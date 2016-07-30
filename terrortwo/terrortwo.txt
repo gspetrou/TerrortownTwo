@@ -1,0 +1,11 @@
+"terrortown"
+{
+	"base"		"base"
+	"title"		"Trouble in Terrorist Town Two"
+	"maps"		"^ttt_|^zm_|^cs_|^de_"
+	"menusystem"	"1"
+
+	"settings"
+	{
+	}
+}
