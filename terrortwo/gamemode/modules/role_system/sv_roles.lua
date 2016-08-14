@@ -1,175 +1,145 @@
-local PLAYER = FindMetaTable("Player")
-
-util.AddNetworkString("TTT_SendRole")
 util.AddNetworkString("TTT_SyncRoles")
+util.AddNetworkString("TTT_ClearRoles")
 
-local function SendRole(ply, role, recipients)
-	net.Start("TTT_SendRole")
-		net.WritePlayer(ply)
-		net.WriteUInt(role, 3)
-	net.Send(recipients)
-end
+local PLAYER = FindMetaTable("Player")
+local traitor_percent = CreateConVar("ttt_traitor_percent", "0.25", nil, "Percentage of players that will be traitors.")
+local detective_threshold = CreateConVar("ttt_detective_threshold", "8", nil, "There must be at least this many players before there can be detectives.")
+local detective_percent = CreateConVar("ttt_detective_percent", "0.15", nil, "Percentage of players that will be detectives.")
 
-function PLAYER:SetSpectator(ShouldNetwork)
-	self.role = ROLE_SPECTATOR
-	GM.PlayerRoles[ROLE_SPECTATOR][self] = true
+GM.PlayerRoles = GM.PlayerRoles or {
+	[ROLE_WAITING] = {},
+	[ROLE_SPECTATOR] = {},
+	[ROLE_INNOCENT] = {},
+	[ROLE_DETECTIVE] = {},
+	[ROLE_TRAITOR] = {}
+}
+local EmptyRoles = GM.PlayerRoles
 
-	if ShouldNetwork then
-		local spectators = TTT.GetSpectators()
-		local traitors = TTT.GetTraitors()
-		local recipients = spectators
-		for i, v in ipairs(traitors) do
-			table.insert(recipients, v)
-		end
-
-		SendRole(self, ROLE_SPECTATOR, recipients)
-	end
-end
-function PLAYER:SetInnocent(ShouldNetwork)
-	self.role = ROLE_INNOCENT
-	GM.PlayerRoles[ROLE_INNOCENT][self] = true
-
-	if ShouldNetwork then
-		SendRole(self, ROLE_INNOCENT, self)
-	end
-end
-function PLAYER:SetDetective(ShouldNetwork)
-	self.role = ROLE_DETECTIVE
-	GM.PlayerRoles[ROLE_DETECTIVE][self] = true
-
-	if ShouldNetwork then
-		SendRole(self, ROLE_DETECTIVE, player.GetAll())
-	end
-end
-function PLAYER:SetTraitor(ShouldNetwork)
-	self.role = ROLE_TRAITOR
-	GM.PlayerRoles[ROLE_TRAITOR][self] = true
-
-	if ShouldNetwork then
-		SendRole(self, ROLE_TRAITOR, TTT.GetTraitors())
-	end
+function PLAYER:SetRole(roletype)
+	self.role = roletype
+	table.insert(GM.PlayerRoles[roletype], self)
 end
 
 function PLAYER:GetRole()
-	return self.role or ROLE_INVALID
-end
-function PLAYER:SetRole(role)
-	if role == ROLE_SPECTATOR then
-		self:SetSpectator()
-	elseif role == ROLE_INNOCENT then
-		self:SetInnocent()
-	elseif role == ROLE_DETECTIVE then
-		self:SetDetective()
-	elseif role == ROLE_TRAITOR then
-		self:SetTraitor()
-	else
-		error("Tried to set an invalid role '"..role.."' on player '"..role.."'.")
-	end
+	return self.role or ROLE_WAITING
 end
 
-function PLAYER:IsInvalid()
-	return self:GetRole() == ROLE_INVALID
-end
-function PLAYER:IsSpectator()
-	return self:GetRole() == ROLE_SPECTATOR
-end
-function PLAYER:IsInnocent()
-	return self:GetRole() == ROLE_INNOCENT
-end
-function PLAYER:IsDetective()
-	return self:GetRole() == ROLE_DETECTIVE
-end
-function PLAYER:IsTraitor()
-	return self:GetRole() == ROLE_TRAITOR
-end
+function PLAYER:IsWaiting() return self:GetRole() == ROLE_WAITING end
+function PLAYER:IsSpectator() return self:GetRole() == ROLE_SPECTATOR end
+function PLAYER:IsInnocent() return self:GetRole() == ROLE_INNOCENT end
+function PLAYER:IsDetective() return self:GetRole() == ROLE_DETECTIVE end
+function PLAYER:IsTraitor() return self:GetRole() == ROLE_TRAITOR end
 
-function TTT.GetSpectators()
-	local spectators = {}
+function TTT.GetWaiting() return GM.PlayerRoles[ROLE_WAITING] end
+function TTT.GetSpectators() return GM.PlayerRoles[ROLE_SPECTATOR] end
+function TTT.GetInnocents() return GM.PlayerRoles[ROLE_INNOCENT] end
+function TTT.GetDetectives() return GM.PlayerRoles[ROLE_DETECTIVE] end
+function TTT.GetTraitors() return GM.PlayerRoles[ROLE_TRAITOR] end
 
-	for i, v in ipairs(player.GetAll()) do
-		if v:IsSpectator() then
-			table.insert(spectators, v)
+function TTT.GetActivePlayers()
+	local players = player.GetAll()
+
+	for i = 1, #players do
+		local ply = plys[i]
+
+		if not ply:Alive() then
+			table.remove(players, i)
 		end
 	end
-	return spectators
-end
-function TTT.GetInnocents()
-	local innocents = {}
 
-	for i, v in ipairs(player.GetAll()) do
-		if v:IsInnocent() then
-			table.insert(innocents, v)
-		end
-	end
-	return innocents
-end
-function TTT.GetDetectives()
-	local detectives = {}
-
-	for i, v in ipairs(player.GetAll()) do
-		if v:IsDetective() then
-			table.insert(detectives, v)
-		end
-	end
-	return detectives
-end
-function TTT.GetTraitors()
-	local traitors = {}
-
-	for i, v in ipairs(player.GetAll()) do
-		if v:IsTraitor() then
-			table.insert(traitors, v)
-		end
-	end
-	return traitors
+	return players
 end
 
-function TTT.SyncSpectators()
-	local spectators = TTT.GetSpectators()
+function TTT.SyncRoles()
+	-- Send traitors
 	local traitors = TTT.GetTraitors()
-	local recipients = spectators
-	for i, v in ipairs(traitors) do
-		table.insert(recipients, v)
-	end
 
 	net.Start("TTT_SyncRoles")
-		net.WriteUInt(#spectators, 7)
-		net.WriteUInt(ROLE_SPECTATOR, 3)
-		for i, v in ipairs(spectators) do
+		net.WriteUInt(ROLE_TRAITOR, 3)
+		net.WriteUInt(#traitors, 7)
+		for i, v in ipairs(traitors) do
 			net.WritePlayer(v)
 		end
-	net.Send(recipients)
-end
-function TTT.SyncInnocents()
-	for i, v in ipairs(TTT.GetInnocents()) do
-		SendRole(v, ROLE_INNOCENT, v)
-	end
-end
-function TTT.SyncDetectives()
+	net.Send(traitors)
+
+	-- Send Detectives
 	local detectives = TTT.GetDetectives()
+	if #detectives == 0 then return end
 
 	net.Start("TTT_SyncRoles")
-		net.WriteUInt(#detectives, 7)
 		net.WriteUInt(ROLE_DETECTIVE, 3)
+		net.WriteUInt(#detectives, 7)
 		for i, v in ipairs(detectives) do
 			net.WritePlayer(v)
 		end
 	net.Broadcast()
 end
-function TTT.SyncTraitors()
-	local traitors = TTT.GetTraitors()
 
-	net.Start("TTT_SyncRoles")
-		net.WriteUInt(#traitors, 7)
-		net.WriteUInt(ROLE_TRAITOR, 3)
-		for i, v in ipairs(traitors) do
-			net.WritePlayer(v)
-		end
-	net.Send(traitors)
+-- Sets everyone to waiting
+function TTT.ClearRoles()
+	GM.PlayerRoles = EmptyRoles
+
+	for i, v in ipairs(player.GetAll()) do
+		v.role = ROLE_WAITING
+	end
+
+	net.Start("TTT_ClearRoles")
+	net.Broadcast()
 end
-function TTT.SyncAllRoles()
-	TTT.SyncSpectators()
-	TTT.SyncInnocents()
-	TTT.SyncDetectives()
-	TTT.SyncTraitors()
+
+local function RandomRole(role, percentage)
+	local plys_of_role = {}
+	local allplayers = TTT.GetActivePlayers()
+	local num_allplayers = #allplayers
+	local num_plys_of_role = math.floor(num_allplayers * percentage)
+	local conditional
+	local hookname
+
+	if role == ROLE_DETECTIVE then
+		conditional = function(ply) return ply:IsTraitor() end
+		hookname = "TTT_PickDetectives"
+	else
+		conditional = function(ply) return ply:IsDetective() end
+		hookname = "TTT_PickTraitors"
+	end
+
+	for i = 1, num_plys_of_role do
+		math.randomseed(os.time() - CurTime())	-- Eh, good enough
+
+		local r = math.random(num_allplayers)
+		local ply = allplayers[r]
+
+		if conditional(ply) then
+			table.insert(plys_of_role, ply)
+			table.remove(allplayers, r)
+		end
+
+		num_allplayers = num_allplayers - 1
+	end
+
+	plys_of_role = hook.Call(hookname, GM, plys_of_role) or plys_of_role
+
+	for i, v in ipairs(plys_of_role) do
+		v:SetRole(role)
+	end
+end
+
+-- Makes a table of random traitors and sets them to that role.
+-- Does not network, use TTT.SyncRoles for that.
+function TTT.PickRandomTraitors()
+	traitor_percent = traitor_percent:GetFloat()
+	if #player.GetAll() < 4 then
+		traitor_percent = 0.5
+	end
+
+	RandomRole(ROLE_TRAITOR, traitor_percent)
+end
+
+function TTT.PickRandomTraitors()
+	local detectives_pass_threshold = #player.GetAll() >= detective_threshold:GetInt()
+
+	if detectives_pass_threshold then
+		detective_percent = detective_percent:GetFloat()
+		RandomRole(ROLE_DETECTIVE, detective_percent)
+	end
 end
