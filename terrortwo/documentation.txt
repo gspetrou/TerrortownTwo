@@ -1,0 +1,11 @@
+Hooks:
+	SERVER:
+		TTT_PickTraitors(table RandomTraitors)
+			- Arg One:	A table of randomly selected traitors
+			- Return:	A table of people that will be traitors
+		TTT_PickDetectives(table RandomDetectives)
+			- Arg One:	A table of randomly selected detectives
+			- Return:	A table of people that will be detectives
+		
+	CLIENT:
+	

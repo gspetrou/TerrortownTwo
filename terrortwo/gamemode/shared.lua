@@ -5,12 +5,6 @@ GM.Website = "N/A"
 
 DEFINE_BASECLASS("gamemode_base")
 
-ROLE_INVALID	= 0
-ROLE_SPECTATOR	= 1
-ROLE_INNOCENT	= 2
-ROLE_DETECTIVE	= 3
-ROLE_TRAITOR	= 4
-
 TTT = TTT or {}
 
 local function SetupFile(path, prefix, modulename)
