@@ -6,14 +6,14 @@ local traitor_percent = CreateConVar("ttt_traitor_percent", "0.25", nil, "Percen
 local detective_threshold = CreateConVar("ttt_detective_threshold", "8", nil, "There must be at least this many players before there can be detectives.")
 local detective_percent = CreateConVar("ttt_detective_percent", "0.15", nil, "Percentage of players that will be detectives.")
 
-GM.PlayerRoles = GM.PlayerRoles or {
+local EmptyRoles = {
 	[ROLE_WAITING] = {},
 	[ROLE_SPECTATOR] = {},
 	[ROLE_INNOCENT] = {},
 	[ROLE_DETECTIVE] = {},
 	[ROLE_TRAITOR] = {}
 }
-local EmptyRoles = GM.PlayerRoles
+GM.PlayerRoles = GM.PlayerRoles or EmptyRoles
 
 function PLAYER:SetRole(roletype)
 	self.role = roletype
@@ -42,7 +42,7 @@ function TTT.GetActivePlayers()
 	for i = 1, #players do
 		local ply = plys[i]
 
-		if not ply:Alive() then
+		if not ply:Alive() or ply:IsSpectator() or ply:IsWaiting() then
 			table.remove(players, i)
 		end
 	end
@@ -92,8 +92,7 @@ local function RandomRole(role, percentage)
 	local allplayers = TTT.GetActivePlayers()
 	local num_allplayers = #allplayers
 	local num_plys_of_role = math.floor(num_allplayers * percentage)
-	local conditional
-	local hookname
+	local conditional, hookname
 
 	if role == ROLE_DETECTIVE then
 		conditional = function(ply) return ply:IsTraitor() end
