@@ -6,14 +6,14 @@ local traitor_percent = CreateConVar("ttt_traitor_percent", "0.25", nil, "Percen
 local detective_threshold = CreateConVar("ttt_detective_threshold", "8", nil, "There must be at least this many players before there can be detectives.")
 local detective_percent = CreateConVar("ttt_detective_percent", "0.15", nil, "Percentage of players that will be detectives.")
 
-GM.PlayerRoles = GM.PlayerRoles or {
+TTT.PlayerRoles = TTT.PlayerRoles or {
 	[ROLE_WAITING] = {},
 	[ROLE_SPECTATOR] = {},
 	[ROLE_INNOCENT] = {},
 	[ROLE_DETECTIVE] = {},
 	[ROLE_TRAITOR] = {}
 }
-local EmptyRoles = GM.PlayerRoles
+local EmptyRoles = TTT.PlayerRoles
 
 function PLAYER:SetRole(roletype)
 	self.role = roletype
@@ -30,19 +30,29 @@ function PLAYER:IsInnocent() return self:GetRole() == ROLE_INNOCENT end
 function PLAYER:IsDetective() return self:GetRole() == ROLE_DETECTIVE end
 function PLAYER:IsTraitor() return self:GetRole() == ROLE_TRAITOR end
 
-function TTT.GetWaiting() return GM.PlayerRoles[ROLE_WAITING] end
-function TTT.GetSpectators() return GM.PlayerRoles[ROLE_SPECTATOR] end
-function TTT.GetInnocents() return GM.PlayerRoles[ROLE_INNOCENT] end
-function TTT.GetDetectives() return GM.PlayerRoles[ROLE_DETECTIVE] end
-function TTT.GetTraitors() return GM.PlayerRoles[ROLE_TRAITOR] end
+function TTT.GetWaiting() return TTT.PlayerRoles[ROLE_WAITING] end
+function TTT.GetSpectators() return TTT.PlayerRoles[ROLE_SPECTATOR] end
+function TTT.GetInnocents() return TTT.PlayerRoles[ROLE_INNOCENT] end
+function TTT.GetDetectives() return TTT.PlayerRoles[ROLE_DETECTIVE] end
+function TTT.GetTraitors() return TTT.PlayerRoles[ROLE_TRAITOR] end
+
+function PLAYER:IsActive()
+	local isactive = hook.Call("TTT_IsPlayerActive", GM, self)
+
+	if type(active) == "boolean" then
+		return isactive
+	end
+
+	return IsValid(self) and not (self:IsSpectator() and self:IsWaiting())
+end
 
 function TTT.GetActivePlayers()
 	local players = player.GetAll()
 
 	for i = 1, #players do
-		local ply = plys[i]
+		local ply = players[i]
 
-		if not ply:Alive() then
+		if not ply:IsActive() then
 			table.remove(players, i)
 		end
 	end
@@ -124,6 +134,11 @@ local function RandomRole(role, percentage)
 	end
 end
 
+function TTT.PickRoles()
+	TTT.PickRandomTraitors()
+	TTT.PickRandomDetectives()
+end
+
 -- Makes a table of random traitors and sets them to that role.
 -- Does not network, use TTT.SyncRoles for that.
 function TTT.PickRandomTraitors()
@@ -135,7 +150,7 @@ function TTT.PickRandomTraitors()
 	RandomRole(ROLE_TRAITOR, traitor_percent)
 end
 
-function TTT.PickRandomTraitors()
+function TTT.PickRandomDetectives()
 	local detectives_pass_threshold = #player.GetAll() >= detective_threshold:GetInt()
 
 	if detectives_pass_threshold then
