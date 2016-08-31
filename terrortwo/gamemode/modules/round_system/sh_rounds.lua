@@ -13,6 +13,10 @@ function TTT.GetRemainingRoundTime()
 	return TTT.GetRoundEndTime() - CurTime()
 end
 
+function TTT.GetFormattedRemainingTime()
+	
+end
+
 function TTT.GetRoundState()
 	return TTT.RoundState
 end

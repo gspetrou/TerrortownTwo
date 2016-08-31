@@ -17,6 +17,14 @@ function TTT.SetRoundState(state)
 	print("Round state changed to: ".. TTT.RoundTypeToPrint(state))
 end
 
+function TTT.SetRoundEndTime(seconds)
+	SetGlobalFloat("ttt_roundend_time", seconds)
+end
+
+function TTT.ExtendRoundTime(seconds)
+	TTT.SetRoundEndTime(TTT.GetRoundEndTime() + seconds)
+end
+
 local function StartPrepOrActive()
 	if math.max(preptime:GetInt(), 0) == 0 then
 		TTT.SetRoundState(ROUND_ACTIVE)
@@ -34,7 +42,7 @@ function TTT.StartRound()
 	TTT.SyncRoles()
 
 	TTT.SetRoundState(ROUND_ACTIVE)
-	SetGlobalFloat("ttt_roundend_time", CurTime() + roundtime:GetFloat())
+	TTT.SetRoundEndTime(CurTime() + roundtime:GetFloat())
 end
 
 function TTT.EndRound()
