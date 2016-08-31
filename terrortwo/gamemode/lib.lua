@@ -17,12 +17,12 @@ function net.ReadPlayer()
 end
 
 function DebugPrint(text)
-	MsgC(Color(200, 20, 20), "TTT DEBUG: ", color_white, text)
+	MsgC(Color(200, 20, 20), "TTT DEBUG: ", color_white, text.."\n")
 
 	text = os.date("%d/%m/%Y - %H:%M:%S", os.time()).."\t"..text.."\n"
-	if not file.Exists("ttt_debug_prints.txt", "DATA") then
-		file.Write("ttt_debug_prints.txt", text)
+	if not file.Exists("ttt/debug_prints.txt", "DATA") then
+		file.Write("ttt/debug_prints.txt", text)
 	else
-		file.Append("ttt_debug_prints.txt", text)
+		file.Append("ttt/debug_prints.txt", text)
 	end
 end

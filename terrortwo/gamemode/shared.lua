@@ -65,3 +65,7 @@ function GM:LoadModules()
 end
 
 GM:LoadModules()
+
+if not file.IsDir("ttt", "DATA") then
+	file.CreateDir("ttt")
+end
