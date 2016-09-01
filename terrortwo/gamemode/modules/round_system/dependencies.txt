@@ -1,3 +1,0 @@
-TTT.GetActivePlayers()
-TTT.PickRoles()
-TTT.SyncRoles()
