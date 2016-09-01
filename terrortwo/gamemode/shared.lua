@@ -6,8 +6,6 @@ GM.Website = "N/A"
 DEFINE_BASECLASS("gamemode_base")
 local debugmode = CreateConVar("ttt_debug_prints", "1", nil, "Enables debug prints.")
 
-TTT = TTT or {}
-
 local function SetupFile(path, prefix)
 	if prefix == "sv_" then
 		if SERVER then

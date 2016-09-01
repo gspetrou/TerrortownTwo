@@ -1,8 +1,4 @@
-AddCSLuaFile("shared.lua")
-AddCSLuaFile("lib.lua")
-include("shared.lua")
-include("lib.lua")
-
+TTT = TTT or {}
 
 -- Get hands working
 function GM:PlayerSpawn(ply)
@@ -18,3 +14,8 @@ function GM:PlayerSetHandsModel(ply, ent)
 		ent:SetBodyGroups(info.body)
 	end
 end
+
+AddCSLuaFile("shared.lua")
+AddCSLuaFile("lib.lua")
+include("lib.lua")
+include("shared.lua")
