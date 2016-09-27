@@ -15,4 +15,4 @@ L.active = "Active"
 
 L.invalid = "bork" -- This is used for any invalid text.
 
-TTT.AddLanguage(L)
+TTT.Languages.Register(L)

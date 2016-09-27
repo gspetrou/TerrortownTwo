@@ -1,35 +1,37 @@
 TTT.Languages = TTT.Languages or {}
+TTT.Languages.Langs = TTT.Languages.Langs or {}
+
 local langs = langs or {} -- Used for networking
 local numlangs = numlangs or -1
 
 if SERVER then
-	util.AddNetworkString("TTT_ServerDefaultLanguage")
+	util.AddNetworkString("TTT_Languages_ServerDefault")
 
 	if not file.Exists("ttt/language.txt", "DATA") then
 		file.Write("ttt/language.txt", "english")
 	end
 
-	TTT.ServerDefaultLanguage = file.Read("ttt/language.txt", "DATA")
+	TTT.Languages.ServerDefault = file.Read("ttt/language.txt", "DATA")
 
 	concommand.Add("ttt_language_default", function(_, _, arg)
 		local lang = arg[1]
 
 		if #arg == 0 or lang == "" then
-			print("Current default language is set to '"..TTT.ServerDefaultLanguage.."'.")
+			print("Current default language is set to '"..TTT.Languages.ServerDefault.."'.")
 			return
 		end
 
-		if lang == TTT.ServerDefaultLanguage then
+		if lang == TTT.Languages.ServerDefault then
 			return
 		end
 
-		if not TTT.IsValidLanguage(lang) then
+		if not TTT.Languages.IsValid(lang) then
 			print("'"..lang.."' is not a valid language. Type 'ttt_language_list' to see available languages.")
 
-			if TTT.IsValidLanguage(TTT.ServerDefaultLanguage) then
-				print("Reverting to previous language, "..TTT.ServerDefaultLanguage..".")
+			if TTT.Languages.IsValid(TTT.Languages.ServerDefault) then
+				print("Reverting to previous language, "..TTT.Languages.ServerDefault..".")
 				return
-			elseif TTT.IsValidLanguage("english") then
+			elseif TTT.Languages.IsValid("english") then
 				print("Defaulting language to English.")
 				lang = "english"
 			else
@@ -37,42 +39,42 @@ if SERVER then
 			end
 		end
 
-		TTT.ServerDefaultLanguage = lang
+		TTT.Languages.ServerDefault = lang
 		file.Write("ttt/language.txt", lang)
 
-		net.Start("TTT_ServerDefaultLanguage")
+		net.Start("TTT_Languages_ServerDefault")
 			net.WriteUInt(langs[lang], 6)
 		net.Broadcast()
 	end)
 
-	hook.Add("PlayerInitialSpawn", "TTT_SendServerDefaultLanguage", function(ply)
-		net.Start("TTT_ServerDefaultLanguage")
-			net.WriteUInt(langs[TTT.ServerDefaultLanguage] or 0, 6)
+	hook.Add("PlayerInitialSpawn", "TTT_Languages_SendServerDefault", function(ply)
+		net.Start("TTT_Languages_ServerDefault")
+			net.WriteUInt(langs[TTT.Languages.ServerDefault] or 0, 6)
 		net.Send(ply)
 	end)
 else
-	net.Receive("TTT_ServerDefaultLanguage", function()
+	net.Receive("TTT_Languages_ServerDefault", function()
 		local langnum = net.ReadUInt(6)
 
 		for k, v in pairs(langs) do
 			if langnum == v then
-				TTT.ServerDefaultLanguage = k
+				TTT.Languages.ServerDefault = k
 			end
 		end
 	end)
 end
 
-function TTT.IsValidLanguage(lang)
+function TTT.Languages.IsValid(lang)
 	if type(lang) ~= "string" then
 		return false
 	elseif SERVER then
-		return TTT.Languages[lang] == true
+		return TTT.Languages.Langs[lang] == true
 	else
-		return type(TTT.Languages[lang]) == "table"
+		return type(TTT.Languages.Langs[lang]) == "table"
 	end
 end
 
-function TTT.LoadLanguages()
+function TTT.Languages.Init()
 	local files = {}
 
 	-- Load external langauges first
@@ -102,7 +104,7 @@ function TTT.LoadLanguages()
 	end
 end
 
-function TTT.AddLanguage(tbl)
+function TTT.Languages.Register(tbl)
 	local id = tbl.ID
 	if type(id) ~= "string" then
 		DebugPrint("Unable to add language since it is missing the ID field, aborting.")
@@ -116,18 +118,18 @@ function TTT.AddLanguage(tbl)
 	end
 
 	if SERVER then
-		TTT.Languages[id] = true
+		TTT.Languages.Langs[id] = true
 	else
-		TTT.Languages[id] = tbl
+		TTT.Languages.Langs[id] = tbl
 	end
 end
 
-hook.Add("Initialize", "TTT_LoadLanguages", function()
-	TTT.LoadLanguages()
+hook.Add("Initialize", "TTT_Languages_Load", function()
+	TTT.Languages.Init()
 end)
 
 concommand.Add("ttt_language_list", function()
-	for k, v in pairs(TTT.Languages) do
+	for k, v in pairs(TTT.Languages.Langs) do
 		print(k)
 	end
 end)

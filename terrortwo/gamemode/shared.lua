@@ -6,6 +6,10 @@ GM.Website = "N/A"
 DEFINE_BASECLASS("gamemode_base")
 local debugmode = CreateConVar("ttt_debug_prints", "1", nil, "Enables debug prints.")
 
+if not file.IsDir("ttt", "DATA") then
+	file.CreateDir("ttt")
+end
+
 local function SetupFile(path, prefix)
 	if prefix == "sv_" then
 		if SERVER then
@@ -60,10 +64,7 @@ function GM:LoadModules()
 	end
 
 	hook.Call("TTT_PostModulesLoaded", GM)
+	TTT.LoadedModules = true
 end
 
 GM:LoadModules()
-
-if not file.IsDir("ttt", "DATA") then
-	file.CreateDir("ttt")
-end
