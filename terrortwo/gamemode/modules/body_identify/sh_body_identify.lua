@@ -5,6 +5,7 @@ function PLAYER:IsIdentified()
 	return self.ttt_identified or false
 end
 
+-- If called on client only will only change for that client.
 function PLAYER:SetIdentified(bool)
 	self.ttt_identified = bool
 
