@@ -1,5 +1,5 @@
 local getRole, getTime, math_floor, math_Clamp, math_min = TTT.Roles.RoleAsString, TTT.Rounds.GetFormattedRemainingTime, math.floor, math.Clamp, math.min
-local surface_DrawRect, surface_SetDrawColor, surface_GetTextSize, surface_DrawText, surface_SetFont, surface_SetTextPos = surface.DrawRect, surface.SetDrawColor, surface.GetTextSize, surface.DrawText, surface.SetFont, surface.SetTextPos
+local surface_DrawRect, surface_SetDrawColor, surface_GetTextSize, surface_DrawText, surface_SetFont, surface_SetTextPos, surface_SetTextColor = surface.DrawRect, surface.SetDrawColor, surface.GetTextSize, surface.DrawText, surface.SetFont, surface.SetTextPos, surface.SetTextColor
 
 local health_colors = {
 	bg = {100, 25, 25},
@@ -25,6 +25,8 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 	local bar_h = (scale_h - 12)/3
 	local bar_pos_x = 8
 	local bar_pos_y = h - 2 - scale_h
+
+	surface_SetTextColor(255, 255, 255)
 
 	surface_SetDrawColor(35, 35, 40)
 	surface_DrawRect(5, bar_pos_y - 3, scale_w, bar_h*3 + 12)

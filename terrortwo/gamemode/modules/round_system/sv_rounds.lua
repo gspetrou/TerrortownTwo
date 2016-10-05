@@ -3,10 +3,13 @@ TTT.Rounds = TTT.Rounds or {}
 
 local preventwin = CreateConVar("ttt_dev_preventwin", "0", nil, "Set to 1 to prevent the rounds from ending.")
 local preventstart = CreateConVar("ttt_dev_preventstart", "0", nil, "Set to 1 to prevent the round from starting.")
-local posttime = CreateConVar("ttt_post_time", "30", nil, "Time in seconds after a round has ended till the game goes into prep. Set to 0 to skip post round time.")
-local preptime = CreateConVar("ttt_prep_time", "30", nil, "Time in seconds after the round has entered preperation time till the round actually starts. Set to 0 to skip prep round time.")
-local roundtime = CreateConVar("ttt_roundtime_seconds", "600", nil, "How long is the round in seconds. This is before any extensions are added to it like haste or overtime.")
-local minimum_players = CreateConVar("ttt_minimum_players", "2", nil, "This many players is required for a round to start.")
+local posttime = CreateConVar("ttt_post_time", "30", FCVAR_ARCHIVE, "Time in seconds after a round has ended till the game goes into prep. Set to 0 to skip post round time.")
+local preptime = CreateConVar("ttt_prep_time", "30", FCVAR_ARCHIVE, "Time in seconds after the round has entered preperation time till the round actually starts. Set to 0 to skip prep round time.")
+local roundtime = CreateConVar("ttt_roundtime_seconds", "600", FCVAR_ARCHIVE, "How long is the round in seconds. This is before any extensions are added to it like haste or overtime.")
+local minimum_players = CreateConVar("ttt_minimum_players", "2", FCVAR_ARCHIVE, "This many players is required for a round to start.")
+local numrounds = CreateConVar("ttt_rounds_per_map", "7", FCVAR_ARCHIVE, "How many rounds to play before a map change is initiated.")
+
+TTT.Rounds.NumFinishedRounds = 0
 
 function TTT.Rounds.SetState(state, wintype)
 	local newstate = hook.Call("TTT_Rounds_StateChanged", GM, state) or state
@@ -77,6 +80,12 @@ end
 function TTT.Rounds.End(wintype)
 	TTT.Roles.Clear()
 	
+	TTT.Rounds.NumFinishedRounds = TTT.Rounds.NumFinishedRounds + 1
+
+	if TTT.Rounds.NumFinishedRounds >= numrounds:GetInt() then
+		TTT.MapHandler.HandleMapSwitch()
+	end
+
 	if posttime:GetInt() <= 0 then
 		TTT.Rounds.EnterPrep()
 	else

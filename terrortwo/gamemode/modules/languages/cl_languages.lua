@@ -56,7 +56,7 @@ function TTT.Languages.GetPhrase(phrase, ...)
 	local p = TTT.Languages.GetTable()[phrase] or "bork"
 
 	if ... then
-		string.format(p, ...)
+		p = string.format(p, ...)
 	end
 
 	return p
