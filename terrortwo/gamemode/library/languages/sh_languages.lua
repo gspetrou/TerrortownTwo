@@ -5,7 +5,7 @@ local langs = langs or {} -- Used for networking
 local numlangs = numlangs or -1
 
 if SERVER then
-	util.AddNetworkString("TTT_Languages_ServerDefault")
+	util.AddNetworkString("TTT.Languages.ServerDefault")
 
 	if not file.Exists("ttt/language.txt", "DATA") then
 		file.Write("ttt/language.txt", "english")
@@ -42,18 +42,18 @@ if SERVER then
 		TTT.Languages.ServerDefault = lang
 		file.Write("ttt/language.txt", lang)
 
-		net.Start("TTT_Languages_ServerDefault")
+		net.Start("TTT.Languages.ServerDefault")
 			net.WriteUInt(langs[lang], 6)
 		net.Broadcast()
 	end)
 
-	hook.Add("PlayerInitialSpawn", "TTT_Languages_SendServerDefault", function(ply)
-		net.Start("TTT_Languages_ServerDefault")
+	function TTT.Languages.SendServerDefault(ply)
+		net.Start("TTT.Languages.ServerDefault")
 			net.WriteUInt(langs[TTT.Languages.ServerDefault] or 0, 6)
 		net.Send(ply)
-	end)
+	end
 else
-	net.Receive("TTT_Languages_ServerDefault", function()
+	net.Receive("TTT.Languages.ServerDefault", function()
 		local langnum = net.ReadUInt(6)
 
 		for k, v in pairs(langs) do
@@ -74,18 +74,18 @@ function TTT.Languages.IsValid(lang)
 	end
 end
 
-function TTT.Languages.Init()
+function TTT.Languages.Initialize()
 	local files = {}
 
 	-- Load external langauges first
-	local root = "modules/languages/languages/"
+	local root = "library/languages/languages/"
 	local f = file.Find(root.."*.lua", "LUA")
 	for i, v in ipairs(f) do
 		files.v = root
 	end
 
 	-- Now internal languages
-	root = GAMEMODE_NAME.."/gamemode/modules/languages/languages/"
+	root = GAMEMODE_NAME.."/gamemode/library/languages/languages/"
 	f = file.Find(root.."*.lua", "LUA")
 	for i, v in ipairs(f) do
 		if not files.v then
@@ -123,10 +123,6 @@ function TTT.Languages.Register(tbl)
 		TTT.Languages.Langs[id] = tbl
 	end
 end
-
-hook.Add("Initialize", "TTT_Languages_Load", function()
-	TTT.Languages.Init()
-end)
 
 concommand.Add("ttt_language_list", function()
 	for k, v in pairs(TTT.Languages.Langs) do

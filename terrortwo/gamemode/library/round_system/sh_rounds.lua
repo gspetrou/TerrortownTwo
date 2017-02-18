@@ -52,13 +52,12 @@ function TTT.Rounds.TypeToPrint(state)
 end
 
 if CLIENT then
-	net.Receive("TTT_Rounds_ChangeState", function()
+	net.Receive("TTT.Rounds.ChangeState", function()
 		TTT.Rounds.State = net.ReadUInt(3)
-
---[[	if TTT.RoundState == ROUND_POST then
+	--[[
+		if TTT.RoundState == ROUND_POST then
 			local wintype = net.ReadUInt(3)
-
 		end
-]]
+	]]
 	end)
 end

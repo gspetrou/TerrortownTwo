@@ -1,6 +1,6 @@
-util.AddNetworkString("TTT_Roles_Sync")
-util.AddNetworkString("TTT_Roles_Clear")
-util.AddNetworkString("TTT_Roles_PlayerDied")
+util.AddNetworkString("TTT.Roles.Sync")
+util.AddNetworkString("TTT.Roles.Clear")
+util.AddNetworkString("TTT.Roles.PlayerDied")
 
 TTT.Roles = TTT.Roles or {}
 
@@ -41,13 +41,21 @@ end
 -- Updates the role for this specific player, no need to sync everyone.
 function PLAYER:ForceRole(r, targets)
 	self:SetRole(r)
-	net.Start("TTT_Roles_Sync")
+	net.Start("TTT.Roles.Sync")
 		net.WriteUInt(r, 3)
 		net.WriteUInt(1, 7)
 
 		net.WritePlayer(self)
-	net.Send(targets or self)
+
+	if targets == true then
+		net.Broadcast()
+	else
+		net.Send(targets or self)
+	end
 end
+function PLAYER:ForceInnocent() self:ForceRole(ROLE_INNOCENT) end
+function PLAYER:ForceTraitor() self:ForceRole(ROLE_TRAITOR, TTT.Roles.GetTraitors()) end
+function PLAYER:ForceDetective() self:ForceRole(ROLE_DETECTIVE, true) end
 
 -- When a player dies before they are identified.
 function TTT.Roles.SendDeath(ply)
@@ -61,23 +69,20 @@ function TTT.Roles.SendDeath(ply)
 	end
 
 	if #recipients > 0 then
-		net.Start("TTT_Roles_PlayerDied")
+		net.Start("TTT.Roles.PlayerDied")
 			net.WritePlayer(ply)
 		net.Send(recipients)
 	end
 end
 
-hook.Add("PlayerDeath", "TTT_Roles_SendDeath", function(ply)
-	TTT.Roles.SendDeath(ply)
-end)
-
-hook.Add("PlayerInitialSpawn", "TTT_Roles_PlayerInit", function(ply)
+-- Checks if a player should be moved to spectatir
+function TTT.SetRoleOnInitialSpawn(ply)
 	if ply:GetInfoNum("ttt_spectator_only", 0) == 1 then
 		ply:SetRole(ROLE_SPECTATOR)
 	else
 		ply:SetRole(ROLE_WAITING)
 	end
-end)
+end
 
 -- Is not spec-only
 function PLAYER:IsActive()
@@ -117,7 +122,7 @@ function TTT.Roles.PickTraitors()
 		table.remove(players, ply_index)
 	end
 
-	traitors = hook.Call("TTT_Roles_PickTraitors", GM, traitors) or traitors
+	traitors = hook.Call("TTT.Roles.PickTraitors", GM, traitors) or traitors
 
 	for i, v in ipairs(traitors) do
 		v:SetRole(ROLE_TRAITOR)
@@ -139,7 +144,7 @@ function TTT.Roles.PickDetectives()
 			table.remove(players, ply_index)
 		end
 
-		detectives = hook.Call("TTT_Roles_PickDetectives", GM, detectives) or detectives
+		detectives = hook.Call("TTT.Roles_].PickDetectives", GM, detectives) or detectives
 
 		for i, v in ipairs(detectives) do
 			v:SetRole(ROLE_DETECTIVE)
@@ -168,7 +173,7 @@ function TTT.Roles.Clear()
 		end
 	end
 
-	net.Start("TTT_Roles_Clear")
+	net.Start("TTT.Roles.Clear")
 		net.WriteUInt(#spec, 7)
 		for i, v in ipairs(spec) do
 			net.WritePlyer(v)
@@ -180,7 +185,7 @@ function TTT.Roles.Sync()
 	-- Send traitors
 	local traitors = TTT.Roles.GetTraitors()
 
-	net.Start("TTT_Roles_Sync")
+	net.Start("TTT.Roles.Sync")
 		net.WriteUInt(ROLE_TRAITOR, 3)
 		net.WriteUInt(#traitors, 7)
 		for i, v in ipairs(traitors) do
@@ -191,7 +196,7 @@ function TTT.Roles.Sync()
 	-- Send Detectives
 	local detectives = TTT.Roles.GetDetectives()
 	if #detectives > 0 then
-		net.Start("TTT_Roles_Sync")
+		net.Start("TTT.Roles.Sync")
 			net.WriteUInt(ROLE_DETECTIVE, 3)
 			net.WriteUInt(#detectives, 7)
 			for i, v in ipairs(detectives) do

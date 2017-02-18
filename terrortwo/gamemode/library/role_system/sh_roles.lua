@@ -39,7 +39,7 @@ TTT.Roles.Colors = {
 if CLIENT then
 	CreateClientConVar("ttt_always_spectator", "0", true, true, "Setting this to true will always make you a spectator.")
 
-	net.Receive("TTT_Roles_Clear", function()
+	net.Receive("TTT.Roles.Clear", function()
 		local numspecs = net.ReadUInt(7)
 		local specs = {}
 		for i = 1, numspecs do
@@ -55,7 +55,7 @@ if CLIENT then
 		end
 	end)
 
-	net.Receive("TTT_Roles_Sync", function()
+	net.Receive("TTT.Roles.Sync", function()
 		local newrole = net.ReadUInt(3)
 		local numplys = net.ReadUInt(7)
 
@@ -68,7 +68,7 @@ if CLIENT then
 	end)
 
 	-- Dont get all excited. This only gets sent to Traitors and Spectators.
-	net.Receive("TTT_Roles_PlayerDied", function()
+	net.Receive("TTT.Roles.PlayerDied", function()
 		local ply = net.ReadEntity()
 		ply.ttt_role = ROLE_SPECTATOR
 	end)

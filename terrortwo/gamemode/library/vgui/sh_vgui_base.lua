@@ -8,17 +8,12 @@ if CLIENT then
 	end
 
 	-- Since HUDPaint is called so much might as well micro-optimize.
-	local LocalPlayer, pairs, hookCall, ScrW, ScrH, IsValid = LocalPlayer, pairs, hook.Call, ScrW, ScrH, IsValid
-	function GM:HUDPaint()
+	local LocalPlayer, pairs, hookCall, ScrW, ScrH = LocalPlayer, pairs, hook.Call, ScrW, ScrH
+	function TTT.VGUI.HUDPaint()
 		local ply, w, h = LocalPlayer(), ScrW(), ScrH()
 
-		-- To prevent some retardation caused by Gmod when players are initializing.
-		if not IsValid(ply) then
-			return
-		end
-
 		for k, v in pairs(TTT.VGUI.Elements) do
-			if hookCall("HUDShouldDraw", self, k) and v[2](ply) then
+			if TTT.VGUI.HUDShouldDraw(k) and v[2](ply) then
 				v[1](ply, w, h)
 			end
 		end
@@ -30,15 +25,14 @@ if CLIENT then
 		CHudAmmo = true,
 		CHudSecondaryAmmo = true
 	}
-
-	function GM:HUDShouldDraw(name)
+	function TTT.VGUI.HUDShouldDraw(name)
 		return not disabled[name]
 	end
 end
 
-hook.Add("TTT_PostModulesLoaded", "TTT_VGUI_Initialize", function()
-	-- Same exact way module loading works.
-	local path = "modules/vgui/vgui/"
+function TTT.VGUI.Initialize()
+	-- Load files in addons/library/vgui/vgui.
+	local path = "library/vgui/vgui/"
 	local loadedfiles = {}
 	local files, _ = file.Find(path.."*.lua", "LUA")
 	for i, v in ipairs(files) do
@@ -50,10 +44,12 @@ hook.Add("TTT_PostModulesLoaded", "TTT_VGUI_Initialize", function()
 		loadedfiles[v] = true
 	end
 
-
-	path = GM.FolderName.."/gamemode/modules/vgui/vgui/"
+	-- Now load files in terrortwo/gamemode/ibrary/vgui/vgui and if there
+	-- are files with same names as the ones in the addons folder then skip over it.
+	path = GAMEMODE.FolderName.."/gamemode/library/vgui/vgui/"
 	files, _ = file.Find(path.."*.lua", "LUA")
 	for i, v in ipairs(files) do
+		print(path..v)
 		if not loadedfiles[v] then
 			if SERVER then
 				AddCSLuaFile(path..v)
@@ -63,4 +59,4 @@ hook.Add("TTT_PostModulesLoaded", "TTT_VGUI_Initialize", function()
 			loadedfiles[v] = true
 		end
 	end
-end)
+end

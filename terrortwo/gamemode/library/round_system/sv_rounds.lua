@@ -1,4 +1,4 @@
-util.AddNetworkString("TTT_Rounds_ChangeState")
+util.AddNetworkString("TTT.Rounds.ChangeState")
 TTT.Rounds = TTT.Rounds or {}
 
 local preventwin = CreateConVar("ttt_dev_preventwin", "0", nil, "Set to 1 to prevent the rounds from ending.")
@@ -12,10 +12,10 @@ local numrounds = CreateConVar("ttt_rounds_per_map", "7", FCVAR_ARCHIVE, "How ma
 TTT.Rounds.NumFinishedRounds = 0
 
 function TTT.Rounds.SetState(state, wintype)
-	local newstate = hook.Call("TTT_Rounds_StateChanged", GM, state) or state
+	local newstate = hook.Call("TTT.Rounds.StateChanged", GM, state) or state
 	TTT.Rounds.State = newstate
 
-	net.Start("TTT_Rounds_ChangeState")
+	net.Start("TTT.Rounds.ChangeState")
 		net.WriteUInt(newstate, 3)
 		if wintype then
 			net.WriteUInt(wintype, 3)
@@ -48,7 +48,7 @@ function TTT.Rounds.EnterPrep()
 		-- This is only really used for client's HUDs at this point.
 		TTT.Rounds.SetEndTime(CurTime() + delay)
 
-		timer.Create("TTT_Rounds_PrepTime", delay, 1, function()
+		timer.Create("TTT.Rounds.PrepTime", delay, 1, function()
 			TTT.Rounds.Start()
 		end)
 	end
@@ -66,7 +66,7 @@ function TTT.Rounds.EnterPost()
 end
 
 function TTT.Rounds.Start()
-	if preventstart:GetBool() or hook.Call("TTT_Rounds_ShouldStart", GM) == false or #TTT.Roles.GetActivePlayers() < minimum_players:GetInt() then
+	if preventstart:GetBool() or hook.Call("TTT.Rounds.ShouldStart") == false or #TTT.Roles.GetActivePlayers() < minimum_players:GetInt() then
 		return
 	end
 
@@ -78,12 +78,12 @@ function TTT.Rounds.Start()
 end
 
 function TTT.Rounds.End(wintype)
-	TTT.Roles.Clear()
+	hook.Call("TTT.Rounds.RoundEnded", nil, wintype)
 	
 	TTT.Rounds.NumFinishedRounds = TTT.Rounds.NumFinishedRounds + 1
 
 	if TTT.Rounds.NumFinishedRounds >= numrounds:GetInt() then
-		TTT.MapHandler.HandleMapSwitch()
+		hook.Call("TTT.Rounds.MapEnd", nil, wintype)
 	end
 
 	if posttime:GetInt() <= 0 then
@@ -97,15 +97,15 @@ function TTT.Rounds.Waiting()
 	TTT.Rounds.SetEndTime(0)
 	TTT.Rounds.SetState(ROUND_WAITING)
 	
-	if timer.Exists("TTT_Rounds_PrepTime") then
-		timer.Remove("TTT_Rounds_PrepTime")
-	elseif timer.Exists("TTT_Rounds_PostTime") then
-		timer.Remove("TTT_Rounds_PostTime")
+	if timer.Exists("TTT.Rounds.PrepTime") then
+		timer.Remove("TTT.Rounds.PrepTime")
+	elseif timer.Exists("TTT.Rounds.PostTime") then
+		timer.Remove("TTT.Rounds.PostTime")
 	end
 end
 
 function TTT.Rounds.ShouldEnd()
-	if preventwin:GetBool() or hook.Call("TTT_Rounds_ShouldEnd", GM) == false then
+	if preventwin:GetBool() or hook.Call("TTT.Rounds.ShouldEnd", GM) == false then
 		return false
 	end
 
@@ -121,16 +121,29 @@ function TTT.Rounds.ShouldEnd()
 	return wintype
 end
 
-hook.Add("PostPlayerDeath", "TTT_CheckRound", function(ply)
+------------------------------
+-- TTT.Rounds.CheckWinOnDeath
+------------------------------
+-- Desc:		Checks if the round should wend after someone died.
+-- Arg One:		Player entity that died.
+function TTT.Rounds.CheckWinOnDeath(ply)
 	local wintype = TTT.Rounds.ShouldEnd()
 
 	if wintype then
 		TTT.Rounds.End(wintype)
 	end
-end)
+end
 
-hook.Add("Initialize", "TTT_Rounds_CheckStatus", function()
-	timer.Create("TTT_Rounds_CheckStatus", 1, 0, function()
+-------------------------
+-- TTT.Rounds.Initialize
+-------------------------
+-- Desc:		Starts a timer which will handle how rounds should go.
+function TTT.Rounds.Initialize()
+	if timer.Exists("TTT.Rounds.CheckStatus") then
+		timer.Remove("TTT.Rounds.CheckStatus")
+	end
+
+	timer.Create("TTT.Rounds.CheckStatus", 1, 0, function()
 		local roundstate = TTT.Rounds.GetState()
 
 		if #TTT.Roles.GetActivePlayers() >= minimum_players:GetInt() then
@@ -142,9 +155,12 @@ hook.Add("Initialize", "TTT_Rounds_CheckStatus", function()
 					TTT.Rounds.End(wintype)
 				end
 			end
-
 		elseif roundstate ~= ROUND_WAITING then
 			TTT.Rounds.Waiting()
 		end
 	end)
+end
+
+concommand.Add("ttt_restartround", function()
+	TTT.Rounds.Initialize()
 end)
