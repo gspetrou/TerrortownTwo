@@ -1,30 +1,25 @@
 TTT.Languages = TTT.Languages or {}
-TTT.Languages.Langs = TTT.Languages.Langs or {}
-
-local langs = langs or {} -- Used for networking
-local numlangs = numlangs or -1
+TTT.Languages.Languages = TTT.Languages.Languages or {}
+TTT.Languages.NWLang = TTT.Languages.NWLang or {}
+local fallbacklanguage = "english"
 
 if SERVER then
 	util.AddNetworkString("TTT.Languages.ServerDefault")
 
-	if not file.Exists("ttt/language.txt", "DATA") then
-		file.Write("ttt/language.txt", "english")
-	end
-
-	TTT.Languages.ServerDefault = file.Read("ttt/language.txt", "DATA")
-
+	-------------------------------------
+	-- ConCommand:	ttt_language_default
+	-------------------------------------
+	-- Desc:		Sets or informs what the server default language is.
+	-- Arg One:		String or nothing.
+	-- 				String, a valid language file name.
+	-- 				Nothing, will print the server default language.
 	concommand.Add("ttt_language_default", function(_, _, arg)
 		local lang = arg[1]
-
-		if #arg == 0 or lang == "" then
+		if #arg == 0 or lang == nil or lang == "" or lang == TTT.Languages.ServerDefault then
 			print("Current default language is set to '"..TTT.Languages.ServerDefault.."'.")
 			return
 		end
-
-		if lang == TTT.Languages.ServerDefault then
-			return
-		end
-
+		
 		if not TTT.Languages.IsValid(lang) then
 			print("'"..lang.."' is not a valid language. Type 'ttt_language_list' to see available languages.")
 
@@ -39,93 +34,141 @@ if SERVER then
 			end
 		end
 
+		TTT.Languages.SetServerDefaultLanguage(lang)
+	end)
+
+	------------------------------------------
+	-- TTT.Languages.SetServerDefaultLanguage
+	------------------------------------------
+	-- Desc:		Sets the server default language and informs players about it.
+	-- Arg One:		String, language file name. You'll want to see if its a valid language beforehand with TTT.Languages.IsValid.
+	function TTT.Languages.SetServerDefaultLanguage(lang)
 		TTT.Languages.ServerDefault = lang
 		file.Write("ttt/language.txt", lang)
-
 		net.Start("TTT.Languages.ServerDefault")
-			net.WriteUInt(langs[lang], 6)
+			net.WriteUInt(TTT.Languages.GetLanguageNWID(lang), 6)
 		net.Broadcast()
-	end)
+	end
 
-	function TTT.Languages.SendServerDefault(ply)
+	-------------------------------------------
+	-- TTT.Languages.GetServerDefaultLanguage
+	-------------------------------------------
+	-- Desc:		Gets a string of what the server default language is.
+	-- Returns:		String, the server default language.
+	function TTT.Languages.GetServerDefaultLanguage()
+		if not file.Exists("ttt/language.txt", "DATA") then
+			file.Write("ttt/language.txt", fallbacklanguage)
+
+			TTT.Languages.ServerDefault = fallbacklanguage
+			return fallbacklanguage
+		else
+			local defaultlanguage = file.Read("ttt/language.txt")
+			if not TTT.Languages.IsValid(defaultlanguage) then
+				defaultlanguage = fallbacklanguage
+				file.Write("ttt/language.txt", defaultlanguage)
+			end
+
+			TTT.Languages.ServerDefault = defaultlanguage
+			return defaultlanguage
+		end
+	end
+
+	-------------------------------------
+	-- TTT.Languages.SendDefaultLanguage
+	-------------------------------------
+	-- Desc:		Tells the given client what the server default language is.
+	-- Arg One:		Player entity, informed what the server default language is.
+	function TTT.Languages.SendDefaultLanguage(ply)
 		net.Start("TTT.Languages.ServerDefault")
-			net.WriteUInt(langs[TTT.Languages.ServerDefault] or 0, 6)
+			net.WriteUInt(TTT.Languages.GetLanguageNWID(TTT.Languages.ServerDefault), 6)
 		net.Send(ply)
 	end
-else
-	net.Receive("TTT.Languages.ServerDefault", function()
-		local langnum = net.ReadUInt(6)
-
-		for k, v in pairs(langs) do
-			if langnum == v then
-				TTT.Languages.ServerDefault = k
-			end
-		end
-	end)
 end
 
-function TTT.Languages.IsValid(lang)
-	if type(lang) ~= "string" then
-		return false
-	elseif SERVER then
-		return TTT.Languages.Langs[lang] == true
-	else
-		return type(TTT.Languages.Langs[lang]) == "table"
-	end
+-------------------------
+-- TTT.Languages.IsValid
+-------------------------
+-- Desc:		Says whether the given language string file name is valid.
+-- Arg One:		String, ID for the language.
+-- Returns:		Boolean, is the language valid.
+function TTT.Languages.IsValid(langID)
+	return SERVER and TTT.Languages.Languages[langID] == true or type(TTT.Languages.Languages[langID]) == "table"
 end
 
-function TTT.Languages.Initialize()
-	local files = {}
 
-	-- Load external langauges first
-	local root = "library/languages/languages/"
-	local f = file.Find(root.."*.lua", "LUA")
-	for i, v in ipairs(f) do
-		files.v = root
-	end
+---------------------------------
+-- TTT.Languages.GetLanguageNWID
+---------------------------------
+-- Desc:		Gets a number representing this language for both the client and server.
+-- Arg One:		String, file name of the language.
+-- Returns:		Number, represting the language.
+function TTT.Languages.GetLanguageNWID(name)
+	return TTT.Languages.NWLang[name]
+end
 
-	-- Now internal languages
-	root = GAMEMODE_NAME.."/gamemode/library/languages/languages/"
-	f = file.Find(root.."*.lua", "LUA")
-	for i, v in ipairs(f) do
-		if not files.v then
-			files[v] = root
-		end
-	end
+-------------------------------
+-- TTT.Languages.LoadLanguages
+-------------------------------
+-- Desc:		Loads the languages. Addons should place languages in "addonname/lua/tttlanguages/".
+function TTT.Languages.LoadLanguages()
+	local langFiles = {}
+	local idnum = -1
 
-	for k, v in pairs(files) do
+	-- Addon languages take priority.
+	local files = file.Find("tttlanguages/*.lua", "LUA")
+	for i, v in ipairs(files) do
+		local filename = v:sub(1, #v - 4)
+		langFiles[filename] = true
+		idnum = idnum + 1
+
 		if SERVER then
-			AddCSLuaFile(v..k)
+			AddCSLuaFile("tttlanguages/".. v)
+			TTT.Languages.Languages[filename] = true
+		else
+			TTT.Languages.Languages[filename] = include("tttlanguages/".. v)
 		end
-		include(v..k)
+		TTT.Languages.NWLang[filename] = idnum
+	end
 
-		numlangs = numlangs + 1
-		langs[string.sub(k, 1, #k-4)] = numlangs
+	-- Now load gamemode languages.
+	local root = GAMEMODE_NAME .."/gamemode/library/languages/languages/"
+	files = file.Find(root .."*.lua", "LUA")
+	for i, v in ipairs(files) do
+		local filename = v:sub(1, #v - 4)
+		if not langFiles[v] then
+			langFiles[v] = true
+			idnum = idnum + 1
+
+			if SERVER then
+				AddCSLuaFile(root .. v)
+				TTT.Languages.Languages[filename] = true
+			else
+				TTT.Languages.Languages[filename] = include(root .. v)
+			end
+			TTT.Languages.NWLang[filename] = idnum
+		end
 	end
 end
 
-function TTT.Languages.Register(tbl)
-	local id = tbl.ID
-	if type(id) ~= "string" then
-		DebugPrint("Unable to add language since it is missing the ID field, aborting.")
-		return
-	end
-	
-	id = string.lower(id)
-	if id == "default" then
-		DebugPrint("You can't set the ID field of the language to 'default', aborting.")
-		return
-	end
+----------------------------
+-- TTT.Languages.Initialize
+----------------------------
+-- Desc:		When called, usually upon gamemode initialization, will load languages inform players about them.
+function TTT.Languages.Initialize()	
+	TTT.Languages.LoadLanguages()
 
 	if SERVER then
-		TTT.Languages.Langs[id] = true
-	else
-		TTT.Languages.Langs[id] = tbl
+		TTT.Languages.GetServerDefaultLanguage()
 	end
 end
 
+--------------------------------------
+-- ConCommand:		ttt_language_list
+--------------------------------------
+-- Desc:		Prints all of the available language names to choose from.
 concommand.Add("ttt_language_list", function()
-	for k, v in pairs(TTT.Languages.Langs) do
+	print("Available languages are:")
+	for k, v in pairs(TTT.Languages.Languages) do
 		print(k)
 	end
 end)

@@ -1,6 +1,6 @@
 local L = {}
-L.ID = "english"			-- Required, keep this only to alphanumeric characters.
-L.LanguageName = "English"	-- Required, the language name people will see, can be any character.
+
+L.LanguageName = "English"
 
 L.innocent = "Innocent"
 L.detective = "Detective"
@@ -17,4 +17,4 @@ L.sb_roundinfo = "Map changes in %s rounds or in %s"
 
 L.invalid = "bork" -- This is used for any invalid text.
 
-TTT.Languages.Register(L)
+return L
