@@ -6,7 +6,7 @@ TTT.Debug = TTT.Debug or {}
 -- TTT.Debug.IsDebugMode
 -------------------------
 -- Desc:		Returns if debug mode is enabled or not.
--- ReturnsL		Boolean, is debug mode enabled.
+-- Returns:		Boolean, is debug mode enabled.
 local debugmode = CreateConVar("ttt_debug_prints", "0", nil, "Enables debug prints.")
 function TTT.Debug.IsDebugMode()
 	return debugmode:GetBool()
@@ -18,6 +18,10 @@ end
 -- Desc:		Prints and logs debug info.
 -- Arg One:		String, text to print.
 function TTT.Debug.Print(text)
+	if not TTT.Debug.IsDebugMode() then
+		return
+	end
+
 	MsgC(Color(210, 20, 20), "TTT DEBUG: ", color_white, text.."\n")
 
 	text = os.date("%d/%m/%Y - %H:%M:%S", os.time()).."\t"..text.."\n"
@@ -94,9 +98,7 @@ function TTT.Library.Initialize()
 		if v:sub(1, 1) ~= "_" then
 			TTT.Library.SetupFile(rootPath .. v, v:sub(1, 3))
 
-			if TTT.Debug.IsDebugMode() then
-				TTT.Debug.Print("Loaded libary file '".. rootPath .. v .."'.")
-			end
+			TTT.Debug.Print("Loaded libary file '".. rootPath .. v .."'.")
 		end
 	end
 
@@ -106,9 +108,7 @@ function TTT.Library.Initialize()
 		for j, d in ipairs(files) do
 			TTT.Library.SetupFile(rootPathAndFolder .."/".. d, d:sub(1, 3))
 
-			if TTT.Debug.IsDebugMode() then
-				TTT.Debug.Print("Loaded libary file '".. rootPathAndFolder .."/".. d .."'.")
-			end
+			TTT.Debug.Print("Loaded libary file '".. rootPathAndFolder .."/".. d .."'.")
 		end
 	end
 

@@ -1,6 +1,9 @@
-include("library/_prelib.lua")	-- All we need to include library-wise.
+include("library/_prelib.lua")	-- Will load the library for us.
 include("shared.lua")
 
+------------
+-- UI Hooks
+------------
 local IsValid, LocalPlayer = IsValid, LocalPlayer
 function GM:HUDPaint()
 	if not IsValid(LocalPlayer()) then
@@ -22,9 +25,20 @@ function GM:HUDDrawScoreBoard()
 end
 
 function GM:ScoreboardShow()
-	print("dick")
+	print("a")
 end
 
 function GM:ScoreboardHide()
-	print("titss")
+	print("b")
 end
+
+---------------
+-- Round Hooks
+---------------
+hook.Add("TTT.Rounds.RoundEnded", "TTT", function(wintype)
+
+end)
+
+hook.Add("TTT.Rounds.MapEnded", "TTT", function(wintype)
+
+end)

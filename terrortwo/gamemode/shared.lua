@@ -1,10 +1,13 @@
 GM.Name = "Trouble in Terrorist Town Two"
-GM.Author = "Stalker"
+GM.Author = "George Petrou (Stalker)"
 GM.Email = "N/A"
 GM.Website = "N/A"
 
 DEFINE_BASECLASS("gamemode_base")
 
+--------------------------
+-- General Gamemode Hooks
+--------------------------
 function GM:Initialize()
 	if not file.IsDir("ttt", "DATA") then
 		file.CreateDir("ttt")			-- Create a data folder to store anything we may want to later.
@@ -14,7 +17,5 @@ function GM:Initialize()
 	TTT.Languages.Initialize()			-- Load the languages.
 	TTT.VGUI.Initialize()				-- Get their HUDs working.
 
-	if SERVER then
-		TTT.Rounds.Initialize()	-- Begin the round managing system.
-	end
+	TTT.Rounds.Initialize()				-- Begin the round managing system.
 end
