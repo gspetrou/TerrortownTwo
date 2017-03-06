@@ -32,36 +32,6 @@ function TTT.Debug.Print(text)
 	end
 end
 
--------------------
--- net.WritePlayer
--------------------
--- Desc:		A more optimized version of net.WriteEntity specifically for players.
--- Arg One:		Player entity to be networked.
-if not net.WritePlayer then
-	function net.WritePlayer(ply)
-		if IsValid(ply) then
-			net.WriteUInt(ply:EntIndex(), 7)
-		else
-			net.WriteUInt(0, 7)
-		end
-	end
-end
-
-------------------
--- net.ReadPlayer
-------------------
--- Desc:		Optimized version of net.ReadEntity specifically for players.
--- Returns:		Player entity thats been written.
-if not net.ReadPlayer then
-	function net.ReadPlayer()
-		local i = net.ReadUInt(7)
-		if not i then
-			return
-		end
-		return Entity(i)
-	end
-end
-
 -------------------------
 -- TTT.Library.SetupFile
 -------------------------
@@ -90,9 +60,11 @@ end
 --------------------------
 -- TTT.Library.Initialize
 --------------------------
--- Desc:		Loads the library folder containning the library used by the gamemode.
+-- Desc:		Loads the library folder containning the library used by the gamemode. Loads util.lua first.
 function TTT.Library.Initialize()
 	local rootPath = GAMEMODE.FolderName .."/gamemode/library/"
+	TTT.Library.SetupFile(rootPath .."util.lua")
+
 	local miscFiles, folders = file.Find(rootPath .."*", "LUA")
 	for i, v in ipairs(miscFiles) do
 		if v:sub(1, 1) ~= "_" then
@@ -113,4 +85,5 @@ function TTT.Library.Initialize()
 	end
 
 	hook.Call("TTT.PostLibariesLoaded")
+	TTT.LibrariesInitiallyLoaded = true
 end
