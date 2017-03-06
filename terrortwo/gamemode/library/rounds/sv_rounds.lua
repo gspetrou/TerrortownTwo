@@ -103,13 +103,12 @@ end
 ------------------------
 -- Desc:		Puts the round into preperation mode.
 function TTT.Rounds.EnterPrep()
+	hook.Call("TTT.Rounds.EnteredPrep")
 	local delay = preptime:GetInt()
 
 	if delay <= 0 then
 		TTT.Rounds.Start()
 	else
-		hook.Call("TTT.Rounds.EnteredPrep")
-
 		TTT.Rounds.SetState(ROUND_PREP)
 		TTT.Rounds.SetEndTime(CurTime() + delay)
 
@@ -124,13 +123,12 @@ end
 ------------------------
 -- Desc:		Puts the round into round post mode.
 function TTT.Rounds.EnterPost()
+	hook.Call("TTT.Rounds.EnteredPost")
 	local delay = posttime:GetInt()
 
 	if delay <= 0 then
 		TTT.Rounds.EnterPrep()
 	else
-		hook.Call("TTT.Rounds.EnteredPost")
-
 		TTT.Rounds.SetState(ROUND_POST)
 		TTT.Rounds.SetEndTime(CurTime() + delay)
 
@@ -170,7 +168,11 @@ function TTT.Rounds.RestartRound()
 	TTT.Rounds.EnterPrep()
 end
 
-concommand.Add("ttt_restartround", function()
+-------------------------------------
+-- ConCommand:		ttt_roundrestart
+-------------------------------------
+-- Desc:		Restarts the current round.
+concommand.Add("ttt_roundrestart", function()
 	TTT.Rounds.RestartRound()
 end)
 

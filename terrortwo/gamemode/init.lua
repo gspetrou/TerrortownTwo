@@ -96,7 +96,7 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	TTT.Roles.Sync()
 end)
 
-hook.Add("TTT.Rounds.RoundEnded", "TTT", function(wintype)
+hook.Add("TTT.Rounds.EnteredPrep", "TTT", function(wintype)
 	TTT.Roles.Clear()
 end)
 

@@ -27,13 +27,9 @@ end
 -- Desc:		Gets all the alive players.
 -- Returns:		Table, containning alive players.
 function TTT.Roles.GetAlivePlayers()
-	local aliveplys = {}
-	for i, v in ipairs(player.GetAll()) do
-		if v:Alive() then
-			table.insert(aliveplys, v)
-		end
-	end
-	return aliveplys
+	return table.Filter(player.GetAll(), function(ply)
+		return ply:Alive()
+	end)
 end
 
 ------------------------------
@@ -42,13 +38,9 @@ end
 -- Desc:		Gets all active players. Active means they are not idle or in always spectate mode.
 -- Returns:		Table, containning active players.
 function TTT.Roles.GetActivePlayers()
-	local activeplys = {}
-	for i, v in ipairs(player.GetAll()) do
-		if v:IsActive() then
-			table.insert(activeplys, v)
-		end
-	end
-	return activeplys
+	return table.Filter(player.GetAll(), function(ply)
+		return ply:IsActive()
+	end)
 end
 
 -------------------
@@ -86,13 +78,9 @@ end)
 -- Arg One:		ROLE_ enum of players to get.
 -- Returns:		Table, players of this role.
 function TTT.Roles.GetPlayersOfRole(role)
-	local plys = {}
-	for i, v in ipairs(player.GetAll()) do
-		if v:GetRole() == role then
-			table.insert(plys, v)
-		end
-	end
-	return plys
+	return table.Filter(player.GetAll(), function(ply)
+		return ply:GetRole() == role
+	end)
 end
 
 -- Role getter functions.
@@ -101,13 +89,9 @@ function TTT.Roles.GetInnocents() return TTT.Roles.GetPlayersOfRole(ROLE_INNOCEN
 function TTT.Roles.GetDetectives() return TTT.Roles.GetPlayersOfRole(ROLE_DETECTIVE) end
 function TTT.Roles.GetTraitors() return TTT.Roles.GetPlayersOfRole(ROLE_TRAITOR) end
 function TTT.Roles.GetSpectators()
-	local plys = {}
-	for i, v in ipairs(player.GetAll()) do
-		if v:IsSpectator() then
-			table.insert(plys, v)
-		end
-	end
-	return plys
+	return table.Filter(player.GetAll(), function(ply)
+		return ply:IsSpectator()
+	end)
 end
 
 ---------------------------------
@@ -117,13 +101,9 @@ end
 -- Arg One:		ROLE_ enum to get players not of this role.
 -- Returns:		Table, players not of the role supplied in arg one.
 function TTT.Roles.GetPlayersNotOfRole(role)
-	local plys = {}
-	for i, v in ipairs(player.GetAll()) do
-		if v:GetRole() ~= role then
-			table.insert(plys, v)
-		end
-	end
-	return plys
+	return table.Filter(player.GetAll(), function(ply)
+		return ply:GetRole() ~= role
+	end)
 end
 
 -- Role getter functions.
@@ -132,13 +112,9 @@ function TTT.Roles.GetNotInnocents() return TTT.Roles.GetPlayersNotOfRole(ROLE_I
 function TTT.Roles.GetNotDetectives() return TTT.Roles.GetPlayersNotOfRole(ROLE_DETECTIVE) end
 function TTT.Roles.GetNotTraitors() return TTT.Roles.GetPlayersNotOfRole(ROLE_TRAITOR) end
 function TTT.Roles.GetNotSpectators()
-	local plys = {}
-	for i, v in ipairs(player.GetAll()) do
-		if not v:IsSpectator() then
-			table.insert(plys, v)
-		end
-	end
-	return plys
+	return table.Filter(player.GetAll(), function(ply)
+		return not ply:IsSpectator()
+	end)
 end
 
 ----------------------------

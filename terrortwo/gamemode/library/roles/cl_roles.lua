@@ -1,5 +1,10 @@
 TTT.Roles = TTT.Roles or {}
 
+-------------------------------------
+-- ConVar:		ttt_always_spectator
+-------------------------------------
+-- Desc:		Puts the player into spectator mode. Won't ever spawn in, just spectates.
+-- Arg One:		Number boolean, 0 or 1 to toggle the convar.
 local always_spec = CreateClientConVar("ttt_always_spectator", "0", true, true, "Setting this to true will always make you a spectator.")
 cvars.AddChangeCallback("ttt_always_spectator", function(_, _, newval)
 	net.Start("TTT.Roles.ChangedSpectatorMode")
@@ -13,12 +18,9 @@ end)
 -- Desc:		Gets all players with unknown roles.
 -- Returns:		Table, containning players with unknown roles.
 function TTT.Roles.GetUnknown()
-	local plys = {}
-	for i, v in ipairs(player.GetAll()) do
-		if v:IsUnknown() then
-			table.insert(plys, v)
-		end
-	end
+	return table.Filter(player.GetAll(), function(ply)
+		return v:IsUnknown()
+	end)
 end
 
 net.Receive("TTT.Roles.Clear", function()
@@ -68,4 +70,10 @@ net.Receive("TTT.Roles.Sync", function()
 			v:SetRole(ROLE_UKNOWN)
 		end
 	end
+end)
+
+net.Receive("TTT.Roles.PlayerSwitchedRole", function()
+	local role = net.ReadUInt(3)
+	local ply = net.ReadPlayer()
+	ply:SetRole(role)
 end)
