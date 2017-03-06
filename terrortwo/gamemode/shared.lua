@@ -19,3 +19,8 @@ function GM:Initialize()
 
 	TTT.Rounds.Initialize()				-- Begin the round managing system.
 end
+
+-- This is for auto-refresh to work.
+if TTT.LibrariesInitiallyLoaded then
+	TTT.Library.Initialize()
+end
