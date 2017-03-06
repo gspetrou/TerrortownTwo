@@ -1,3 +1,4 @@
+print(TTT.Roles.RoleAsString)
 local getRole, getTime, math_floor, math_Clamp, math_min = TTT.Roles.RoleAsString, TTT.Rounds.GetFormattedRemainingTime, math.floor, math.Clamp, math.min
 local surface_DrawRect, surface_SetDrawColor, surface_GetTextSize, surface_DrawText, surface_SetFont, surface_SetTextPos, surface_SetTextColor = surface.DrawRect, surface.SetDrawColor, surface.GetTextSize, surface.DrawText, surface.SetFont, surface.SetTextPos, surface.SetTextColor
 

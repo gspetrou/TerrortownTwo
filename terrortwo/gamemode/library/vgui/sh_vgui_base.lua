@@ -3,17 +3,30 @@ TTT.VGUI = TTT.VGUI or {}
 
 if CLIENT then
 	TTT.VGUI.Elements = TTT.VGUI.Elements or {}
+
+	-----------------------
+	-- TTT.VGUI.AddElement
+	-----------------------
+	-- Desc:		Adds a hud element.
+	-- Arg One:		String. Unique, simple, name for the panel.
+	-- Arg Two:		Function, what should we draw. Called with the localplayer, screen width, and screen height as arguements.
+	-- Arg Three:	Function, called to see if this panel should be drawn. First arguement of this function is the localplayer.
 	function TTT.VGUI.AddElement(name, func, condition)
 		TTT.VGUI.Elements[name] = {func, condition}
 	end
 
 	-- Since HUDPaint is called so much might as well micro-optimize.
 	local LocalPlayer, pairs, hookCall, ScrW, ScrH = LocalPlayer, pairs, hook.Call, ScrW, ScrH
+	
+	---------------------
+	-- TTT.VGUI.HUDPaint
+	---------------------
+	-- Desc:		Called to paint all the huds.
 	function TTT.VGUI.HUDPaint()
 		local ply, w, h = LocalPlayer(), ScrW(), ScrH()
 
 		for k, v in pairs(TTT.VGUI.Elements) do
-			if TTT.VGUI.HUDShouldDraw(k) and v[2](ply) then
+			if v[2](ply) then
 				v[1](ply, w, h)
 			end
 		end
@@ -25,11 +38,19 @@ if CLIENT then
 		CHudAmmo = true,
 		CHudSecondaryAmmo = true
 	}
+	--------------------------
+	-- TTT.VGUI.HUDShouldDraw
+	--------------------------
+	-- Desc:		Should the HUD with the given name be drawn.
+	-- Arg One:		String, name of a VGUI panel.
 	function TTT.VGUI.HUDShouldDraw(name)
 		return not disabled[name]
 	end
 end
 
+-----------------------
+-- TTT.VGUI.Initialize
+-----------------------
 function TTT.VGUI.Initialize()
 	-- Load files in addons/library/vgui/vgui.
 	local path = "library/vgui/vgui/"
@@ -49,7 +70,6 @@ function TTT.VGUI.Initialize()
 	path = GAMEMODE.FolderName.."/gamemode/library/vgui/vgui/"
 	files, _ = file.Find(path.."*.lua", "LUA")
 	for i, v in ipairs(files) do
-		print(path..v)
 		if not loadedfiles[v] then
 			if SERVER then
 				AddCSLuaFile(path..v)
