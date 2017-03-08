@@ -45,12 +45,7 @@ hook.Add("TTT.Rounds.Initialize", "TTT", function()
 	if TTT.Rounds.ShouldStart() then
 		TTT.Rounds.EnterPrep()
 	else
-		timer.Create("TTT.Rounds.WaitForStart", 1, 0, function()
-			if TTT.Rounds.ShouldStart() then
-				timer.Remove("TTT.Rounds.WaitForStart")
-				TTT.Rounds.EnterPrep()
-			end
-		end)
+		TTT.Rounds.WaitForStart()
 	end
 end)
 
@@ -66,17 +61,21 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 		return false
 	end
 
-	local numaliveTraitors, numaliveInnocents, numaliveDetectives = 0, 0, 0
-	for i, v in ipairs(player.GetAll()) do
-		if v:Alive() then
-			if v:IsInnocent() then
-				numaliveInnocents = numaliveInnocents + 1
-			elseif v:IsTraitor() then
-				numaliveTraitors = numaliveTratiors + 1
-			elseif v:IsDetective() then
-				numaliveDetectives = numaliveDetectives + 1
-			end
+	local numAlive, numaliveTraitors, numaliveInnocents, numaliveDetectives = 0, 0, 0, 0
+	for i, v in ipairs(TTT.Roles.GetAlivePlayers()) do
+		numAlive = numAlive + 1
+
+		if v:IsInnocent() then
+			numaliveInnocents = numaliveInnocents + 1
+		elseif v:IsTraitor() then
+			numaliveTraitors = numaliveTraitors + 1
+		elseif v:IsDetective() then
+			numaliveDetectives = numaliveDetectives + 1
 		end
+	end
+
+	if numAlive == 0 then
+		return WIN_TRAITOR
 	end
 
 	local numplys = #TTT.Roles.GetAlivePlayers()
@@ -92,6 +91,9 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 end)
 
 hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
+	for i, v in ipairs(TTT.Roles.GetDeadPlayers()) do
+		TTT.Roles.SpawnMidRound(v) -- Technically the round already started.
+	end
 	TTT.Roles.PickRoles()
 	TTT.Roles.Sync()
 end)

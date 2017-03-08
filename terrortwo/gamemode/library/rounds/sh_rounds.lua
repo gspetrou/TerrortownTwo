@@ -10,7 +10,7 @@ WIN_TIME = 1
 WIN_INNOCENT = 2
 WIN_TRAITOR = 3
 
-TTT.Rounds.State = ROUND_WAITING
+TTT.Rounds.State = TTT.Rounds.State or ROUND_WAITING
 
 -- Replicated ConVars need to be defined shared. Why do I always forget this.
 local roundtime = CreateConVar("ttt_roundtime_seconds", "600", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How long is the round in seconds. This is before any extensions are added to it like haste or overtime.")
@@ -88,6 +88,7 @@ end
 if CLIENT then
 	net.Receive("TTT.Rounds.StateChanged", function()
 		TTT.Rounds.State = net.ReadUInt(3)
+		hook.Call("TTT.Rounds.StateChanged", nil, TTT.Rounds.State)
 	end)
 
 	net.Receive("TTT.Rounds.RoundWin", function()

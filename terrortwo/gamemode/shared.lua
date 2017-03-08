@@ -23,4 +23,17 @@ end
 -- This is for auto-refresh to work.
 if TTT.LibrariesInitiallyLoaded then
 	TTT.Library.Initialize()
-end
+endend
+
+---------------
+-- Round Hooks
+---------------
+hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
+	if state == ROUND_WAITING then
+		for i, v in ipairs(player.GetAll()) do
+			if not v:IsSpectator() then
+				v:SetRole(ROLE_WAITING)
+			end
+		end
+	end
+end)
