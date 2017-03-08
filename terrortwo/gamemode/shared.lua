@@ -1,5 +1,5 @@
 GM.Name = "Trouble in Terrorist Town Two"
-GM.Author = "George Petrou (Stalker)"
+GM.Author = "George 'Stalker' Petrou"
 GM.Email = "N/A"
 GM.Website = "N/A"
 
@@ -23,7 +23,7 @@ end
 -- This is for auto-refresh to work.
 if TTT.LibrariesInitiallyLoaded then
 	TTT.Library.Initialize()
-endend
+end
 
 ---------------
 -- Round Hooks

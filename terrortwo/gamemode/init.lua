@@ -12,6 +12,15 @@ function GM:PlayerInitialSpawn(ply)
 end
 
 function GM:PlayerSpawn(ply)
+	-- If something needs to spawn a player mid-game and doesn't want to deal with this function it can enable ply.ttt_silentspawn.
+	if ply.ttt_silentspawn then
+		if ply:IsSpectator() or TTT.Rounds.IsActive() or TTT.Rounds.IsPost() then
+			TTT.Roles.SpawnInFlyMode(ply)
+		else
+			TTT.Roles.SpawnAsPlayer(ply)
+		end
+	end
+	
 	ply:SetupHands()					-- Get c_ hands working.
 end
 
@@ -24,7 +33,9 @@ function GM:PostPlayerDeath(ply)
 end
 
 function GM:PlayerDisconnected(ply)
-	TTT.Rounds.CheckForRoundEnd()
+	timer.Simple(1, function()	-- Wait till they actually disconnect.
+		TTT.Rounds.CheckForRoundEnd()
+	end)
 end
 
 function GM:PlayerSetHandsModels(ply, ent)
@@ -98,7 +109,8 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	TTT.Roles.Sync()
 end)
 
-hook.Add("TTT.Rounds.EnteredPrep", "TTT", function(wintype)
+hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
+	TTT.MapHandler.ResetMap()
 	TTT.Roles.Clear()
 end)
 

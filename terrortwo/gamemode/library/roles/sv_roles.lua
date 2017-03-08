@@ -28,7 +28,24 @@ end
 -- Returns:		Table, containning alive players.
 function TTT.Roles.GetAlivePlayers()
 	return table.Filter(player.GetAll(), function(ply)
+		if ply:IsInFlyMode() or ply:IsSpectator() then
+			return false
+		end
 		return ply:Alive()
+	end)
+end
+
+----------------------------
+-- TTT.Roles.GetDeadPlayers
+----------------------------
+-- Desc:		Gets a table containning all dead players, does not include spectators.
+-- Returns:		Table, all dead players that are not spectators.
+function TTT.Roles.GetDeadPlayers()
+	return table.Filter(player.GetAll(), function(ply)
+		if not ply:Alive() or ply:IsInFlyMode() then
+			return true
+		end
+		return false
 	end)
 end
 

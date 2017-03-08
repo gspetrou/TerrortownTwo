@@ -35,10 +35,6 @@ end
 ---------------
 -- Round Hooks
 ---------------
-hook.Add("TTT.Rounds.RoundEnded", "TTT", function(wintype)
-
-end)
-
 hook.Add("TTT.Rounds.MapEnded", "TTT", function(wintype)
 
 end)

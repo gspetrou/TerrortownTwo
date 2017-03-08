@@ -67,3 +67,14 @@ function table.FilterCopy(tab, func)
 	end
 	return ret
 end
+
+--------------------------
+-- table.RandomSequential
+--------------------------
+-- Desc:		Returns a random value in a seqential table.
+-- Returns:		1:	Any, value in the table.
+-- 				2:	Number, where that value is found in the table.
+function table.RandomSequential(tbl)
+	local i = math.random(1, #tbl)
+	return tbl[i], i
+end
