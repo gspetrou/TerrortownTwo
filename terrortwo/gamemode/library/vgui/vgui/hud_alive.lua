@@ -1,5 +1,4 @@
-print(TTT.Roles.RoleAsString)
-local getRole, getTime, math_floor, math_Clamp, math_min = TTT.Roles.RoleAsString, TTT.Rounds.GetFormattedRemainingTime, math.floor, math.Clamp, math.min
+local getRole, getTime, getState, roundIsActive, math_floor, math_Clamp, math_min = TTT.Roles.RoleAsString, TTT.Rounds.GetFormattedRemainingTime, TTT.Rounds.GetFormattedState, TTT.Rounds.IsActive, math.floor, math.Clamp, math.min
 local surface_DrawRect, surface_SetDrawColor, surface_GetTextSize, surface_DrawText, surface_SetFont, surface_SetTextPos, surface_SetTextColor = surface.DrawRect, surface.SetDrawColor, surface.GetTextSize, surface.DrawText, surface.SetFont, surface.SetTextPos, surface.SetTextColor
 
 local health_colors = {
@@ -11,12 +10,6 @@ local ammo_colors = {
 	bg = {70, 70, 5},
 	fg = {205, 155, 0}
 }
-
-surface.CreateFont("TTT_HudText", {
-	font = "Trebuchet24",
-	size = 30,
-	weight = 800
-})
 
 TTT.VGUI.ttt_hud_alive_scale = 5.5
 TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
@@ -36,7 +29,6 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 	surface_SetFont("TTT_HudText")
 	local time = getTime()
 	local text_w, text_h = surface_GetTextSize(time)
-	local role = getRole(ply)
 	local role_col = TTT.Roles.Colors[ply:GetRole()]
 	local role_x, role_w = bar_pos_x + text_w + 3, bar_w - text_w - 3
 	surface_SetDrawColor(role_col.r, role_col.g, role_col.b)
@@ -46,10 +38,16 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 	surface_SetTextPos(bar_pos_x, bar_pos_y + bar_h/2 - text_h/2)
 	surface_DrawText(time)
 
-	-- Role
-	text_w, text_h = surface_GetTextSize(role)
+	-- Role text
+	local roletext
+	if not roundIsActive() then
+		roletext = getState()	-- If the round is not active then display the round state.
+	else
+		roletext = getRole(ply)	-- If the round is active display their role.
+	end
+	text_w, text_h = surface_GetTextSize(roletext)
 	surface_SetTextPos(role_x + role_w/2 - text_w/2, bar_pos_y + bar_h/2 - text_h/2)
-	surface_DrawText(role)
+	surface_DrawText(roletext)
 
 	-- Health
 	local hp = ply:Health()
@@ -71,6 +69,6 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 	surface_SetDrawColor(ammo_colors.fg[1], ammo_colors.fg[2], ammo_colors.fg[3])
 	surface_DrawRect(bar_pos_x, bar_pos_y, bar_w, bar_h)
 
-end, function(ply)
-	return ply:Alive()
+end, function(ply, specmode)
+	return ply:Alive() and specmode == OBS_MODE_NONE
 end)

@@ -4,6 +4,12 @@ TTT.VGUI = TTT.VGUI or {}
 if CLIENT then
 	TTT.VGUI.Elements = TTT.VGUI.Elements or {}
 
+	surface.CreateFont("TTT_HudText", {
+		font = "Trebuchet24",
+		size = 30,
+		weight = 800
+	})
+
 	-----------------------
 	-- TTT.VGUI.AddElement
 	-----------------------
@@ -24,10 +30,11 @@ if CLIENT then
 	-- Desc:		Called to paint all the huds.
 	function TTT.VGUI.HUDPaint()
 		local ply, w, h = LocalPlayer(), ScrW(), ScrH()
+		local specmode = ply:GetObserverMode()
 
 		for k, v in pairs(TTT.VGUI.Elements) do
-			if v[2](ply) then
-				v[1](ply, w, h)
+			if v[2](ply, specmode) then
+				v[1](ply, w, h, specmode)
 			end
 		end
 	end
