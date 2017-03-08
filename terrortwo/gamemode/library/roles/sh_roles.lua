@@ -40,6 +40,7 @@ end
 
 -- Role checker functions.
 function PLAYER:IsWaiting() return self:GetRole() == ROLE_WAITING end
+function PLAYER:IsSpectator() return self:GetRole() == ROLE_SPECTATOR end
 function PLAYER:IsUnknown() return self:GetRole() == ROLE_UNKNOWN end
 function PLAYER:IsInnocent() return self:GetRole() == ROLE_INNOCENT end
 function PLAYER:IsDetective() return self:GetRole() == ROLE_DETECTIVE end

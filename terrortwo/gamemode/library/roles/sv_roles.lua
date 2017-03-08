@@ -11,6 +11,69 @@ local detective_threshold = CreateConVar("ttt_detective_threshold", "8", FCVAR_A
 local detective_percent = CreateConVar("ttt_detective_percent", "0.15", FCVAR_ARCHIVE, "Percentage of players that will be detectives.")
 local PLAYER = FindMetaTable("Player")
 
+-- We say flying mode here to not confused being a spectator and spectating with being dead and spectating.
+------------------------------
+-- TTT.Roles.SpawnInFlyMode
+------------------------------
+-- Desc:		Spawns the player in a flying mode.
+-- Arg One:		Player, to be set as a spectator.
+function TTT.Roles.SpawnInFlyMode(ply)
+	ply:StripWeapons()
+	ply:StripAmmo()
+	if not ply.ttt_inflymode then
+		ply:Spectate(OBS_MODE_ROAMING)
+		ply.ttt_inflymode = true
+	end
+end
+
+function PLAYER:IsInFlyMode()
+	return self.ttt_inflymode or false
+end
+
+---------------------------
+-- TTT.Roles.SpawnAsPlayer
+---------------------------
+-- Desc:		Spawns the player as an active player.
+-- Arg One:		Player, to spawn as an active player.
+function TTT.Roles.SpawnAsPlayer(ply)
+	if ply:IsInFlyMode() then
+		ply:UnSpectate()
+		ply.ttt_inflymode = false
+	end
+	TTT.Weapons.GiveStarterWeapons(ply)
+end
+
+---------------------------
+-- TTT.Roles.SpawnMidRound
+---------------------------
+-- Desc:		Spawns a player mid round.
+-- Arg One:		Player, to be spawned.
+function TTT.Roles.SpawnMidRound(ply)
+	if not ply:Alive() then
+		ply.ttt_silentspawn = true
+		ply:Spawn()
+		ply.ttt_silentspawn = false
+	end
+	TTT.MapHandler.PutPlayerAtRandomSpawnPoint(ply)
+	ply:UnSpectate()
+	ply.ttt_inflymode = false
+	
+	ply:StripWeapons()
+	ply:StripAmmo()
+	TTT.Weapons.GiveStarterWeapons(ply)
+end
+
+-------------------------
+-- TTT.Roles.ResetPlayer
+-------------------------
+-- Desc:		Resets a player without respawning them.
+-- Arg One:		Player, to be reset.
+function TTT.Roles.ResetPlayer(ply)
+	ply:UnSpectate()
+	ply.ttt_inflymode = false
+	--ply:SetPos()
+end
+
 ----------------------------
 -- TTT.Roles.SetupSpectator
 ----------------------------
@@ -66,8 +129,14 @@ end
 -- Desc:		Does the player not have ttt_always_spectator enabled or they are not idle.
 -- Return:		Boolean, are they active.
 function PLAYER:IsActive()
-	local num = self:GetInfo("ttt_always_spectator") or 0
-	return type(num) == "number" and num or 0
+	local isspec = self:GetInfo("ttt_always_spectator")
+	if isspec == "1" then
+		isspec = false
+	else
+		isspec = true
+	end
+
+	return isspec
 end
 
 ----------------------
@@ -82,9 +151,11 @@ end
 net.Receive("TTT.Roles.ChangedSpectatorMode", function(_, ply)
 	local wants_spec = net.ReadBool()
 	if wants_spec then
-		self:ForceSpectator()
+		ply:ForceSpectator()
+		hook.Call("TTT.Roles.PlayerBecameSpectator", nil, ply)
 	else
-		self:ForceWaiting()
+		ply:ForceWaiting()
+		hook.Call("TTT.Roles.PlayerExittedSpectator", nil, ply)
 	end
 end)
 
@@ -168,7 +239,6 @@ function PLAYER:ForceSpectator()
 	if self:Alive() then
 		self:Kill()
 	end
-
 	self:ForceRole(ROLE_SPECTATOR, true)
 end
 function PLAYER:ForceInnocent()
@@ -277,6 +347,10 @@ function TTT.Roles.PickRoles()
 
 	for i, v in ipairs(detectives) do
 		v:SetRole(ROLE_DETECTIVE)
+	end
+
+	for i, v in ipairs(TTT.Roles.GetWaiting()) do
+		v:SetRole(ROLE_INNOCENT)
 	end
 end
 
