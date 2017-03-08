@@ -64,6 +64,7 @@ hook.Add("TTT.Rounds.ShouldStart", "TTT", function()
 	if GetConVar("ttt_dev_preventstart"):GetBool() or #TTT.Roles.GetActivePlayers() < GetConVar("ttt_minimum_players"):GetInt() then
 		return false
 	end
+	
 	return true
 end)
 
@@ -114,6 +115,14 @@ hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
 	TTT.Roles.Clear()
 end)
 
-hook.Add("TTT.Rounds.MapEnded", "TTT", function()
-	TTT.MapHandler.HandleMapSwitch()
+--------------
+-- Role Hooks
+--------------
+hook.Add("TTT.Roles.PlayerBecameSpectator", "TTT", function(ply)
+	TTT.Rounds.CheckForRoundEnd()
+end)
+hook.Add("TTT.Roles.PlayerExittedSpectator", "TTT", function(ply)
+	if not TTT.Rounds.IsActive() or not TTT.Rounds.IsPost() then
+		TTT.Roles.SpawnAsPlayer(ply)
+	end
 end)
