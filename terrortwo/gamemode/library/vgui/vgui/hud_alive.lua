@@ -69,6 +69,6 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 	surface_SetDrawColor(ammo_colors.fg[1], ammo_colors.fg[2], ammo_colors.fg[3])
 	surface_DrawRect(bar_pos_x, bar_pos_y, bar_w, bar_h)
 
-end, function(ply, specmode)
-	return ply:Alive() and specmode == OBS_MODE_NONE
+end, function(ply, isspecmode)
+	return ply:Alive() and not isspecmode
 end)

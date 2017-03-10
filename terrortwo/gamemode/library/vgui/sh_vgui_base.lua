@@ -30,7 +30,7 @@ if CLIENT then
 	-- Desc:		Called to paint all the huds.
 	function TTT.VGUI.HUDPaint()
 		local ply, w, h = LocalPlayer(), ScrW(), ScrH()
-		local specmode = ply:GetObserverMode()
+		local isspecmode = ply:GetObserverMode() ~= OBS_MODE_NONE
 
 		for k, v in pairs(TTT.VGUI.Elements) do
 			if v[2](ply, specmode) then

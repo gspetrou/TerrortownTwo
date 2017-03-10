@@ -286,7 +286,7 @@ end
 --------------------------
 -- TTT.Rounds.ClearTimers
 --------------------------
--- Desc:		Removes the prep and post time timers.
+-- Desc:		Removes the prep, post, and time run out timers.
 function TTT.Rounds.ClearTimers()
 	if timer.Exists("TTT.Rounds.PrepTime") then
 		timer.Remove("TTT.Rounds.PrepTime")

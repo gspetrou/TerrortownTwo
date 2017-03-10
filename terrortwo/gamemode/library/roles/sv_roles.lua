@@ -18,8 +18,8 @@ local PLAYER = FindMetaTable("Player")
 -- Desc:		Spawns the player in a flying mode.
 -- Arg One:		Player, to be set as a spectator.
 function TTT.Roles.SpawnInFlyMode(ply)
-	ply:StripWeapons()
-	ply:StripAmmo()
+	TTT.Weapons.StripCompletely(ply)
+
 	if not ply.ttt_inflymode then
 		ply:Spectate(OBS_MODE_ROAMING)
 		ply.ttt_inflymode = true
@@ -58,20 +58,7 @@ function TTT.Roles.SpawnMidRound(ply)
 	ply:UnSpectate()
 	ply.ttt_inflymode = false
 	
-	ply:StripWeapons()
-	ply:StripAmmo()
-	TTT.Weapons.GiveStarterWeapons(ply)
-end
-
--------------------------
--- TTT.Roles.ResetPlayer
--------------------------
--- Desc:		Resets a player without respawning them.
--- Arg One:		Player, to be reset.
-function TTT.Roles.ResetPlayer(ply)
-	ply:UnSpectate()
-	ply.ttt_inflymode = false
-	--ply:SetPos()
+	hook.Call("TTT.Roles.SpawnedMidRound", nil, ply)
 end
 
 ----------------------------

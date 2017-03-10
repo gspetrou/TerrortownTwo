@@ -121,8 +121,14 @@ end)
 hook.Add("TTT.Roles.PlayerBecameSpectator", "TTT", function(ply)
 	TTT.Rounds.CheckForRoundEnd()
 end)
+
 hook.Add("TTT.Roles.PlayerExittedSpectator", "TTT", function(ply)
 	if not TTT.Rounds.IsActive() or not TTT.Rounds.IsPost() then
 		TTT.Roles.SpawnAsPlayer(ply)
 	end
+end)
+
+hook.Add("TTT.Roles.SpawnedMidRound", "TTT", function(ply)
+	TTT.Weapons.StripCompletely(ply)
+	TTT.Weapons.GiveStarterWeapons(ply)
 end)
