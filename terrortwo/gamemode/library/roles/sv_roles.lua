@@ -20,14 +20,14 @@ local PLAYER = FindMetaTable("Player")
 function TTT.Roles.SpawnInFlyMode(ply)
 	TTT.Weapons.StripCompletely(ply)
 
-	if not ply.ttt_inflymode then
+	if not ply.ttt_InFlyMode then
 		ply:Spectate(OBS_MODE_ROAMING)
-		ply.ttt_inflymode = true
+		ply.ttt_InFlyMode = true
 	end
 end
 
 function PLAYER:IsInFlyMode()
-	return self.ttt_inflymode or false
+	return self.ttt_InFlyMode or false
 end
 
 ---------------------------
@@ -35,30 +35,32 @@ end
 ---------------------------
 -- Desc:		Spawns the player as an active player.
 -- Arg One:		Player, to spawn as an active player.
-function TTT.Roles.SpawnAsPlayer(ply)
+-- Arg Two:		Boolean, if true places them at a spawn point.
+function TTT.Roles.SpawnAsPlayer(ply, resetSpawn)
 	if ply:IsInFlyMode() then
 		ply:UnSpectate()
-		ply.ttt_inflymode = false
+		ply.ttt_InFlyMode = false
 	end
-	TTT.Weapons.GiveStarterWeapons(ply)
+	hook.Call("TTT.Roles.PlayerSpawned", nil, ply, false)
 end
 
----------------------------
--- TTT.Roles.SpawnMidRound
----------------------------
+------------------------
+-- TTT.Roles.ForceSpawn
+------------------------
 -- Desc:		Spawns a player mid round.
 -- Arg One:		Player, to be spawned.
-function TTT.Roles.SpawnMidRound(ply)
+-- Arg Two:		Boolean, if true places them at a spawn point.
+function TTT.Roles.ForceSpawn(ply, resetSpawn)
 	if not ply:Alive() then
-		ply.ttt_silentspawn = true
+		ply.ttt_OverrideSpawn = true
 		ply:Spawn()
-		ply.ttt_silentspawn = false
+		ply.ttt_OverrideSpawn = false
 	end
-	TTT.MapHandler.PutPlayerAtRandomSpawnPoint(ply)
 	ply:UnSpectate()
-	ply.ttt_inflymode = false
+	ply.ttt_InFlyMode = false
 	
-	hook.Call("TTT.Roles.SpawnedMidRound", nil, ply)
+	hook.Call("TTT.Roles.PlayerSpawned", nil, ply, resetSpawn, true)
+	ply:SetNoDraw(false) -- For some reason they spawn with no-draw set. This will undo that.
 end
 
 ----------------------------

@@ -228,8 +228,12 @@ end
 -- ConCommand:		ttt_roundrestart
 -------------------------------------
 -- Desc:		Restarts the current round.
-concommand.Add("ttt_roundrestart", function()
-	TTT.Rounds.RestartRound()
+concommand.Add("ttt_roundrestart", function(ply)
+	if not IsValid(ply) or ply:IsSuperAdmin() then
+		TTT.Rounds.RestartRound()
+	else
+		print("You do not have permission to run this command.")
+	end
 end)
 
 

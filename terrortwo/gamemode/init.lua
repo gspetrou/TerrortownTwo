@@ -12,16 +12,25 @@ function GM:PlayerInitialSpawn(ply)
 end
 
 function GM:PlayerSpawn(ply)
-	-- If something needs to spawn a player mid-game and doesn't want to deal with this function it can enable ply.ttt_silentspawn.
-	if ply.ttt_silentspawn then
+	-- If something needs to spawn a player mid-game and doesn't want to deal with this function it can enable ply.ttt_OverrideSpawn.
+	if ply.ttt_OverrideSpawn ~= true then
 		if ply:IsSpectator() or TTT.Rounds.IsActive() or TTT.Rounds.IsPost() then
-			TTT.Roles.SpawnInFlyMode(ply)
+			self:PlayerSpawnAsSpectator(ply)
 		else
-			TTT.Roles.SpawnAsPlayer(ply)
+			TTT.Roles.SpawnAsPlayer(ply, true)
 		end
 	end
 	
+	self:PlayerSetModel(ply)
 	ply:SetupHands()					-- Get c_ hands working.
+end
+
+function GM:PlayerSetModel(ply)			-- For backwards compatability.
+	TTT.PlayerSettings.SetModel(ply)
+end
+
+function GM:PlayerSpawnAsSpectator(ply)	-- For backwards compatability.
+	TTT.Roles.SpawnInFlyMode(ply)
 end
 
 function GM:PlayerDeath(ply)
@@ -49,6 +58,12 @@ function GM:PlayerSetHandsModels(ply, ent)
 	end
 end
 
+function GM:CanPlayerSuicide(ply)
+		return true
+	end
+	return false
+end
+
 ---------------
 -- Round Hooks
 ---------------
@@ -73,6 +88,10 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 		return false
 	end
 
+	if TTT.Rounds.GetRemainingTime() <= 0 then
+		return WIN_TIME
+	end
+
 	local numAlive, numaliveTraitors, numaliveInnocents, numaliveDetectives = 0, 0, 0, 0
 	for i, v in ipairs(TTT.Roles.GetAlivePlayers()) do
 		numAlive = numAlive + 1
@@ -91,9 +110,7 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 	end
 
 	local numplys = #TTT.Roles.GetAlivePlayers()
-	if TTT.Rounds.GetRemainingTime() <= 0 then
-		return WIN_TIME
-	elseif numplys == numaliveTraitors then
+	if numplys == numaliveTraitors then
 		return WIN_TRAITOR
 	elseif numplys == (numaliveInnocents + numaliveDetectives) then
 		return WIN_INNOCENT
@@ -104,13 +121,14 @@ end)
 
 hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	for i, v in ipairs(TTT.Roles.GetDeadPlayers()) do
-		TTT.Roles.SpawnMidRound(v) -- Technically the round already started.
+		TTT.Roles.ForceSpawn(v) -- Technically the round already started.
 	end
 	TTT.Roles.PickRoles()
 	TTT.Roles.Sync()
 end)
 
 hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
+	TTT.PlayerSettings.SetDefaultModelColor(TTT.PlayerSettings.GetRandomPlayerColor())
 	TTT.MapHandler.ResetMap()
 	TTT.Roles.Clear()
 end)
@@ -125,10 +143,15 @@ end)
 hook.Add("TTT.Roles.PlayerExittedSpectator", "TTT", function(ply)
 	if not TTT.Rounds.IsActive() or not TTT.Rounds.IsPost() then
 		TTT.Roles.SpawnAsPlayer(ply)
+		TTT.PlayerSettings.SetModel(ply)
 	end
 end)
 
-hook.Add("TTT.Roles.SpawnedMidRound", "TTT", function(ply)
+hook.Add("TTT.Roles.PlayerSpawned", "TTT", function(ply, resetSpawn, wasForced)
+	if resetSpawn then
+		TTT.MapHandler.PutPlayerAtRandomSpawnPoint(ply)
+	end
+	
 	TTT.Weapons.StripCompletely(ply)
 	TTT.Weapons.GiveStarterWeapons(ply)
 end)
