@@ -70,7 +70,7 @@ function TTT.MapHandler.GetRandomSpawnPoint()
 	local spawn, index = table.RandomSequential(spawnpoints)
 	table.remove(spawnpoints, index)
 	
-	-- TO DO: Add case for when no valid spawns are left.
+	-- TODO: Add case for when no valid spawns are left.
 	while (not TTT.MapHandler.WillPlayerFit(spawn:GetPos())) do
 		spawn, index = table.RandomSequential(spawnpoints)
 		table.remove(spawnpoints, index)
