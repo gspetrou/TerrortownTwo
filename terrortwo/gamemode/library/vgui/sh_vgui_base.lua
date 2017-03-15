@@ -33,8 +33,8 @@ if CLIENT then
 		local isspecmode = ply:GetObserverMode() ~= OBS_MODE_NONE
 
 		for k, v in pairs(TTT.VGUI.Elements) do
-			if v[2](ply, specmode) then
-				v[1](ply, w, h, specmode)
+			if v[2](ply, isspecmode) then
+				v[1](ply, w, h, isspecmode)
 			end
 		end
 	end

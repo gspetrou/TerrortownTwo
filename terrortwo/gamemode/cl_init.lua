@@ -1,6 +1,13 @@
 include("library/_prelib.lua")	-- Will load the library for us.
 include("shared.lua")
 
+--------------------------
+-- General Gamemode Hooks
+--------------------------
+function GM:InitPostEntity()
+	--TTT.Roles.InitializeSpectator()
+end
+
 ------------
 -- UI Hooks
 ------------

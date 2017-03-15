@@ -77,6 +77,10 @@ function GM:Initialize()
 	TTT.Languages.Initialize()			-- Load the languages.
 	TTT.VGUI.Initialize()				-- Get their HUDs working.
 
+	if SERVER then
+		TTT.PlayerSettings.Initialize()	-- Select the player models for the map.
+	end
+	
 	TTT.Rounds.Initialize()				-- Begin the round managing system.
 end
 
