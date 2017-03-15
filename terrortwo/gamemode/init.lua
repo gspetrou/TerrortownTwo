@@ -59,6 +59,7 @@ function GM:PlayerSetHandsModels(ply, ent)
 end
 
 function GM:CanPlayerSuicide(ply)
+	if not ply:IsInFlyMode() then
 		return true
 	end
 	return false
