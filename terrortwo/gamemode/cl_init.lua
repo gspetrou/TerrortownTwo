@@ -5,7 +5,7 @@ include("shared.lua")
 -- General Gamemode Hooks
 --------------------------
 function GM:InitPostEntity()
-	--TTT.Roles.InitializeSpectator()
+	TTT.Roles.InitializeSpectator()
 end
 
 ------------

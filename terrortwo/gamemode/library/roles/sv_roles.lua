@@ -18,8 +18,6 @@ local PLAYER = FindMetaTable("Player")
 -- Desc:		Spawns the player in a flying mode.
 -- Arg One:		Player, to be set as a spectator.
 function TTT.Roles.SpawnInFlyMode(ply)
-	TTT.Weapons.StripCompletely(ply)
-
 	if not ply.ttt_InFlyMode then
 		ply:Spectate(OBS_MODE_ROAMING)
 		ply.ttt_InFlyMode = true
@@ -60,7 +58,7 @@ function TTT.Roles.ForceSpawn(ply, resetSpawn)
 	ply.ttt_InFlyMode = false
 	
 	hook.Call("TTT.Roles.PlayerSpawned", nil, ply, resetSpawn, true)
-	ply:SetNoDraw(false) -- For some reason they spawn with no-draw set. This will undo that.
+	ply:SetNoDraw(false) -- For some reason players spawn with no-draw set. This will undo that.
 end
 
 ----------------------------
@@ -115,17 +113,10 @@ end
 -------------------
 -- PLAYER:IsActive
 -------------------
--- Desc:		Does the player not have ttt_always_spectator enabled or they are not idle.
+-- Desc:		Is the player not a spectator.
 -- Return:		Boolean, are they active.
 function PLAYER:IsActive()
-	local isspec = self:GetInfo("ttt_always_spectator")
-	if isspec == "1" then
-		isspec = false
-	else
-		isspec = true
-	end
-
-	return isspec
+	return not self:IsSpectator()
 end
 
 ----------------------
@@ -134,16 +125,21 @@ end
 -- Desc:		Checks if the player is a spectator.
 -- Returns:		Boolean, are they a spectator.
 function PLAYER:IsSpectator()
-	return not self:IsActive()
+	if self.ttt_IsSpectator ~= nil then
+		return self.ttt_IsSpectator
+	end
+	return true
 end
 
 net.Receive("TTT.Roles.ChangedSpectatorMode", function(_, ply)
 	local wants_spec = net.ReadBool()
 	if wants_spec then
 		ply:ForceSpectator()
+		ply.ttt_IsSpectator = true
 		hook.Call("TTT.Roles.PlayerBecameSpectator", nil, ply)
 	else
 		ply:ForceWaiting()
+		ply.ttt_IsSpectator = false
 		hook.Call("TTT.Roles.PlayerExittedSpectator", nil, ply)
 	end
 end)
