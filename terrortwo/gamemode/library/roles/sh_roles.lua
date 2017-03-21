@@ -10,12 +10,12 @@ ROLE_DETECTIVE	= 5
 ROLE_TRAITOR	= 6
 
 TTT.Roles.Colors = {
-	[ROLE_WAITING] = Color(90, 90, 90, 230),
-	[ROLE_SPECTATOR] = Color(90, 90, 90, 230),
-	[ROLE_UNKNOWN] = Color(90, 90, 90, 230),
-	[ROLE_INNOCENT] = Color(39, 174, 96, 230),
-	[ROLE_DETECTIVE] = Color(41, 128, 185, 230),
-	[ROLE_TRAITOR] = Color(192, 57, 43, 230)
+	[ROLE_WAITING] = TTT.Colors.Dead,
+	[ROLE_SPECTATOR] = TTT.Colors.Dead,
+	[ROLE_UNKNOWN] = TTT.Colors.Dead,
+	[ROLE_INNOCENT] = TTT.Colors.Innocent,
+	[ROLE_DETECTIVE] = TTT.Colors.Detective,
+	[ROLE_TRAITOR] = TTT.Colors.Traitor
 }
 
 local PLAYER = FindMetaTable("Player")

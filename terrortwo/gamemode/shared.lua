@@ -51,6 +51,12 @@ DEFINE_BASECLASS("gamemode_base")
 
 -- Thanks TTT.
 TTT.Colors = {
+	Dead		= Color(90, 90, 90, 230),
+	Innocent	= Color(39, 174, 96, 230),
+	Detective	= Color(41, 128, 185, 230),
+	Traitor		= Color(192, 57, 43, 230),
+	PunchYellow	= Color(205, 155, 0),
+
 	White		= Color(255, 255, 255),
 	Black		= Color(0, 0, 0),
 	Green		= Color(0, 255, 0),

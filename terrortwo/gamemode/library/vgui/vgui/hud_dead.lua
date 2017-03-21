@@ -1,5 +1,6 @@
 local surface_DrawRect, surface_SetDrawColor, surface_GetTextSize, surface_DrawText, surface_SetFont, surface_SetTextPos, surface_SetTextColor = surface.DrawRect, surface.SetDrawColor, surface.GetTextSize, surface.DrawText, surface.SetFont, surface.SetTextPos, surface.SetTextColor
 local getTime = TTT.Rounds.GetFormattedRemainingTime
+local punchYellow = TTT.Colors.PunchYellow
 
 TTT.VGUI.ttt_hud_dead_scale = 1
 TTT.VGUI.AddElement("ttt_hud_dead", function(ply, w, h)
@@ -14,7 +15,7 @@ TTT.VGUI.AddElement("ttt_hud_dead", function(ply, w, h)
 	surface_SetDrawColor(35, 35, 40)
 	surface_DrawRect(pnl_x, pnl_y, pnl_w, pnl_h)
 	-- Draw the yellow inner frame.
-	surface_SetDrawColor(205, 155, 0)
+	surface_SetDrawColor(punchYellow)
 	surface_DrawRect(pnl_x + inset, pnl_y + inset, pnl_w - inset*2, pnl_h - inset*2)
 
 	-- Draw the time.
