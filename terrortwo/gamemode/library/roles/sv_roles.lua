@@ -22,6 +22,8 @@ function TTT.Roles.SpawnInFlyMode(ply)
 		ply:Spectate(OBS_MODE_ROAMING)
 		ply.ttt_InFlyMode = true
 	end
+
+	hook.Call("TTT.Roles.PlayerSpawnedInFlyMode", nil, ply)
 end
 
 function PLAYER:IsInFlyMode()

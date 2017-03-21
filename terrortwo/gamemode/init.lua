@@ -42,8 +42,11 @@ function GM:PostPlayerDeath(ply)
 end
 
 function GM:PlayerDisconnected(ply)
-	timer.Simple(1, function()	-- Wait till they actually disconnect.
-		TTT.Rounds.CheckForRoundEnd()
+	timer.Create("TTT.WaitForFullPlayerDisconnect", .5, 0, function()
+		if not IsValid(ply) then
+			TTT.Rounds.CheckForRoundEnd()
+			timer.Remove("TTT.WaitForFullPlayerDisconnect")
+		end
 	end)
 end
 
@@ -58,6 +61,7 @@ function GM:PlayerSetHandsModels(ply, ent)
 	end
 end
 
+-- Only allow people who are actually alive to die.
 function GM:CanPlayerSuicide(ply)
 	if not ply:IsInFlyMode() then
 		return true
@@ -155,4 +159,8 @@ hook.Add("TTT.Roles.PlayerSpawned", "TTT", function(ply, resetSpawn, wasForced)
 	
 	TTT.Weapons.StripCompletely(ply)
 	TTT.Weapons.GiveStarterWeapons(ply)
+end)
+
+hook.Add("TTT.Roles.PlayerSpawnedInFlyMode", "TTT", function(ply)
+	TTT.Weapons.StripCompletely(ply)
 end)
