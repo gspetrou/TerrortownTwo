@@ -46,6 +46,10 @@ function PLAYER:IsInnocent() return self:GetRole() == ROLE_INNOCENT end
 function PLAYER:IsDetective() return self:GetRole() == ROLE_DETECTIVE end
 function PLAYER:IsTraitor() return self:GetRole() == ROLE_TRAITOR end
 
+function PLAYER:GetRoleColor()
+	return TTT.Roles.Colors[self:GetRole()]
+end
+
 if CLIENT then
 	--------------------------
 	-- TTT.Roles.RoleAsString

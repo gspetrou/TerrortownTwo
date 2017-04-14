@@ -32,11 +32,11 @@ function GM:HUDDrawScoreBoard()
 end
 
 function GM:ScoreboardShow()
-	print("a")
+	TTT.Scoreboard.Open()
 end
 
 function GM:ScoreboardHide()
-	print("b")
+	TTT.Scoreboard.Close()
 end
 
 ---------------
