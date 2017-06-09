@@ -44,7 +44,7 @@ end
 ---------------
 hook.Add("TTT.Rounds.MapEnded", "TTT", function(wintype)
 
-end)end)
+end)
 
 ----------------
 -- Weapon Hooks

@@ -2,6 +2,36 @@ TTT = TTT or {}
 TTT.Library = TTT.Library or {}
 TTT.Debug = TTT.Debug or {}
 
+-- Thanks TTT.
+TTT.Colors = {
+	Dead		= Color(90, 90, 90, 230),
+	Innocent	= Color(39, 174, 96, 230),
+	Detective	= Color(41, 128, 185, 230),
+	Traitor		= Color(192, 57, 43, 230),
+	PunchYellow	= Color(205, 155, 0),
+
+	White		= Color(255, 255, 255),
+	Black		= Color(0, 0, 0),
+	Green		= Color(0, 255, 0),
+	DarkGreen	= Color(0, 100, 0),
+	Red			= Color(255, 0, 0),
+	Yellow		= Color(200, 200, 0),
+	LightGray	= Color(200, 200, 200),
+	Blue		= Color(0, 0, 255),
+	Navy		= Color(0, 0, 100),
+	Pink		= Color(255, 0, 255),
+	Orange		= Color(250, 100, 0),
+	Olive		= Color(100, 100, 0)
+}
+
+if not file.IsDir("ttt", "DATA") then
+	file.CreateDir("ttt")			-- Create a data folder to store anything we may want to later.
+end
+
+function GM:LoadLibraries()
+	TTT.Library.Initialize()			-- Load the libraries.
+end
+
 -------------------------
 -- TTT.Debug.IsDebugMode
 -------------------------
@@ -62,7 +92,7 @@ end
 --------------------------
 -- Desc:		Loads the library folder containning the library used by the gamemode. Loads util.lua first.
 function TTT.Library.Initialize()
-	local rootPath = GAMEMODE.FolderName .."/gamemode/library/"
+	local rootPath = GM.FolderName.."/gamemode/library/"
 	TTT.Library.SetupFile(rootPath .."util.lua")
 
 	local miscFiles, folders = file.Find(rootPath .."*", "LUA")

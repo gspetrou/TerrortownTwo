@@ -45,46 +45,20 @@ GM.Name = "Trouble in Terrorist Town Two"
 GM.Author = "George 'Stalker' Petrou"
 GM.Email = "N/A"
 GM.Website = "N/A"
-TTT.Version = 20170309					-- YearMonthDay
-
+TTT.Version = 20170606					-- YearMonthDay
 DEFINE_BASECLASS("gamemode_base")
 
--- Thanks TTT.
-TTT.Colors = {
-	Dead		= Color(90, 90, 90, 230),
-	Innocent	= Color(39, 174, 96, 230),
-	Detective	= Color(41, 128, 185, 230),
-	Traitor		= Color(192, 57, 43, 230),
-	PunchYellow	= Color(205, 155, 0),
-
-	White		= Color(255, 255, 255),
-	Black		= Color(0, 0, 0),
-	Green		= Color(0, 255, 0),
-	DarkGreen	= Color(0, 100, 0),
-	Red			= Color(255, 0, 0),
-	Yellow		= Color(200, 200, 0),
-	LightGray	= Color(200, 200, 200),
-	Blue		= Color(0, 0, 255),
-	Navy		= Color(0, 0, 100),
-	Pink		= Color(255, 0, 255),
-	Orange		= Color(250, 100, 0),
-	Olive		= Color(100, 100, 0)
-}
+GM:LoadLibraries()
 
 --------------------------
 -- General Gamemode Hooks
 --------------------------
 function GM:Initialize()
-	if not file.IsDir("ttt", "DATA") then
-		file.CreateDir("ttt")			-- Create a data folder to store anything we may want to later.
-	end
-
-	TTT.Library.Initialize()			-- Load the library.
 	TTT.Languages.Initialize()			-- Load the languages.
 	TTT.VGUI.Initialize()				-- Get their HUDs working.
 
 	if SERVER then
-		TTT.PlayerSettings.Initialize()	-- Select the player models for the map.
+		TTT.Player.Initialize()	-- Select the player models for the map.
 	end
 	
 	TTT.Rounds.Initialize()				-- Begin the round managing system.

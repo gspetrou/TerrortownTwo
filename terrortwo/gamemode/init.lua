@@ -26,7 +26,7 @@ function GM:PlayerSpawn(ply)
 end
 
 function GM:PlayerSetModel(ply)			-- For backwards compatability.
-	TTT.PlayerSettings.SetModel(ply)
+	TTT.Player.SetModel(ply)
 end
 
 function GM:PlayerSpawnAsSpectator(ply)	-- For backwards compatability.
@@ -130,10 +130,14 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	end
 	TTT.Roles.PickRoles()
 	TTT.Roles.Sync()
+
+	timer.Simple(1, function()
+		TTT.Rounds.CheckForRoundEnd()	-- Could happen if ttt_dev_preventwin is 0 and ttt_minimum_players is <= 1.
+	end)
 end)
 
 hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
-	TTT.PlayerSettings.SetDefaultModelColor(TTT.PlayerSettings.GetRandomPlayerColor())
+	TTT.Player.SetDefaultModelColor(TTT.Player.GetRandomPlayerColor())
 	TTT.MapHandler.ResetMap()
 	TTT.Roles.Clear()
 end)
@@ -148,7 +152,7 @@ end)
 hook.Add("TTT.Roles.PlayerExittedSpectator", "TTT", function(ply)
 	if not TTT.Rounds.IsActive() or not TTT.Rounds.IsPost() then
 		TTT.Roles.SpawnAsPlayer(ply)
-		TTT.PlayerSettings.SetModel(ply)
+		TTT.Player.SetModel(ply)
 	end
 end)
 
