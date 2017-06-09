@@ -1,4 +1,5 @@
 TTT.Weapons = TTT.Weapons or {}
+util.AddNetworkString("TTT.Weapons.RequestDropCurrentWeapon")
 local PLAYER = FindMetaTable("Player")
 
 -------------------------------
@@ -17,13 +18,5 @@ end
 -- Desc:		Gives the player the weapons they should spawn with.
 -- Arg One:		Player, to be armed.
 function TTT.Weapons.GiveStarterWeapons(ply)
-	-- This hook can be used to give the player starter weapon as well as disable the stock ones.
-	local giveDefaults = hook.Call("TTT.Weapons.GiveStarterWeapons", nil, ply)
-	if giveDefaults ~= false then
-		--[[
-		ply:Give("weapon_ttt2_crowbar")
-		ply:Give("weapon_ttt2_magneto")
-		ply:Give("weapon_ttt2_holster")
-		]]
-	end
+	-- TODO
 end

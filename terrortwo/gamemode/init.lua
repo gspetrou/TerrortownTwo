@@ -164,3 +164,26 @@ end)
 hook.Add("TTT.Roles.PlayerSpawnedInFlyMode", "TTT", function(ply)
 	TTT.Weapons.StripCompletely(ply)
 end)
+
+----------------
+-- Weapon Hooks
+----------------
+function GM:PlayerCanPickupWeapon(ply, wep)
+	if not IsValid(ply) or not ply:IsActive() then
+		return false
+	end
+
+	if wep.Kind == nil then
+		error("Player tried to pickup weapon with missing SWEP.Kind. Class name: '".. wep.ClassName .."'.")
+	end
+
+	if TTT.Weapons.HasWeaponInSlot(ply, wep.Kind) then
+		return false
+	end
+
+	return true
+end
+
+hook.Add("TTT.Weapons.DroppedWeapon", "TTT", function(ply, wep)
+	-- TODO: PLAY WEAPON DROP ANIMATION!
+end)
