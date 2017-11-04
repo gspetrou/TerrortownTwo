@@ -3,6 +3,13 @@ include("library/_prelib.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
+-----------------
+-- General Hooks
+-----------------
+function GM:InitPostEntity()
+	TTT.Weapons.Precache()
+end
+
 ----------------
 -- Player Hooks
 ----------------

@@ -9,7 +9,7 @@ local preventstart = CreateConVar("ttt_dev_preventstart", "0", nil, "Set to 1 to
 local posttime = CreateConVar("ttt_post_time", "30", FCVAR_ARCHIVE, "Time in seconds after a round has ended till the game goes into prep. Set to 0 to skip post round time.")
 local initialpreptime = CreateConVar("ttt_prep_time_initial", "60", FCVAR_ARCHIVE, "Time in seconds after the first round has entered preperation time till the round actually starts. Set to 0 to skip prep round time.")
 local preptime = CreateConVar("ttt_prep_time", "30", FCVAR_ARCHIVE, "Time in seconds after the round has entered preperation time till the round actually starts. Set to 0 to skip prep round time.")
-local minimum_players = CreateConVar("ttt_minimum_players", "2", FCVAR_ARCHIVE, "This many players is required for a round to start.")
+local minimum_players = CreateConVar("ttt_minimum_players", "2", FCVAR_ARCHIVE, "This many players are required for a round to start.")
 
 cvars.AddChangeCallback("ttt_dev_preventwin", function(_, _, newval)
 	if newval == "0" and TTT.Rounds.IsActive() then

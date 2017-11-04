@@ -311,16 +311,10 @@ function SWEP:GetSecondaryDamage() return self.Secondary.Damage end
 
 -- TTT1 added an extra validity check to these two functions so I might as well add that extra safety here as well.
 function SWEP:Ammo1()
-	if not IsValid(self.Owner) then
-		return false
-	end
-	return self.Baseclass.Ammo1(self)
+	return IsValid(self:GetOwner()) and self:GetOwner():GetAmmoCount(self.Primary.Ammo) or false
 end 
 function SWEP:Ammo2()
-	if not IsValid(self.Owner) then
-		return false
-	end
-	return self.Baseclass.Ammo2(self)
+	return IsValid(self:GetOwner()) and self:GetOwner():GetAmmoCount(self.Secondary.Ammo) or false
 end
 
 
