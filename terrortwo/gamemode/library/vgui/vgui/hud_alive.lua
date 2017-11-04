@@ -65,13 +65,19 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 	-- Ammo
 	local wep = ply:GetActiveWeapon()
 	if IsValid(wep) then
+		local clipAmmo = wep:Clip1()
+		local storedAmmo = wep:Ammo1()
+
 		bar_pos_y = bar_pos_y + bar_h + 3
 		surface_SetDrawColor(ammo_colors.bg[1], ammo_colors.bg[2], ammo_colors.bg[3])
 		surface_DrawRect(bar_pos_x, bar_pos_y, bar_w, bar_h)
 		surface_SetDrawColor(ammo_colors.fg[1], ammo_colors.fg[2], ammo_colors.fg[3])
-		surface_DrawRect(bar_pos_x, bar_pos_y, bar_w, bar_h)
+		surface_DrawRect(bar_pos_x, bar_pos_y, bar_w * math_Clamp(clipAmmo/wep.Primary.ClipSize, 0, 1), bar_h)
 
-		local ammoText = "20/60"
+		local ammoText = clipAmmo
+		if storedAmmo ~= false and storedAmmo > 0 then
+			ammoText = ammoText.." + "..storedAmmo
+		end
 		text_w, text_h = surface_GetTextSize(ammoText)
 		surface_SetTextPos(bar_pos_x + bar_w - text_w - 3, bar_pos_y + bar_h/2 - text_h/2)
 		surface_DrawText(ammoText)

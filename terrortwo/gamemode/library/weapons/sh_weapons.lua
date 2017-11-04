@@ -24,13 +24,47 @@ function TTT.Weapons.HasWeaponInSlot(ply, kind)
 	end
 
 	local plyWeps = ply:GetWeapons()
-	for i, v in ipairs(plyWeps) do
+	for k, v in pairs(plyWeps) do
 		if v.Kind == kind then
 			return true
 		end
 	end
 
 	return false
+end
+
+------------------------------------
+-- TTT.Weapons.HasWeaponForAmmoType
+------------------------------------
+-- Desc:		Sees if a given player has a weapon that takes a given type of ammo.
+-- Arg One:		Player, to check weapons of for a certain type of ammo.
+-- Arg Two:		String, ammotype to check their weapons for.
+-- Returns:		Boolean, true if they have a weapon that takes the given ammo type.
+function TTT.Weapons.HasWeaponForAmmoType(ply, ammotype)
+	local plyWeps = ply:GetWeapons()
+	for k, v in pairs(plyWeps) do
+		if v.Primary.Ammo == ammotype or v.Secondary.Ammo == ammotype then
+			return true
+		end
+	end
+
+	return false
+end
+
+----------------------------
+-- TTT.Weapons.CacheWeapons
+----------------------------
+-- Desc:		Precache all weapon models since nondeveloper commands can show the first time equipment has been bought.
+function TTT.Weapons.Precache()
+	local util_PrecacheModel = util.PrecacheModel
+	for k, wep in ipairs(weapons.GetList()) do
+		if wep.WorldModel then
+			util_PrecacheModel(wep.WorldModel)
+		end
+		if wep.ViewModel then
+			util_PrecacheModel(wep.ViewModel)
+		end
+	end
 end
 
 -------------------------------
@@ -46,7 +80,7 @@ function TTT.Weapons.GetWeaponInSlot(ply, kind)
 	end
 
 	local plyWeps = ply:GetWeapons()
-	for i, v in ipairs(plyWeps) do
+	for k, v in pairs(plyWeps) do
 		if v.Kind == kind then
 			return v
 		end
