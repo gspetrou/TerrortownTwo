@@ -22,7 +22,7 @@ if CLIENT then
 	end
 
 	-- Since HUDPaint is called so much might as well micro-optimize.
-	local LocalPlayer, pairs, hookCall, ScrW, ScrH = LocalPlayer, pairs, hook.Call, ScrW, ScrH
+	local LocalPlayer, pairs, ScrW, ScrH = LocalPlayer, pairs, ScrW, ScrH
 	
 	---------------------
 	-- TTT.VGUI.HUDPaint

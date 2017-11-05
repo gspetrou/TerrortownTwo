@@ -37,8 +37,8 @@ function SWEP:DrawWorldModelTranslucent()
 end
 
 function SWEP:Deploy()
-	if SERVER and IsValid(self.Owner) then
-		self.Owner:DrawViewModel(false)
+	if SERVER and IsValid(self:GetOwner()) then
+		self:GetOwner():DrawViewModel(false)
 	end
 
 	self:DrawShadow(false)

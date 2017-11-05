@@ -97,7 +97,7 @@ if SERVER then
 	-- Arg One:		Entity, to see if it can pickup the ammo.
 	function ENT:CanBePickedUpByEnt(ply)
 		if not self.PickedUp and IsValid(ply) and ply:IsPlayer() then
-			local result = hook.Call("TTT2.Ammo.CanPickUp", TTT, ent, self)		-- Can be called plenty of times so be careful.
+			local result = hook.Call("TTT.Ammo.CanPickUp", nil, ent, self)		-- Can be called plenty of times so be careful.
 			if result then
 				return result
 			end
@@ -108,6 +108,23 @@ if SERVER then
 		end
 
 		return false
+	end
+
+	function ENT:Touch(ply)
+		if self:CanBePickedUpByEnt(ply) then
+			local ammo = ply:GetAmmoCount(self.AmmoType)
+			if self.AmmoMax >= (ammo + math.ceil(self.AmmoGive * 0.25)) then
+				local given = self.AmmoGive
+				given = math.min(given, self.AmmoMax - ammo)
+				ply:GiveAmmo(given, self.AmmoType)
+
+				self:Remove()
+
+				-- Just in case remove does not happen soon enough.
+				self.PickedUp = true
+				hook.Call("TTT.Ammo.PickedUp", nil, ply, self)
+			end
+		end
 	end
 end
 
@@ -133,21 +150,4 @@ function ENT:Initialize()
 	end
 
 	self.PickedUp = false
-end
-
-
-function ENT:Touch(ply)
-	if SERVER and self:CanBePickedUpByEnt(ply) then
-		local ammo = ply:GetAmmoCount(self.AmmoType)
-		if self.AmmoMax >= (ammo + math.ceil(self.AmmoGive * 0.25)) then
-			local given = self.AmmoGive
-			given = math.min(given, self.AmmoMax - ammo)
-			ply:GiveAmmo(given, self.AmmoType)
-
-			self:Remove()
-
-			-- Just in case remove does not happen soon enough.
-			self.PickedUp = true
-		end
-	end
 end

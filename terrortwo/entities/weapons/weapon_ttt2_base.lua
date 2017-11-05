@@ -116,7 +116,7 @@ SWEP.Animations_Primary3rdPerson	= PLAYER_ATTACK1	-- Enum, animation to play whe
 SWEP.Animations_Secondary3rdPerson	= PLAYER_ATTACK1	-- Enum, animation to play when secondary attacking (third person).
 
 -- Micro-optimizations!
-local CurTime, Vector, IsFirstTimePredicted, game_SinglePlayer = CurTime, Vector, IsFirstTimePredicted, game.SinglePlayer
+local CurTime, Vector, game_SinglePlayer = CurTime, Vector, game.SinglePlayer
 
 function SWEP:Initialize()
 	util.PrecacheModel(self.ViewModel)
@@ -190,7 +190,7 @@ function SWEP:PrimaryAttack()
 		self:SendWeaponAnim(self.Animations_Primary)
 	end
 	if self.Animations_Primary3rdPerson then
-		self.Owner:SetAnimation(self.Animations_Primary3rdPerson)
+		self:GetOwner():SetAnimation(self.Animations_Primary3rdPerson)
 	end
 
 	self:ShootBullets(self.Primary.Damage, self.Primary.NumShots, self.Primary.Cone, self.Primary.Recoil, self.Primary.Tracers, self.Primary.BulletForce)
@@ -217,7 +217,7 @@ function SWEP:SecondaryAttack()
 		self:SendWeaponAnim(self.Animations_Secondary)
 	end
 	if self.Animations_Secondary3rdPerson then
-		self.Owner:SetAnimation(self.Animations_Secondary3rdPerson)
+		self:GetOwner():SetAnimation(self.Animations_Secondary3rdPerson)
 	end
 
 	if self.Secondary.Delay then
@@ -230,7 +230,7 @@ function SWEP:CanPrimaryAttack()
 		return
 	end
 
-	if not IsValid(self.Owner) or (SERVER and not self.Owner:IsActive()) or (self.Primary.RequiresAmmo and self:Clip1() <= 0) then
+	if not IsValid(self:GetOwner()) or (SERVER and not self:GetOwner():IsActive()) or (self.Primary.RequiresAmmo and self:Clip1() <= 0) then
 		self:EmitSound(self.Sound_Empty)
 		self:SetNextPrimaryFire(CurTime() + self.Primary.DryFireDelay)
 		return false
@@ -244,7 +244,7 @@ function SWEP:CanSecondaryAttack()
 		return
 	end
 
-	if not IsValid(self.Owner) or (SERVER and not self.Owner:IsActive()) or self:Clip2() <= 0 then
+	if not IsValid(self:GetOwner()) or (SERVER and not self:GetOwner():IsActive()) or self:Clip2() <= 0 then
 		self:EmitSound(self.Sound_Empty)
 		self:SetNextSecondaryFire(CurTime() + self.Secondary.DryFireDelay)
 		return false
@@ -257,25 +257,27 @@ function SWEP:ShootBullets(damage, numBullets, aimCone, recoil, tracers, force)
 	-- The bullet itself.
 	local bullet	= {}
 	bullet.Damage	= damage
-	bullet.Src		= self.Owner:GetShootPos()
-	bullet.Dir		= self.Owner:GetAimVector()
+	bullet.Src		= self:GetOwner():GetShootPos()
+	bullet.Dir		= self:GetOwner():GetAimVector()
 	bullet.Spread	= Vector(aimCone, aimCone, 0)
 	bullet.Tracer	= tracers
 	bullet.Force	= force
 	bullet.Num		= numBullets
-	self.Owner:FireBullets(bullet)
+	self:GetOwner():FireBullets(bullet)
 
 	-- Recoil.
-	local eyeAngs = self.Owner:EyeAngles()
-	eyeAngs.pitch = eyeAngs.pitch - recoil
-	self.Owner:SetEyeAngles(eyeAngs)
+	if (game.SinglePlayer() and SERVER) or (not game.SinglePlayer() and CLIENT and IsFirstTimePredicted()) then
+		local eyeAngs = self:GetOwner():EyeAngles()
+		eyeAngs.pitch = eyeAngs.pitch - recoil
+		self:GetOwner():SetEyeAngles(eyeAngs)
+	end
 
 	-- Weapon effects.
 	self:ShootEffects()
 end
 
 function SWEP:ShootEffects()
-	self.Owner:MuzzleFlash()
+	self:GetOwner():MuzzleFlash()
 end
 
 -------------------------

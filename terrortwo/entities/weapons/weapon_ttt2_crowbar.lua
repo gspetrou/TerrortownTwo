@@ -26,7 +26,7 @@ SWEP.Sound_Secondary	= attackSound
 
 SWEP.Animations_HitPerson = ACT_VM_HITCENTER
 SWEP.Animations_HitWorld = ACT_VM_MISSCENTER
-
+/*
 function SWEP:OnDrop()
 	self:Remove()
 end
@@ -37,4 +37,4 @@ function SWEP:PrimaryAttack()
 	end
 
 
-end
+end*/

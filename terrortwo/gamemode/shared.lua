@@ -81,3 +81,10 @@ hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
 		end
 	end
 end)
+
+------------------
+-- Movement Hooks
+------------------
+function GM:SetupMove(ply, mv, cmd)
+	TTT.Player.SetupMovement(ply, mv, cmd)
+end
