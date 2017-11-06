@@ -43,7 +43,7 @@ end
 -- Round Hooks
 ---------------
 hook.Add("TTT.Rounds.MapEnded", "TTT", function(wintype)
-
+	-- Map stuff here
 end)
 
 ----------------

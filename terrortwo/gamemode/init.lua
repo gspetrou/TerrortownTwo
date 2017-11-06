@@ -138,6 +138,8 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	TTT.Roles.PickRoles()
 	TTT.Roles.Sync()
 
+	TTT.Weapons.GiveRoleWeapons()
+
 	timer.Simple(1, function()
 		TTT.Rounds.CheckForRoundEnd()	-- Could happen if ttt_dev_preventwin is 0 and ttt_minimum_players is <= 1.
 	end)
@@ -147,6 +149,14 @@ hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
 	TTT.Player.SetDefaultModelColor(TTT.Player.GetRandomPlayerColor())
 	TTT.MapHandler.ResetMap()
 	TTT.Roles.Clear()
+
+	local defaultWeapon = GetConVar("ttt_weapons_default"):GetString()
+	for i, ply in ipairs(TTT.Roles.GetAlivePlayers()) do
+		TTT.Weapons.StripCompletely(ply)
+		TTT.Weapons.GiveStarterWeapons(ply)
+
+		ply:SelectWeapon(defaultWeapon)
+	end
 end)
 
 --------------

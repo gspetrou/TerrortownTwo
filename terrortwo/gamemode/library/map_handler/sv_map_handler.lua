@@ -13,8 +13,6 @@ function TTT.MapHandler.ResetMap()
 		end
 
 		v:Spawn()
-		v:StripAmmo()
-		v:StripWeapons()
 	end
 end
 
@@ -26,7 +24,7 @@ end
 -----------------------------------
 -- Desc:		Returns a table of all spawn entities.
 -- Returns:		Table, just read the damn description.
-local validspawns = {		-- Table taken from original TTT code.
+local TTT.MapHandler.PlayerSpawnEntities = {		-- Table taken from original TTT code.
 	"info_player_deathmatch",
 	"info_player_combine",
 	"info_player_rebel",
@@ -39,7 +37,7 @@ local validspawns = {		-- Table taken from original TTT code.
 }
 function TTT.MapHandler.GetSpawnEntities()
 	local spawns = {}
-	for _, class in ipairs(validspawns) do
+	for _, class in ipairs(TTT.MapHandler.PlayerSpawnEntities) do
 		for i, v in ipairs(ents.FindByClass(class)) do
 			if IsValid(v) then
 				table.insert(spawns, v)

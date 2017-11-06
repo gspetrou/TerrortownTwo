@@ -2,7 +2,7 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "ammo_ttt2_base"
 
-ENT.AmmoType	= "50cal"
+ENT.AmmoType	= "pistol_heavy"
 ENT.AmmoGive	= 12
 ENT.AmmoMax		= 36
 ENT.Model		= Model("models/items/357ammo.mdl")

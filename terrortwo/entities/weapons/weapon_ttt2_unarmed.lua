@@ -5,7 +5,7 @@ DEFINE_BASECLASS(SWEP.Base)
 SWEP.PrintName	= "Holstered"
 SWEP.CanDrop		= false
 SWEP.Kind			= WEAPON_UNARMED
-SWEP.SpawnWith		= {ROLE_INNOCENT, ROLE_TRAITOR, ROLE_DETECTIVE}
+SWEP.SpawnWith		= true
 
 SWEP.HoldType	= "normal"
 SWEP.ViewModel	= "models/weapons/v_crowbar.mdl"

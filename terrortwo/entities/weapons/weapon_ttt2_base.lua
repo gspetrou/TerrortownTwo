@@ -71,7 +71,8 @@ SWEP.SilentKiller	= false					-- When someone is killed by this weapon they won'
 SWEP.CanDrop		= true
 
 SWEP.Fingerprints	= {}
-SWEP.SpawnWith		= nil					-- Make this a table of ROLE_ enums to choose what roles spawn with this weapon.
+SWEP.SpawnWith		= nil					-- Boolean. If true, everyone will spawn with this weapon.
+SWEP.RoleWeapon		= nil					-- ROLE_ enum or table of ROLE_ enums. Any player with one of these roles will be given this weapon at the start of the round.
 SWEP.Kind			= WEAPON_PRIMARY		-- WEAPON_ enum for what slot this gun takes.
 
 -- Set the sounds to false to disable them.
@@ -104,9 +105,9 @@ SWEP.Secondary.Cone			= 0.02	-- Number, radius of the spread cone the gun shoots
 SWEP.Secondary.DryFireDelay	= 0.2	-- Number, time between each time you can dry fire. No real reason to change this unless you wan't to.
 SWEP.Secondary.Ammo			= "none"-- String, type of ammo the weapon takes.
 
--- Stored on the weapon after it is dropped
-SWEP.StoredAmmo_Primary		= 0
-SWEP.StoredAmmo_Secondary	= 0
+SWEP.HeadshotMultiplier		= 1		-- Number, headshot damage multiplier.
+
+SWEP.StoredAmmo_Primary		= 0		-- Used to store ammo on a weapon when it is dropped.
 
 -- Set the animations to false to disable them.
 SWEP.Animations_Primary		= ACT_VM_PRIMARYATTACK		-- Enum. animation to play when primary attacking (first person).
@@ -130,16 +131,19 @@ end
 
 function SWEP:Reload()
 	if self.Animations_Reload then
-		self:DefaultReload(self.Animations_Reload)
-	end
+		local reloaded = self:DefaultReload(self.Animations_Reload)
 
-	if self.Sound_Reload then
-		self:EmitSound(self.Sound_Reload)
+		if reloaded and self.Sound_Reload then
+			self:EmitSound(self.Sound_Reload)
+		end
 	end
 end
 
 function SWEP:Deploy()
 	return true -- Its really annoying when people forget to return true here.
+end
+
+function SWEP:SetupDataTables()
 end
 
 -- Largely copied from weapon_tttbase.
@@ -169,9 +173,7 @@ end
 
 -- Called right before a weapon is dropped and is still considered to be in the player's hands.
 function SWEP:PreDrop()
-	if self.Primary.Ammo ~= "none" then
-		self.StoredAmmo_Primary = self:Clip1()
-	end
+	self.StoredAmmo_Primary = self:Clip1()
 end
 
 -----------------------
@@ -230,7 +232,8 @@ function SWEP:CanPrimaryAttack()
 		return
 	end
 
-	if not IsValid(self:GetOwner()) or (SERVER and not self:GetOwner():IsActive()) or (self.Primary.RequiresAmmo and self:Clip1() <= 0) then
+	local ply = self:GetOwner()
+	if not IsValid(ply) or (SERVER and (ply:IsInFlyMode() or ply:IsSpectating())) or (self.Primary.RequiresAmmo and self:Clip1() <= 0) then
 		self:EmitSound(self.Sound_Empty)
 		self:SetNextPrimaryFire(CurTime() + self.Primary.DryFireDelay)
 		return false
@@ -319,13 +322,6 @@ function SWEP:Ammo2()
 	return IsValid(self:GetOwner()) and self:GetOwner():GetAmmoCount(self.Secondary.Ammo) or false
 end
 
-
-
-
-
-
-
-
-
-
-
+function SWEP:GetHeadshotMultiplier()
+	return self.HeadshotMultiplier or 1
+end

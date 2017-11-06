@@ -5,7 +5,7 @@ DEFINE_BASECLASS(SWEP.Base)
 SWEP.PrintName	= "Crowbar"
 SWEP.CanDrop	= false
 SWEP.Kind		= WEAPON_MELEE
-SWEP.SpawnWith	= {ROLE_INNOCENT, ROLE_TRAITOR, ROLE_DETECTIVE}
+SWEP.SpawnWith	= true
 
 SWEP.HoldType	= "melee"
 SWEP.WorldModel	= "models/weapons/w_crowbar.mdl"

@@ -11,6 +11,91 @@ WEAPON_EQUIP1		= 6
 WEAPON_EQUIP2		= 7
 WEAPON_SPECIALEQUIP	= 8
 
+-- Ammo Types. Values copied from Source Engine.
+-- AR2
+game.AddAmmoType({
+	name = "ar_heavy",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	plydmg = 0,
+	npcdmg = 0,
+	maxcarry = 9999,	-- This is the Garry's Mod default for all default ammo types.
+	minsplash = 4,
+	maxsplash = 8
+})
+
+-- SMG1
+game.AddAmmoType({
+	name = "ar_light",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	plydmg = 0,
+	npcdmg = 0,
+	maxcarry = 9999,
+	minsplash = 4,
+	maxsplash = 8
+})
+
+-- AlyxGun
+game.AddAmmoType({
+	name = "pistol_heavy",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE,
+	plydmg = 0,
+	npcdmg = 0,
+	maxcarry = 9999,
+	minsplash = 4,
+	maxsplash = 8
+})
+
+-- Pistol
+game.AddAmmoType({
+	name = "pistol_light",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	plydmg = 0,
+	npcdmg = 0,
+	maxcarry = 9999,
+	minsplash = 4,
+	maxsplash = 8
+})
+
+-- 357
+game.AddAmmoType({
+	name = "sniper",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	plydmg = 0,
+	npcdmg = 0,
+	maxcarry = 9999,
+	minsplash = 4,
+	maxsplash = 8
+})
+
+-- Buckshot
+game.AddAmmoType({
+	name = "shotgun_buckshot",
+	dmgtype = bit.bor(DMG_BULLET, DMG_BUCKSHOT),
+	tracer = TRACER_LINE,
+	plydmg = 0,
+	npcdmg = 0,
+	maxcarry = 9999,
+	minsplash = 4,
+	maxsplash = 8
+})
+
+-- No ammo type.
+game.AddAmmoType({
+	name = "none",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	plydmg = 0,
+	npcdmg = 0,
+	maxcarry = 9999,
+	minsplash = 4,
+	maxsplash = 8
+})
+
 -------------------------------
 -- TTT.Weapons.HasWeaponInSlot
 -------------------------------
@@ -90,11 +175,21 @@ function TTT.Weapons.GetWeaponInSlot(ply, kind)
 end
 
 if CLIENT then
+	----------------------------------------
+	-- TTT.Weapons.RequestDropCurrentWeapon
+	----------------------------------------
+	-- Desc:		Client only. Asks server to drop their weapaon if they can.
 	function TTT.Weapons.RequestDropCurrentWeapon()
 		net.Start("TTT.Weapons.RequestDropCurrentWeapon")
 		net.SendToServer()
 	end
 else
+	-----------------------------
+	-- TTT.Weapons.CanDropWeapon
+	-----------------------------
+	-- Desc:		Sees if the player can drop their current weapon.
+	-- Arg One:		Player
+	-- Arg Two:		Entity, weapon of theirs to see if it can be dropped.
 	function TTT.Weapons.CanDropWeapon(ply, wep)
 		if not IsValid(ply) or not IsValid(wep) or not wep.CanDrop then
 			return false
@@ -110,6 +205,12 @@ else
 		return true
 	end
 
+	--------------------------
+	-- TTT.Weapons.DropWeapon
+	--------------------------
+	-- Desc:		Drops the player's given weapon.
+	-- Arg One:		Player, to drop weapon of.
+	-- Arg Two:		Entity, weapon to drop.
 	function TTT.Weapons.DropWeapon(ply, wep)
 		if not IsValid(ply) or not IsValid(wep) then
 			return
