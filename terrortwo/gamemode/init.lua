@@ -70,7 +70,7 @@ end
 
 -- Only allow people who are actually alive to die.
 function GM:CanPlayerSuicide(ply)
-	if not ply:IsInFlyMode() then
+	if ply:Alive() then
 		return true
 	end
 	return false
@@ -190,7 +190,7 @@ end)
 -- Weapon Hooks
 ----------------
 function GM:PlayerCanPickupWeapon(ply, wep)
-	if not IsValid(ply) or not ply:IsActive() then
+	if not IsValid(ply) or not ply:Alive() then
 		return false
 	end
 

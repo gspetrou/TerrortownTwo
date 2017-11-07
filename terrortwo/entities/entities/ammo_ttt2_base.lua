@@ -102,7 +102,7 @@ if SERVER then
 				return result
 			end
 
-			if ply:IsActive() and self:HasWeaponForAmmo(ply) and self:CanBeReached(ply) then
+			if ply:Alive() and self:HasWeaponForAmmo(ply) and self:CanBeReached(ply) then
 				return true
 			end
 		end

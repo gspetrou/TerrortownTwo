@@ -228,12 +228,12 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:CanPrimaryAttack()
-	if not self.Primary.Enabled then
-		return
+	local ply = self:GetOwner()
+	if not self.Primary.Enabled or not IsValid(ply) or not ply:Alive() then
+		return false
 	end
 
-	local ply = self:GetOwner()
-	if not IsValid(ply) or (SERVER and (ply:IsInFlyMode() or ply:IsSpectating())) or (self.Primary.RequiresAmmo and self:Clip1() <= 0) then
+	if self.Primary.RequiresAmmo and self:Clip1() <= 0 then
 		self:EmitSound(self.Sound_Empty)
 		self:SetNextPrimaryFire(CurTime() + self.Primary.DryFireDelay)
 		return false
@@ -243,11 +243,12 @@ function SWEP:CanPrimaryAttack()
 end
 
 function SWEP:CanSecondaryAttack()
-	if not self.Secondary.Enabled then
-		return
+	local ply = self:GetOwner()
+	if not self.Secondary.Enabled or not IsValid(ply) or not ply:Alive() then
+		return false
 	end
 
-	if not IsValid(self:GetOwner()) or (SERVER and not self:GetOwner():IsActive()) or self:Clip2() <= 0 then
+	if self:Clip2() <= 0 then
 		self:EmitSound(self.Sound_Empty)
 		self:SetNextSecondaryFire(CurTime() + self.Secondary.DryFireDelay)
 		return false

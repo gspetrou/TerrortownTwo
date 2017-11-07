@@ -33,8 +33,8 @@ end
 ---------------------------
 -- TTT.Roles.SpawnAsPlayer
 ---------------------------
--- Desc:		Spawns the player as an active player.
--- Arg One:		Player, to spawn as an active player.
+-- Desc:		Spawns the player.
+-- Arg One:		Player, to spawn as player.
 -- Arg Two:		Boolean, if true places them at a spawn point.
 function TTT.Roles.SpawnAsPlayer(ply, resetSpawn)
 	if ply:IsInFlyMode() then
@@ -73,6 +73,14 @@ function TTT.Roles.SetupSpectator(ply)
 	end
 end
 
+local oldAlive = PLAYER.Alive
+function PLAYER:Alive()
+	if self:IsSpectator() or self:IsInFlyMode() then
+		return false
+	end
+	return oldAlive(self)
+end
+
 -----------------------------
 -- TTT.Roles.GetAlivePlayers
 -----------------------------
@@ -80,9 +88,6 @@ end
 -- Returns:		Table, containning alive players.
 function TTT.Roles.GetAlivePlayers()
 	return table.Filter(player.GetAll(), function(ply)
-		if ply:IsInFlyMode() or ply:IsSpectator() then
-			return false
-		end
 		return ply:Alive()
 	end)
 end
@@ -94,31 +99,19 @@ end
 -- Returns:		Table, all dead players that are not spectators.
 function TTT.Roles.GetDeadPlayers()
 	return table.Filter(player.GetAll(), function(ply)
-		if not ply:Alive() or ply:IsInFlyMode() then
-			return true
-		end
-		return false
+		return not oldAlive(ply) and not ply:IsSpectator()
 	end)
 end
 
 ------------------------------
 -- TTT.Roles.GetActivePlayers
 ------------------------------
--- Desc:		Gets all active players. Active means they are not idle or in always spectate mode.
+-- Desc:		Gets all active players. Active means they are not in always spectate mode.
 -- Returns:		Table, containning active players.
 function TTT.Roles.GetActivePlayers()
 	return table.Filter(player.GetAll(), function(ply)
-		return ply:IsActive()
+		return not ply:IsSpectator()
 	end)
-end
-
--------------------
--- PLAYER:IsActive
--------------------
--- Desc:		Is the player not a spectator.
--- Return:		Boolean, are they active.
-function PLAYER:IsActive()
-	return not self:IsSpectator()
 end
 
 ----------------------
