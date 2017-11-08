@@ -24,7 +24,7 @@ function GM:PlayerSpawn(ply)
 		if ply:IsSpectator() or TTT.Rounds.IsActive() or TTT.Rounds.IsPost() then
 			self:PlayerSpawnAsSpectator(ply)
 		else
-			TTT.Roles.SpawnAsPlayer(ply, true)
+			TTT.Roles.SpawnPlayer(ply, true)
 		end
 	end
 	
@@ -133,7 +133,7 @@ end)
 
 hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	for i, v in ipairs(TTT.Roles.GetDeadPlayers()) do
-		TTT.Roles.ForceSpawn(v) -- Technically the round already started.
+		TTT.Roles.SpawnPlayer(v, true) -- Technically the round already started.
 	end
 	TTT.Roles.PickRoles()
 	TTT.Roles.Sync()
@@ -168,12 +168,12 @@ end)
 
 hook.Add("TTT.Roles.PlayerExittedSpectator", "TTT", function(ply)
 	if not TTT.Rounds.IsActive() or not TTT.Rounds.IsPost() then
-		TTT.Roles.SpawnAsPlayer(ply)
+		TTT.Roles.SpawnPlayer(ply, true)
 		TTT.Player.SetModel(ply)
 	end
 end)
 
-hook.Add("TTT.Roles.PlayerSpawned", "TTT", function(ply, resetSpawn, wasForced)
+hook.Add("TTT.Roles.PlayerSpawned", "TTT", function(ply, resetSpawn, forced)
 	if resetSpawn then
 		TTT.MapHandler.PutPlayerAtRandomSpawnPoint(ply)
 	end

@@ -30,6 +30,19 @@ function PLAYER:IsInFlyMode()
 	return self.ttt_InFlyMode or false
 end
 
+function TTT.Roles.SpawnPlayer(ply, resetspawn, forced)
+	--if not ply:Alive() or forced then
+		ply.ttt_OverrideSpawn = true
+		ply:Spawn()
+		ply.ttt_OverrideSpawn = false
+
+		ply:UnSpectate()
+		ply.ttt_InFlyMode = false
+	--end
+	ply:SetNoDraw(false)
+	hook.Call("TTT.Roles.PlayerSpawned", nil, ply, resetSpawn, forced)
+end
+/*
 ---------------------------
 -- TTT.Roles.SpawnAsPlayer
 ---------------------------
@@ -41,13 +54,13 @@ function TTT.Roles.SpawnAsPlayer(ply, resetSpawn)
 		ply:UnSpectate()
 		ply.ttt_InFlyMode = false
 	end
-	hook.Call("TTT.Roles.PlayerSpawned", nil, ply, false)
+	hook.Call("TTT.Roles.PlayerSpawned", nil, ply, resetSpawn)
 end
 
 ------------------------
 -- TTT.Roles.ForceSpawn
 ------------------------
--- Desc:		Spawns a player mid round.
+-- Desc:		Force spawns a player. Should be used mid-round.
 -- Arg One:		Player, to be spawned.
 -- Arg Two:		Boolean, if true places them at a spawn point.
 function TTT.Roles.ForceSpawn(ply, resetSpawn)
@@ -62,7 +75,7 @@ function TTT.Roles.ForceSpawn(ply, resetSpawn)
 	hook.Call("TTT.Roles.PlayerSpawned", nil, ply, resetSpawn, true)
 	ply:SetNoDraw(false) -- For some reason players spawn with no-draw set. This will undo that.
 end
-
+*/
 ----------------------------
 -- TTT.Roles.SetupSpectator
 ----------------------------

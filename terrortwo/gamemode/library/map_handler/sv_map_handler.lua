@@ -24,7 +24,7 @@ end
 -----------------------------------
 -- Desc:		Returns a table of all spawn entities.
 -- Returns:		Table, just read the damn description.
-local TTT.MapHandler.PlayerSpawnEntities = {		-- Table taken from original TTT code.
+TTT.MapHandler.PlayerSpawnEntities = {		-- Table taken from original TTT code.
 	"info_player_deathmatch",
 	"info_player_combine",
 	"info_player_rebel",
