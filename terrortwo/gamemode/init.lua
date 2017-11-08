@@ -23,14 +23,26 @@ function GM:PlayerSpawn(ply)
 	if ply.ttt_OverrideSpawn ~= true then
 		if ply:IsSpectator() or TTT.Rounds.IsActive() or TTT.Rounds.IsPost() then
 			self:PlayerSpawnAsSpectator(ply)
+			hook.Call("TTT.Player.PostPlayerSpawn", nil, ply, true)
 		else
-			TTT.Roles.SpawnPlayer(ply, true)
+			ply:UnSpectate()
+			ply.ttt_InFlyMode = false
+			ply:SetupHands()					-- Get c_ hands working.
+			hook.Call("TTT.Player.PostPlayerSpawn", nil, ply, false)
 		end
 	end
 	
 	self:PlayerSetModel(ply)
-	ply:SetupHands()					-- Get c_ hands working.
+	self:PlayerLoadout(ply)		-- Doesn't do anything, backwards compatability.
 end
+
+hook.Add("TTT.Player.PostPlayerSpawn", "TTT", function(ply, isSpec)
+	TTT.Weapons.StripCompletely(ply)
+
+	if not isSpec then
+		TTT.Weapons.GiveStarterWeapons(ply)
+	end
+end)
 
 function GM:PlayerSetModel(ply)			-- For backwards compatability.
 	TTT.Player.SetModel(ply)
@@ -41,7 +53,9 @@ function GM:PlayerSpawnAsSpectator(ply)	-- For backwards compatability.
 end
 
 function GM:PlayerDeath(ply)
-
+	ply.ttt_deathpos = ply:GetPos()
+	ply.ttt_deathang = ply:GetAngles()
+	ply.ttt_deathpos_set = true
 end
 
 function GM:PostPlayerDeath(ply)
@@ -133,7 +147,7 @@ end)
 
 hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	for i, v in ipairs(TTT.Roles.GetDeadPlayers()) do
-		TTT.Roles.SpawnPlayer(v, true) -- Technically the round already started.
+		TTT.Roles.ForceSpawnPlayer(v, true) -- Technically the round already started.
 	end
 	TTT.Roles.PickRoles()
 	TTT.Roles.Sync()
@@ -168,22 +182,19 @@ end)
 
 hook.Add("TTT.Roles.PlayerExittedSpectator", "TTT", function(ply)
 	if not TTT.Rounds.IsActive() or not TTT.Rounds.IsPost() then
-		TTT.Roles.SpawnPlayer(ply, true)
+		TTT.Roles.ForceSpawnPlayer(ply, true)
 		TTT.Player.SetModel(ply)
 	end
 end)
 
-hook.Add("TTT.Roles.PlayerSpawned", "TTT", function(ply, resetSpawn, forced)
+hook.Add("TTT.Roles.ForceSpawnedPlayer", "TTT", function(ply, resetSpawn, shouldarm)
 	if resetSpawn then
 		TTT.MapHandler.PutPlayerAtRandomSpawnPoint(ply)
 	end
-	
-	TTT.Weapons.StripCompletely(ply)
-	TTT.Weapons.GiveStarterWeapons(ply)
-end)
-
-hook.Add("TTT.Roles.PlayerSpawnedInFlyMode", "TTT", function(ply)
-	TTT.Weapons.StripCompletely(ply)
+	if shouldarm then
+		TTT.Weapons.StripCompletely(ply)
+		TTT.Weapons.GiveStarterWeapons(ply)
+	end
 end)
 
 ----------------

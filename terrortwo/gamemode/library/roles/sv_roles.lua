@@ -10,6 +10,7 @@ local traitor_percent = CreateConVar("ttt_traitor_percent", "0.25", FCVAR_ARCHIV
 local detective_threshold = CreateConVar("ttt_detective_threshold", "8", FCVAR_ARCHIVE, "There must be at least this many players before there can be detectives.")
 local detective_percent = CreateConVar("ttt_detective_percent", "0.15", FCVAR_ARCHIVE, "Percentage of players that will be detectives.")
 local PLAYER = FindMetaTable("Player")
+local oldAlive = PLAYER.Alive
 
 -- We say flying mode here to not confused being a spectator and spectating with being dead and spectating.
 ------------------------------
@@ -18,75 +19,70 @@ local PLAYER = FindMetaTable("Player")
 -- Desc:		Spawns the player in a flying mode.
 -- Arg One:		Player, to be set as a spectator.
 function TTT.Roles.SpawnInFlyMode(ply)
+	-- If the player is actually dead, spawn them first.
+	if not oldAlive(ply) then
+		ply.ttt_OverrideSpawn = true
+		ply:Spawn()
+		ply.ttt_OverrideSpawn = false
+	end
+
 	if not ply.ttt_InFlyMode then
 		ply:Spectate(OBS_MODE_ROAMING)
 		ply.ttt_InFlyMode = true
 	end
 
-	hook.Call("TTT.Roles.PlayerSpawnedInFlyMode", nil, ply)
+	-- If the player spawns in fly mode after dying as a player, spawm them at their death position.
+	if ply.ttt_deathpos_set then
+		ply:SetPos(ply.ttt_deathpos)
+		ply:SetAngles(ply.ttt_deathang)
+		ply.ttt_deathpos_set = false
+	end
 end
 
+----------------------
+-- PLAYER:IsInFlyMode
+----------------------
+-- Desc:		Is the player in fly mode.
+-- Returns:		Boolean, are they in fly mode.
 function PLAYER:IsInFlyMode()
 	return self.ttt_InFlyMode or false
 end
 
-function TTT.Roles.SpawnPlayer(ply, resetspawn, forced)
-	--if not ply:Alive() or forced then
-		ply.ttt_OverrideSpawn = true
-		ply:Spawn()
-		ply.ttt_OverrideSpawn = false
-
-		ply:UnSpectate()
-		ply.ttt_InFlyMode = false
-	--end
-	ply:SetNoDraw(false)
-	hook.Call("TTT.Roles.PlayerSpawned", nil, ply, resetSpawn, forced)
-end
-/*
----------------------------
--- TTT.Roles.SpawnAsPlayer
----------------------------
--- Desc:		Spawns the player.
--- Arg One:		Player, to spawn as player.
--- Arg Two:		Boolean, if true places them at a spawn point.
-function TTT.Roles.SpawnAsPlayer(ply, resetSpawn)
-	if ply:IsInFlyMode() then
-		ply:UnSpectate()
-		ply.ttt_InFlyMode = false
-	end
-	hook.Call("TTT.Roles.PlayerSpawned", nil, ply, resetSpawn)
-end
-
-------------------------
--- TTT.Roles.ForceSpawn
-------------------------
--- Desc:		Force spawns a player. Should be used mid-round.
+------------------------------
+-- TTT.Roles.ForceSpawnPlayer
+------------------------------
+-- Desc:		Forces a player to spawn.
 -- Arg One:		Player, to be spawned.
--- Arg Two:		Boolean, if true places them at a spawn point.
-function TTT.Roles.ForceSpawn(ply, resetSpawn)
-	if not ply:Alive() then
-		ply.ttt_OverrideSpawn = true
+-- Arg Two:		Boolean, should we reset their spawn position to a map spawn spot.
+-- Arg Three:	Boolean, should we arm the player with the default weapons when they spawn. Optional, true by default.
+function TTT.Roles.ForceSpawnPlayer(ply, resetspawn, shouldarm)
+	if not oldAlive(ply) then
+		local pos = ply:GetPos()
+		local ang = ply:GetAngles()
 		ply:Spawn()
-		ply.ttt_OverrideSpawn = false
+		if not resetspawn then
+			ply:SetPos(pos)
+			ply:SetEyeAngles(ang)
+		end
 	end
 	ply:UnSpectate()
 	ply.ttt_InFlyMode = false
-	
-	hook.Call("TTT.Roles.PlayerSpawned", nil, ply, resetSpawn, true)
-	ply:SetNoDraw(false) -- For some reason players spawn with no-draw set. This will undo that.
+	ply:SetNoDraw(false)
+	hook.Call("TTT.Roles.ForceSpawnedPlayer", nil, ply, resetspawn, shouldarm or true)
 end
-*/
+
 ----------------------------
 -- TTT.Roles.SetupSpectator
 ----------------------------
 -- Desc:		Sees if this player should be a spectator and sets them if they should.
+-- 				Used when a player joins a server with spectate always on.
+-- Arg One:		Player, to setup as spectator.
 function TTT.Roles.SetupSpectator(ply)
 	if ply:IsSpectator() then
 		ply:SetRole(ROLE_SPECTATOR)
 	end
 end
 
-local oldAlive = PLAYER.Alive
 function PLAYER:Alive()
 	if self:IsSpectator() or self:IsInFlyMode() then
 		return false
