@@ -181,7 +181,8 @@ hook.Add("TTT.Roles.PlayerBecameSpectator", "TTT", function(ply)
 end)
 
 hook.Add("TTT.Roles.PlayerExittedSpectator", "TTT", function(ply)
-	if not TTT.Rounds.IsActive() or not TTT.Rounds.IsPost() then
+	print(TTT.Rounds.IsPost())
+	if not TTT.Rounds.IsActive() and not TTT.Rounds.IsPost() then
 		TTT.Roles.ForceSpawnPlayer(ply, true)
 		TTT.Player.SetModel(ply)
 	end
