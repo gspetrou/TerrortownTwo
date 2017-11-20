@@ -12,17 +12,20 @@ local ammo_colors = {
 }
 
 TTT.VGUI.ttt_hud_alive_scale = 5.5
+TTT.VGUI.ttt_hud_alive_alpha = 220
 TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 	local scale_w, scale_h = math_min(math_floor(w/TTT.VGUI.ttt_hud_alive_scale), 300), math_min(math_floor(h/TTT.VGUI.ttt_hud_alive_scale), 150)
+	local alpha = TTT.VGUI.ttt_hud_alive_alpha
+	local alpha_text = TTT.VGUI.ttt_hud_alive_alpha * 1.2
 
 	local bar_w = scale_w - 6
 	local bar_h = (scale_h - 12)/3
 	local bar_pos_x = 8
 	local bar_pos_y = h - 2 - scale_h
 
-	surface_SetTextColor(255, 255, 255)
+	surface_SetTextColor(255, 255, 255, alpha_text)
 
-	surface_SetDrawColor(35, 35, 40)
+	surface_SetDrawColor(35, 35, 40, alpha)
 	surface_DrawRect(5, bar_pos_y - 3, scale_w, bar_h*3 + 12)
 
 	-- Role and Time
@@ -31,7 +34,7 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 	local text_w, text_h = surface_GetTextSize(time)
 	local role_col = TTT.Roles.Colors[ply:GetRole()]
 	local role_x, role_w = bar_pos_x + text_w + 3, bar_w - text_w - 3
-	surface_SetDrawColor(role_col.r, role_col.g, role_col.b)
+	surface_SetDrawColor(role_col.r, role_col.g, role_col.b, alpha)
 	surface_DrawRect(role_x, bar_pos_y, role_w, bar_h)
 
 	-- Time
@@ -54,9 +57,9 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 	text_w, text_h = surface_GetTextSize(hp)
 
 	bar_pos_y = bar_pos_y + bar_h + 3
-	surface_SetDrawColor(health_colors.bg[1], health_colors.bg[2], health_colors.bg[3])
+	surface_SetDrawColor(health_colors.bg[1], health_colors.bg[2], health_colors.bg[3], alpha)
 	surface_DrawRect(bar_pos_x, bar_pos_y, bar_w, bar_h)
-	surface_SetDrawColor(health_colors.fg[1], health_colors.fg[2], health_colors.fg[3])
+	surface_SetDrawColor(health_colors.fg[1], health_colors.fg[2], health_colors.fg[3], alpha)
 	surface_DrawRect(bar_pos_x, bar_pos_y, bar_w * math_Clamp(hp/100, 0, 1), bar_h)
 
 	surface_SetTextPos(bar_pos_x + bar_w - text_w - 3, bar_pos_y + bar_h/2 - text_h/2)
@@ -69,9 +72,9 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 		local storedAmmo = wep:Ammo1()
 
 		bar_pos_y = bar_pos_y + bar_h + 3
-		surface_SetDrawColor(ammo_colors.bg[1], ammo_colors.bg[2], ammo_colors.bg[3])
+		surface_SetDrawColor(ammo_colors.bg[1], ammo_colors.bg[2], ammo_colors.bg[3], alpha)
 		surface_DrawRect(bar_pos_x, bar_pos_y, bar_w, bar_h)
-		surface_SetDrawColor(ammo_colors.fg[1], ammo_colors.fg[2], ammo_colors.fg[3])
+		surface_SetDrawColor(ammo_colors.fg[1], ammo_colors.fg[2], ammo_colors.fg[3], alpha)
 		surface_DrawRect(bar_pos_x, bar_pos_y, bar_w * math_Clamp(clipAmmo/wep.Primary.ClipSize, 0, 1), bar_h)
 
 		local ammoText = clipAmmo

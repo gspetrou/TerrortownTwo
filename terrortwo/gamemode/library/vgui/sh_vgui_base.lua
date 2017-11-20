@@ -10,6 +10,12 @@ if CLIENT then
 		weight = 800
 	})
 
+	surface.CreateFont("TTT_WeaponSwitchText", {
+		font = "Trebuchet22",
+		size = 22,
+		weight = 800
+	})
+
 	-----------------------
 	-- TTT.VGUI.AddElement
 	-----------------------
@@ -58,6 +64,7 @@ end
 -----------------------
 -- TTT.VGUI.Initialize
 -----------------------
+-- Protip:		If you're working on your own HUD, rather than constantly changing maps simply call this function to refresh your HUD.
 function TTT.VGUI.Initialize()
 	-- Load files in addons/library/vgui/vgui.
 	local path = "library/vgui/vgui/"

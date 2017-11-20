@@ -8,6 +8,11 @@ function GM:InitPostEntity()
 	TTT.Roles.InitializeSpectator()
 end
 
+-- I hooked onto PlayerBindPress this way rather than through the GM table so that other addons can easily disable this.
+hook.Add("PlayerBindPress", "TTT", function(ply, bind, pressed)
+	return TTT.VGUI.WeaponSwitcherHandler(ply, bind, pressed)
+end)
+
 ------------
 -- UI Hooks
 ------------
