@@ -78,14 +78,33 @@ end
 -- Desc:		Gets a phrase that is translated to the player's currently set language.
 -- Arg One:		String, phrase ID.
 -- Arg Two:		Varag, wherever there is a %s in the returned string it will be substituted here.
+-- Returns:		String. Phrase in the clients languages. If that phrase isn't valid in the clients language then it returns it in english.
+-- 				If that phrase is not valid in english either it simply returns the original phrase.
 function TTT.Languages.GetPhrase(phrase, ...)
-	local p = TTT.Languages.GetTable()[phrase] or "bork"
+	local p = TTT.Languages.GetTable()[phrase]
+	if not p and TTT.Languages.IsValid("english") then
+		p = TTT.Languages.Languages["english"][phrase] or phrase
+	end
 
 	if ... then
 		p = string.format(p, ...)
 	end
 
 	return p
+end
+
+---------------------------
+-- TTT.Languages.AddPhrase
+---------------------------
+-- Desc:		Adds a new phrase to a given language. You'll need to call this every map change since its not permanent.
+-- Arg One:		String, id for the phrase you are adding.
+-- Arg Two:		String, language ID for the language you want to add this phrase to. Run the command 'ttt_language_list' if you're unsure.
+-- Arg Three:	String, the translated text. Can include values that will later be formated by string.format.
+function TTT.Languages.AddPhrase(phrase_id, lang, translation)
+	if not TTT.Languages.IsValid(lang) then
+		error("Attempted to add phrase '"..phrase_id.."' to invalid language '"..lang"'.")
+	end
+	TTT.Languages.Languages[lang][phrase_id] = translation
 end
 
 net.Receive("TTT.Languages.ServerDefault", function()
