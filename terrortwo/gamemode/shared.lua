@@ -48,6 +48,9 @@ GM.Website = "N/A"
 TTT.Version = 20171207					-- YearMonthDay
 DEFINE_BASECLASS("gamemode_base")
 
+hook.Add("TTT.PreLibraryLoaded", "TTT", function()
+	hook.Remove("PlayerTick", "TickWidgets")	-- Why does this even run on the base gamemode.
+
 	if SERVER then
 		TTT.Library.InitSQL()
 	end
@@ -63,15 +66,13 @@ function GM:Initialize()
 	TTT.VGUI.Initialize()				-- Get their HUDs working.
 
 	if SERVER then
+		RunConsoleCommand("mp_friendlyfire", "1")	-- Enables lag compensation.
 		TTT.Player.Initialize()	-- Select the player models for the map.
+	else
+		TTT.Scoreboard.Initialize()
 	end
 	
 	TTT.Rounds.Initialize()				-- Begin the round managing system.
-end
-
--- This is for auto-refresh to work.
-if TTT.LibrariesInitiallyLoaded then
-	TTT.Library.Initialize()
 end
 
 ---------------
@@ -90,6 +91,6 @@ end)
 ------------------
 -- Movement Hooks
 ------------------
-function GM:SetupMove(ply, mv, cmd)
-	TTT.Player.SetupMovement(ply, mv, cmd)
+function GM:SetupMove(ply, mv)
+	TTT.Player.SetupMovement(ply, mv)
 end

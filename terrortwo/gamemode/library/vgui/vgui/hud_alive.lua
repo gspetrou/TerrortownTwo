@@ -67,9 +67,9 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 
 	-- Ammo
 	local wep = ply:GetActiveWeapon()
-	if IsValid(wep) then
+	if IsValid(wep) and istable(wep.Primary) then	-- We check wep.Primary because it might be a weapon written in C++. (weapon_physgun)
 		local clipAmmo = wep:Clip1()
-		local storedAmmo = wep:Ammo1()
+		local storedAmmo = wep.Ammo1 and wep:Ammo1() or false
 
 		bar_pos_y = bar_pos_y + bar_h + 3
 		surface_SetDrawColor(ammo_colors.bg[1], ammo_colors.bg[2], ammo_colors.bg[3], alpha)

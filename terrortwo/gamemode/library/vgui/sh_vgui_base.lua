@@ -20,7 +20,7 @@ if CLIENT then
 	-- TTT.VGUI.AddElement
 	-----------------------
 	-- Desc:		Adds a hud element.
-	-- Arg One:		String. Unique, simple, name for the panel.
+	-- Arg One:		String. A unique and simple name for the panel.
 	-- Arg Two:		Function, what should we draw. Called with the localplayer, screen width, and screen height as arguements.
 	-- Arg Three:	Function, called to see if this panel should be drawn. First arguement of this function is the localplayer.
 	function TTT.VGUI.AddElement(name, func, condition)

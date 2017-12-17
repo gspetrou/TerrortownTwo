@@ -20,6 +20,7 @@ function GM:PlayerInitialSpawn(ply)
 	TTT.Library.InitPlayerSQLData(ply)
 	TTT.Roles.SetupAlwaysSpectate(ply)
 	TTT.Languages.SendDefaultLanguage(ply)
+	TTT.Player.SetSpeeds(ply)
 end
 
 function GM:PlayerSpawn(ply)
@@ -91,6 +92,11 @@ function GM:CanPlayerSuicide(ply)
 	if ply:Alive() then
 		return true
 	end
+	return false
+end
+
+-- Disallow player taunting.
+function GM:PlayerShouldTaunt()
 	return false
 end
 
@@ -207,6 +213,11 @@ end)
 function GM:PlayerCanPickupWeapon(ply, wep)
 	if not IsValid(ply) or not ply:Alive() then
 		return false
+	end
+
+	-- This may be useful for some people at some point.
+	if wep:GetClass() == "weapon_physgun" then
+		return not ply:HasWeapon("weapon_physgun")
 	end
 
 	if wep.Kind == nil then

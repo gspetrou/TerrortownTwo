@@ -64,6 +64,8 @@ end
 -- Desc:		Gets a random spawn point entity for the player that is safe to spawn at (E.g. nothing blocking it).
 -- Returns:		Entity, the spawn point.
 function TTT.MapHandler.GetRandomSpawnPoint()
+	math.randomseed(os.time())
+
 	local spawnpoints = TTT.MapHandler.GetSpawnEntities()
 	local spawn, index = table.RandomSequential(spawnpoints)
 	table.remove(spawnpoints, index)
