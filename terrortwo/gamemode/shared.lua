@@ -45,10 +45,15 @@ GM.Name = "Trouble in Terrorist Town Two"
 GM.Author = "George 'Stalker' Petrou"
 GM.Email = "N/A"
 GM.Website = "N/A"
-TTT.Version = 20170606					-- YearMonthDay
+TTT.Version = 20171207					-- YearMonthDay
 DEFINE_BASECLASS("gamemode_base")
 
-GM:LoadLibraries()
+	if SERVER then
+		TTT.Library.InitSQL()
+	end
+end)
+
+GM:LoadLibraries()	-- Load the gamemode's library. Also gets called on auto-refresh to reload library.
 
 --------------------------
 -- General Gamemode Hooks

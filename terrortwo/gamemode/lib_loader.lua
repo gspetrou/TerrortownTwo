@@ -1,36 +1,6 @@
-TTT = TTT or {}
+-- This file loads the library loader and makes some useful debug functions.
 TTT.Library = TTT.Library or {}
 TTT.Debug = TTT.Debug or {}
-
--- Thanks TTT.
-TTT.Colors = {
-	Dead		= Color(90, 90, 90, 230),
-	Innocent	= Color(39, 174, 96, 230),
-	Detective	= Color(41, 128, 185, 230),
-	Traitor		= Color(192, 57, 43, 230),
-	PunchYellow	= Color(205, 155, 0),
-
-	White		= Color(255, 255, 255),
-	Black		= Color(0, 0, 0),
-	Green		= Color(0, 255, 0),
-	DarkGreen	= Color(0, 100, 0),
-	Red			= Color(255, 0, 0),
-	Yellow		= Color(200, 200, 0),
-	LightGray	= Color(200, 200, 200),
-	Blue		= Color(0, 0, 255),
-	Navy		= Color(0, 0, 100),
-	Pink		= Color(255, 0, 255),
-	Orange		= Color(250, 100, 0),
-	Olive		= Color(100, 100, 0)
-}
-
-if not file.IsDir("ttt", "DATA") then
-	file.CreateDir("ttt")			-- Create a data folder to store anything we may want to later.
-end
-
-function GM:LoadLibraries()
-	TTT.Library.Initialize()			-- Load the libraries.
-end
 
 -------------------------
 -- TTT.Debug.IsDebugMode
@@ -62,6 +32,31 @@ function TTT.Debug.Print(text)
 	end
 end
 
+-----------------------
+-- TTT.Library.InitSQL
+-----------------------
+-- Desc:		Checks and creates the SQL table for the gamemode if need be.
+function TTT.Library.InitSQL()
+	sql.Query([[CREATE TABLE IF NOT EXISTS `ttt` (
+		`id` INT UNSIGNED,
+		`karma` INT,
+		`is_spec` BOOL,
+		PRIMARY KEY (id)
+	);]])
+end
+
+---------------------------------
+-- TTT.Library.InitPlayerSQLData
+---------------------------------
+-- Desc:		Initializes the given player's row in the SQL table.
+-- Player:		Player to initialize in the SQL table.
+function TTT.Library.InitPlayerSQLData(ply)
+	local result = sql.Query("SELECT * from `ttt` WHERE id=".. sql.SQLStr(ply:SteamID64()) ..";")
+	if not result then
+		sql.Query("INSERT INTO ttt (id, karma, is_spec) VALUES (".. sql.SQLStr(ply:SteamID64()) ..", ".. 1000 ..", ".. 0 ..");")
+	end
+end
+
 -------------------------
 -- TTT.Library.SetupFile
 -------------------------
@@ -90,12 +85,12 @@ end
 --------------------------
 -- TTT.Library.Initialize
 --------------------------
--- Desc:		Loads the library folder containning the library used by the gamemode. Loads util.lua first.
+-- Desc:		Loads the library folder containning the library used by the gamemode.
 function TTT.Library.Initialize()
 	local rootPath = GM.FolderName.."/gamemode/library/"
-	TTT.Library.SetupFile(rootPath .."util.lua")
-
 	local miscFiles, folders = file.Find(rootPath .."*", "LUA")
+
+	-- Load misc files in library/
 	for i, v in ipairs(miscFiles) do
 		if v:sub(1, 1) ~= "_" then
 			TTT.Library.SetupFile(rootPath .. v, v:sub(1, 3))
@@ -104,6 +99,7 @@ function TTT.Library.Initialize()
 		end
 	end
 
+	-- Load files inside folder of library/
 	for i, v in ipairs(folders) do
 		local rootPathAndFolder = rootPath .. v
 		local files = file.Find(rootPathAndFolder .."/*.lua", "LUA")
@@ -113,7 +109,15 @@ function TTT.Library.Initialize()
 			TTT.Debug.Print("Loaded libary file '".. rootPathAndFolder .."/".. d .."'.")
 		end
 	end
+end
 
-	hook.Call("TTT.PostLibariesLoaded")
-	TTT.LibrariesInitiallyLoaded = true
+function GM:LoadLibraries()
+	if not file.IsDir("ttt", "DATA") then
+		file.CreateDir("ttt")			-- Create a data folder to store anything we may want to later.
+	end
+	
+	hook.Call("TTT.PreLibraryLoaded")
+	TTT.Library.Initialize()			-- Load the libraries.
+	TTT.LibraryInitialized = true
+	hook.Call("TTT.PostLibraryLoaded")
 end

@@ -1,4 +1,5 @@
-include("library/_prelib.lua")	-- Will load the library for us.
+include("util.lua")			-- Mini utility library to load beforehand and be used throughought the gamemode.
+include("lib_loader.lua")	-- Loads the library loader
 include("shared.lua")
 
 --------------------------

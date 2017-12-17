@@ -1,3 +1,28 @@
+-- This is a small utility library loaded before the gamemode's library and used throughout the gamemode.
+TTT = TTT or {}	-- Used for almost everything.
+
+-- Thanks TTT.
+TTT.Colors = {
+	Dead		= Color(90, 90, 90, 230),
+	Innocent	= Color(39, 174, 96, 230),
+	Detective	= Color(41, 128, 185, 230),
+	Traitor		= Color(192, 57, 43, 230),
+	PunchYellow	= Color(205, 155, 0),
+
+	White		= Color(255, 255, 255),
+	Black		= Color(0, 0, 0),
+	Green		= Color(0, 255, 0),
+	DarkGreen	= Color(0, 100, 0),
+	Red			= Color(255, 0, 0),
+	Yellow		= Color(200, 200, 0),
+	LightGray	= Color(200, 200, 200),
+	Blue		= Color(0, 0, 255),
+	Navy		= Color(0, 0, 100),
+	Pink		= Color(255, 0, 255),
+	Orange		= Color(250, 100, 0),
+	Olive		= Color(100, 100, 0)
+}
+
 -------------------
 -- net.WritePlayer
 -------------------
@@ -77,4 +102,17 @@ end
 function table.RandomSequential(tbl)
 	local i = math.random(1, #tbl)
 	return tbl[i], i
+end
+
+------------------
+-- table.SortCopy
+------------------
+-- Desc:		Same as table.sort but returns a copy rather than modifying the original table.
+-- Arg One:		Table, to be copied and then sorted.
+-- Arg Two:		Function, to sort table by. Same setup as table.sort's second arguement.
+-- Returns:		Table, sorted copy of the given table.
+function table.SortCopy(original, sortFunc)
+	local tbl = original
+	table.sort(tbl, sortFunc)
+	return tbl
 end

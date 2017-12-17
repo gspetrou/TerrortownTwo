@@ -1,6 +1,9 @@
-AddCSLuaFile("library/_prelib.lua")	-- Will load the library
-include("library/_prelib.lua")
+AddCSLuaFile("util.lua")		-- Mini utility library to load beforehand and be used throughought the gamemode.
+AddCSLuaFile("lib_loader.lua")	-- Loads the library loader
 AddCSLuaFile("shared.lua")
+
+include("util.lua")
+include("lib_loader.lua")
 include("shared.lua")
 
 -----------------
