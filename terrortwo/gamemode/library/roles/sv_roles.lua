@@ -2,7 +2,7 @@
 util.AddNetworkString("TTT.Roles.SyncTraitors")
 util.AddNetworkString("TTT.Roles.Sync")
 util.AddNetworkString("TTT.Roles.Clear")
-util.AddNetworkString("TTT.Roles.ChangedSpectatorMode")
+util.AddNetworkString("TTT.Roles.SpectatorModeChange")
 util.AddNetworkString("TTT.Roles.PlayerSwitchedRole")
 
 -- Setup the convars.
@@ -12,7 +12,7 @@ local detective_percent = CreateConVar("ttt_detective_percent", "0.15", FCVAR_AR
 local PLAYER = FindMetaTable("Player")
 local oldAlive = PLAYER.Alive
 
--- We say flying mode here to not confused being a spectator and spectating with being dead and spectating.
+-- Being dead and spectating is called fly mode. Being a spectator and spectating is called being a spectator.
 ------------------------------
 -- TTT.Roles.SpawnInFlyMode
 ------------------------------
@@ -71,18 +71,6 @@ function TTT.Roles.ForceSpawnPlayer(ply, resetspawn, shouldarm)
 	hook.Call("TTT.Roles.ForceSpawnedPlayer", nil, ply, resetspawn, shouldarm or true)
 end
 
-----------------------------
--- TTT.Roles.SetupSpectator
-----------------------------
--- Desc:		Sees if this player should be a spectator and sets them if they should.
--- 				Used when a player joins a server with spectate always on.
--- Arg One:		Player, to setup as spectator.
-function TTT.Roles.SetupSpectator(ply)
-	if ply:IsSpectator() then
-		ply:SetRole(ROLE_SPECTATOR)
-	end
-end
-
 function PLAYER:Alive()
 	if self:IsSpectator() or self:IsInFlyMode() then
 		return false
@@ -123,28 +111,44 @@ function TTT.Roles.GetActivePlayers()
 	end)
 end
 
-----------------------
--- PLAYER:IsSpectator
-----------------------
--- Desc:		Checks if the player is a spectator.
--- Returns:		Boolean, are they a spectator.
-function PLAYER:IsSpectator()
-	if self.ttt_IsSpectator ~= nil then
-		return self.ttt_IsSpectator
+---------------------------------
+-- TTT.Roles.SetupAlwaysSpectate
+---------------------------------
+-- Desc:		Sees if the player has always spectate enabled on this server, and if they do make them a spectator.
+-- Arg One:		Player, to see if they should be a spectator.
+function TTT.Roles.SetupAlwaysSpectate(ply)
+	local q = sql.Query("SELECT `is_spec` from `ttt` WHERE id=".. sql.SQLStr(ply:SteamID64()) ..";")[1].is_spec
+	local should_spec = q == "1" and true or false
+	if should_spec then
+		ply:SetRole(ROLE_SPECTATOR)
+	else
+		ply:SetRole(ROLE_WAITING)
 	end
-	return true
 end
 
-net.Receive("TTT.Roles.ChangedSpectatorMode", function(_, ply)
-	local wants_spec = net.ReadBool()
-	if wants_spec then
+---------------------------
+-- TTT.Roles.MakeSpectator
+---------------------------
+-- Desc:		Makes the player into a spectator or takes them out if they do not want to be.
+-- Arg One:		Player, to change spectator status of.
+-- Arg Two:		Boolean, true to make them a spectator. False to remove their spectator.
+function TTT.Roles.MakeSpectator(ply, is_spec)
+	local id = sql.SQLStr(ply:SteamID64())
+	local sql_is_spec = is_spec and "1" or "0"
+	sql.Query("UPDATE `ttt` SET is_spec = ".. sql_is_spec .." WHERE id = ".. id ..";")
+
+	if is_spec then
 		ply:ForceSpectator()
-		ply.ttt_IsSpectator = true
 		hook.Call("TTT.Roles.PlayerBecameSpectator", nil, ply)
 	else
 		ply:ForceWaiting()
-		ply.ttt_IsSpectator = false
 		hook.Call("TTT.Roles.PlayerExittedSpectator", nil, ply)
+	end
+end
+
+net.Receive("TTT.Roles.SpectatorModeChange", function(_, ply)
+	if IsValid(ply) then
+		TTT.Roles.MakeSpectator(ply, not ply:IsSpectator())
 	end
 end)
 
@@ -292,11 +296,12 @@ function TTT.Roles.PickRoles()
 	local traitors = {}
 	local detectives = {}
 
+	math.randomseed(os.time())
+
 	-- Pick traitors.
 	do
 		local players = TTT.Roles.GetWaiting()
 		local needed_players = math.max(1, math.floor(#players * traitor_percent:GetFloat()))
-		math.randomseed(os.time())
 
 		for i = 1, needed_players do
 			local ply_index = math.random(1, #players)
@@ -320,7 +325,6 @@ function TTT.Roles.PickRoles()
 		local players = TTT.Roles.GetWaiting()
 		if #players >= detective_threshold:GetInt() then
 			local needed_players = math.max(1, math.floor(#players * detective_percent:GetFloat()))
-			math.randomseed(os.time())
 
 			for i = 1, needed_players do
 				local ply_index = math.random(1, #players)

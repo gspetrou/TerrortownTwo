@@ -1,4 +1,5 @@
 TTT.Roles = TTT.Roles or {}
+local PLAYER = FindMetaTable("Player")
 
 -- TTT2 treats spectators differently than TTT. Here spectators are only people with
 -- ttt_always_spectator enabled. Dead players are just dead traitors/detectives/innocents.
@@ -17,8 +18,6 @@ TTT.Roles.Colors = {
 	[ROLE_DETECTIVE] = TTT.Colors.Detective,
 	[ROLE_TRAITOR] = TTT.Colors.Traitor
 }
-
-local PLAYER = FindMetaTable("Player")
 
 ------------------
 -- PLAYER:SetRole

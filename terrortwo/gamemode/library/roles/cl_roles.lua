@@ -1,28 +1,15 @@
 TTT.Roles = TTT.Roles or {}
 
--------------------------------------
--- ConVar:		ttt_always_spectator
--------------------------------------
--- Desc:		Puts the player into spectator mode. Won't ever spawn in, just spectates.
--- Arg One:		Number boolean, 0 or 1 to toggle the convar.
-local always_spec = CreateClientConVar("ttt_always_spectator", "0", true, false, "Setting this to true will always make you a spectator.")
-cvars.AddChangeCallback("ttt_always_spectator", function(_, _, newval)
-	newval = newval == "1" and true or false
-	
-	net.Start("TTT.Roles.ChangedSpectatorMode")
-		net.WriteBool(newval)
+-- This command will switch the player between spectator and not spectator.
+concommand.Add("ttt_always_spectator", function(ply)
+	net.Start("TTT.Roles.SpectatorModeChange")
 	net.SendToServer()
 end)
 
----------------------------------
--- TTT.Roles.InitializeSpectator
----------------------------------
--- Desc:		Tell's the server what this player's spectator state is.
-function TTT.Roles.InitializeSpectator()
-	local isspec = always_spec:GetString() == "1" and true or false
-	net.Start("TTT.Roles.ChangedSpectatorMode")
-		net.WriteBool(isspec)
-	net.SendToServer()
+local PLAYER = FindMetaTable("Player")
+local oldAlive = PLAYER.Alive
+function PLAYER:Alive()
+	return not self:IsSpectator() and oldAlive(self)
 end
 
 ------------------------
