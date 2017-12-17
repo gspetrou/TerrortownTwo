@@ -14,7 +14,8 @@ end
 -- Player Hooks
 ----------------
 function GM:PlayerInitialSpawn(ply)
-	TTT.Roles.SetupSpectator(ply)
+	TTT.Library.InitPlayerSQLData(ply)
+	TTT.Roles.SetupAlwaysSpectate(ply)
 	TTT.Languages.SendDefaultLanguage(ply)
 end
 

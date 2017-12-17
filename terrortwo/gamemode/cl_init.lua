@@ -4,13 +4,16 @@ include("shared.lua")
 --------------------------
 -- General Gamemode Hooks
 --------------------------
-function GM:InitPostEntity()
-	TTT.Roles.InitializeSpectator()
-end
-
 -- I hooked onto PlayerBindPress this way rather than through the GM table so that other addons can easily disable this.
 hook.Add("PlayerBindPress", "TTT", function(ply, bind, pressed)
 	return TTT.VGUI.WeaponSwitcherHandler(ply, bind, pressed)
+end)
+
+-- If a player joins mid round, make them a spectator. This will last till the next role sync, usually when the round is over.
+hook.Add("OnEntityCreated", "TTT", function(ent)
+	if ent:IsPlayer() and TTT.Rounds.IsActive() then
+		ent:SetRole(ROLE_SPECTATOR)
+	end
 end)
 
 ------------
