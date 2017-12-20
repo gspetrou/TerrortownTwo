@@ -143,7 +143,12 @@ function TTT.Languages.LoadLanguages()
 				AddCSLuaFile(root .. v)
 				TTT.Languages.Languages[filename] = true
 			else
-				TTT.Languages.Languages[filename] = include(root .. v)
+				local oldL = L
+				L = {}
+				include(root .. v)
+				
+				TTT.Languages.Languages[filename] = L
+				L = oldL
 			end
 			TTT.Languages.NWLang[filename] = idnum
 		end

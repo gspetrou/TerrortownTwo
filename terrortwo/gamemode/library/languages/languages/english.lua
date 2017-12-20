@@ -1,5 +1,3 @@
-local L = {}
-
 L.LanguageName = "English"
 
 L.innocent = "Innocent"
@@ -28,5 +26,3 @@ L.sb_role = "Role"
 L.sb_sort_by = "Sort By"
 
 L.invalid = "bork" -- This is used for any invalid text.
-
-return L
