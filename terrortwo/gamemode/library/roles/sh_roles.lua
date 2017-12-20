@@ -3,8 +3,8 @@ local PLAYER = FindMetaTable("Player")
 
 -- TTT2 treats spectators differently than TTT. Here spectators are only people with
 -- ttt_always_spectator enabled. Dead players are just dead traitors/detectives/innocents.
-ROLE_WAITING	= 0
-ROLE_SPECTATOR	= 1
+ROLE_WAITING	= 1
+ROLE_SPECTATOR	= 2
 ROLE_UNKNOWN	= 3
 ROLE_INNOCENT	= 4
 ROLE_DETECTIVE	= 5

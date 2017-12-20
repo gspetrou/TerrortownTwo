@@ -64,7 +64,7 @@ net.Receive("TTT.Roles.Sync", function()
 	-- Any player without a role, set to unknown
 	for i, v in ipairs(player.GetAll()) do
 		if v:IsWaiting() then
-			v:SetRole(ROLE_UKNOWN)
+			v:SetRole(ROLE_UNKNOWN)
 		end
 	end
 
