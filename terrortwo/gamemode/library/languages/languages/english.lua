@@ -23,6 +23,9 @@ L.sb_missing = "Missing in Action"
 L.sb_dead = "Confirmed Dead"
 L.sb_spectators = "Spectators"
 L.sb_playingon = "You are playing on..."
+L.sb_name = "Name"
+L.sb_role = "Role"
+L.sb_sort_by = "Sort By"
 
 L.invalid = "bork" -- This is used for any invalid text.
 

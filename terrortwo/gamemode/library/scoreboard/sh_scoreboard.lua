@@ -1,16 +1,49 @@
+CreateConVar("ttt_scoreboard_highlight_admins", "1", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Will admins be highlighted in the scoreboard.")
+if SERVER then do return end end
+
 TTT.Scoreboard = TTT.Scoreboard or {}
 TTT.Scoreboard.Columns = TTT.Scoreboard.Columns or {}
 TTT.Scoreboard.Groups = TTT.Scoreboard.Groups or {}
-TTT.Scoreboard.RowHeight = 24
+TTT.Scoreboard.ExtraSortingOptions = TTT.Scoreboard.ExtraSortingOptions or {}
+
+concommand.Add("ttt_scoreboard_list_sorting", function()
+	Msg("Sorting options are as listed: name role ")
+	for i, v in ipairs(TTT.Scoreboard.Columns) do
+		if isfunction(v.sortFunc) then
+			Msg(v.id.." ")
+		end
+	end
+	Msg("\n")
+end)
+
+surface.CreateFont("cool_large", {
+	font = "coolvetica",
+	size = 24,
+	weight = 400
+})
+surface.CreateFont("cool_small", {
+	font = "coolvetica",
+	size = 20,
+	weight = 400
+})
+surface.CreateFont("treb_small", {
+	font = "Trebuchet18",
+	size = 14,
+	weight = 700
+})
 
 -- I've been dreading writing this module since I started this project. Here we go...
 
 function TTT.Scoreboard.Initialize()
-	hook.Call("TTT.Scoreboard.InitializeColumns", nil, self)
-	hook.Call("TTT.Scoreboard.InitializeGroups", nil, self)
+	TTT.Scoreboard.Columns = {}
+	TTT.Scoreboard.Groups = {}
+	TTT.Scoreboard.ExtraSortingOptions = {}
+
+	hook.Call("TTT.Scoreboard.InitializeItems", nil, self)
 
 	table.sort(TTT.Scoreboard.Groups, function(a, b) return a.order < b.order end)
-	table.sort(TTT.Scoreboard.Columns, function(a, b) return a.order < b.order end)
+	table.sort(TTT.Scoreboard.Columns, function(a, b) return a.order > b.order end)
+	table.sort(TTT.Scoreboard.ExtraSortingOptions, function(a, b) return a.order < b.order end)
 end
 
 -----------------------
@@ -18,8 +51,11 @@ end
 -----------------------
 -- Desc:		Opens the scoreboard for the client.
 function TTT.Scoreboard.Open()
-	gui.EnableScreenClicker(true)
+	if IsValid(TTT.Scoreboard.Scoreboard) then
+		TTT.Scoreboard.Scoreboard:Remove()
+	end
 	TTT.Scoreboard.Scoreboard = vgui.Create("TTT.Scoreboard")
+	gui.EnableScreenClicker(true)	-- We could use PANEL.MakePopup instead but you can start walking with the scoreboard open this way.
 end
 
 -----------------------
@@ -54,13 +90,18 @@ end
 -- Arg Five:	Function, used to obtain the data to display for the player in that column.
 -- 				Arg One:	Player
 -- 				Return:		Number/String to display for that player in that column.
-function TTT.Scoreboard.AddColumn(col_id, lbl_id, wth, ordr, fn)
+-- Arg Six:		(Optional) Function, used to sort the players by this specific column. If set to nil or false, this row won't be sortable.
+-- 				Arg One:	Player A, to sort.
+-- 				Arg Two:	Player B, to compare with player A for sorting.
+-- 				Return:		Boolean, should player A come before player B.
+function TTT.Scoreboard.AddColumn(col_id, lbl_id, wth, ordr, fn, sortFn)
 	table.insert(TTT.Scoreboard.Columns, {
 		id = col_id,
-		label = TTT.Languages.GetPhrase(lbl_id),
+		label = lbl_id,
 		width = wth or 50,
 		order = ordr or 0,	-- Anything 0 or less means we don't care.
-		func = fn
+		func = fn,
+		sortFunc = sortFn or false
 	})
 end
 
@@ -72,14 +113,25 @@ end
 -- Arg Two:		String, language phrase that will be translated into the user's langauge. Label of the group.
 -- Arg Three:	(Optional) Number, order this should show up. 1 means top most, anything bigger moves more to the bottom.
 -- 				If this arg is nil or is a number that is 0 or less it will just be tacked on at the bottom.
--- Arg Four:	Function, used to decide what players should be listed under this group.
+-- Arg Four:	(Optional) Color, for the header of the group. Transparent if left blank.
+-- Arg Five:	Function, used to decide what players should be listed under this group.
 -- 				Arg One: 	Player
 -- 				Return:		Boolean, should they be displayed in this group.
-function TTT.Scoreboard.AddGroup(group_id, lbl_id, ordr, fn)
+function TTT.Scoreboard.AddGroup(group_id, lbl_id, ordr, col, fn)
 	table.insert(TTT.Scoreboard.Groups, {
 		id = group_id,
-		label = TTT.Languages.GetPhrase(lbl_id),
+		label = lbl_id,
 		order = ordr or 0,	-- Anything 0 or less means we don't care.
+		color = col or Color(255, 255, 255, 0),
 		func = fn
+	})
+end
+
+function TTT.Scoreboard.AddExtraSortingOption(sort_id, phr, ordr, sorter)
+	table.insert(TTT.Scoreboard.ExtraSortingOptions, {
+		id = sort_id,
+		phrase = phr,
+		order = ordr,
+		sortFunc = sorter
 	})
 end
