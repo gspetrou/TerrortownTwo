@@ -81,7 +81,9 @@ hook.Add("TTT.Scoreboard.InitializeItems", "TTT", function(panel)
 	-- GROUPS
 	------------
 	TTT.Scoreboard.AddGroup("terrorists", "sb_terrorists", 10, Color(40, 200, 40, 100), function(ply)
-		return ply:IsAlive()
+		return ply:Alive()
+	end, function(pnl, ply)
+		--
 	end)
 /*
 	--TTT.Scoreboard.AddGroup("missing", "sb_missing", 20, Color(130, 190, 130, 100), function(ply) return false end)

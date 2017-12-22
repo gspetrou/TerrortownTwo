@@ -58,7 +58,6 @@ function PANEL:Init()
 		end
 	end
 
-	self.LastNumPlayers = player.GetCount()
 	self:UpdateScoreboard()	-- Populate the groups and then sort them.
 	self:StartUpdateTimer()	-- Start a timer to update the scoreboard info while its open.
 end
@@ -194,6 +193,7 @@ function PANEL:AddGroup(data)
 	group:SetOrder(data.order)
 	group:SetLabelColor(data.color)
 	group:SetSortingFunction(data.func)
+	group:SetRowDoClickFunction(data.rowDoClickFunc)
 	table.insert(self.Groups, group)
 	self.GroupScrollPanel:AddItem(group)
 end

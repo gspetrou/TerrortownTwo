@@ -10,6 +10,7 @@ function PANEL:Init()
 	self.ContainnedRows = {}
 	self.order = 0
 	self.color = Color(255, 255, 255, 0)
+	self.RowDoClickFunc = nil
 	self.SortingFunction = function() ErrorNoHalt("No sorting function set on TTT Scoreboard score group.\n") return false end
 end
 
@@ -25,6 +26,10 @@ function PANEL:SetSortingFunction(func)
 	self.SortingFunction = func
 end
 
+function PANEL:SetRowDoClickFunction(fn)
+	self.RowDoClickFunc = fn
+end
+
 function PANEL:SetLabelColor(col)
 	self.color = col
 end
@@ -37,6 +42,7 @@ end
 function PANEL:AddPlayer(ply)
 	local row = vgui.Create("TTT.Scoreboard.Row", self)
 	row:SetPlayer(ply)
+	row:SetupDoClickFunction(self.RowDoClickFunc)
 	row:SetContentAlignment(1)
 
 	for i, colData in ipairs(self.Columns) do

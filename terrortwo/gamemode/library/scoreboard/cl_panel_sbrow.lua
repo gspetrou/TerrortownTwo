@@ -15,8 +15,19 @@ local rolecolor = {
 function PANEL:Init()
 	self.Columns = {}
 	self.Avatar = vgui.Create("AvatarImage", self)	-- Make our avatar
+	self.AvatarButton = vgui.Create("Button", self)	-- Make an invisible button on top of the avatar for openning that player's steam page.
+	self.AvatarButton:SetText("")
+	self.AvatarButton.Paint = function() end
+	self.AvatarButton.DoClick = function()
+		local ply = self:GetPlayer()
+		if IsValid(ply) and ply:IsPlayer() then
+			ply:ShowProfile()
+		end
+	end
+	
 	self.Name = ""
 	self.Player = nil
+	self.DoClickFunc = nil
 
 	self.MuteButton = vgui.Create("DImageButton", self)
 	self.MuteButton.DoClick = function()
@@ -31,6 +42,16 @@ function PANEL:SetPlayer(ply)		-- Given a player, sets up the row to have their 
 	self.Avatar:SetPlayer(ply, 32)
 	self.Name = ply:Nick()
 	self.Player = ply
+end
+
+function PANEL:SetupDoClickFunction(func)
+	self.DoClickFunc = func
+end
+
+function PANEL:DoClick()
+	if isfunction(self.DoClickFunc) then
+		self.DoClickFunc(self, self:GetPlayer())
+	end
 end
 
 -------------------
@@ -126,17 +147,23 @@ function PANEL:PerformLayout(w, h)
 
 	self.Avatar:SetPos(0, 0)
 	self.Avatar:SetSize(SB_ROW_HEIGHT, SB_ROW_HEIGHT)
+	self.AvatarButton:SetPos(0, 0)
+	self.AvatarButton:SetSize(SB_ROW_HEIGHT, SB_ROW_HEIGHT)
 
 	local ply = self:GetPlayer()
-	if IsValid(ply) and ply ~= LocalPlayer() and not ply:IsBot() then
-		if not ply:IsMuted() then
-			self.MuteButton:SetImage("icon16/sound.png")
+	if IsValid(ply) then
+		if ply ~= LocalPlayer() and not ply:IsBot() then
+			if not ply:IsMuted() then
+				self.MuteButton:SetImage("icon16/sound.png")
+			else
+				self.MuteButton:SetImage("icon16/sound_mute.png")
+			end
+			self.MuteButton:SetSize(16, 16)
+			self.MuteButton:DockMargin(4, 4, 4, 4)
+			self.MuteButton:Dock(RIGHT)
 		else
-			self.MuteButton:SetImage("icon16/sound_mute.png")
+			self.MuteButton:SetVisible(false)
 		end
-		self.MuteButton:SetSize(16, 16)
-		self.MuteButton:DockMargin(4, 4, 4, 4)
-		self.MuteButton:Dock(RIGHT)
 	end
 end
 

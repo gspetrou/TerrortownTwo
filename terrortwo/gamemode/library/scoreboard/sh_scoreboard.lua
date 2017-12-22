@@ -117,13 +117,14 @@ end
 -- Arg Five:	Function, used to decide what players should be listed under this group.
 -- 				Arg One: 	Player
 -- 				Return:		Boolean, should they be displayed in this group.
-function TTT.Scoreboard.AddGroup(group_id, lbl_id, ordr, col, fn)
+function TTT.Scoreboard.AddGroup(group_id, lbl_id, ordr, col, fn, rowDoClick)
 	table.insert(TTT.Scoreboard.Groups, {
 		id = group_id,
 		label = lbl_id,
 		order = ordr or 0,	-- Anything 0 or less means we don't care.
 		color = col or Color(255, 255, 255, 0),
-		func = fn
+		func = fn,
+		rowDoClickFunc = rowDoClick
 	})
 end
 
