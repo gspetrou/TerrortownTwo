@@ -1,4 +1,10 @@
 TTT.Weapons = TTT.Weapons or {}
+TTT.Weapons.SpawnWithWeapons = TTT.Weapons.SpawnWithWeapons or {}
+TTT.Weapons.RoleWeapons = TTT.Weapons.RoleWeapons or {
+	[ROLE_INNOCENT] = {},
+	[ROLE_DETECTIVE] = {},
+	[ROLE_TRAITOR] = {}
+}
 
 -- Weapon Slots.
 WEAPON_INVALID		= 0
@@ -138,10 +144,11 @@ function TTT.Weapons.HasWeaponForAmmoType(ply, ammotype)
 end
 
 ----------------------------
--- TTT.Weapons.CacheWeapons
+-- TTT.Weapons.CreateCaches
 ----------------------------
 -- Desc:		Precache all weapon models since nondeveloper commands can show the first time equipment has been bought.
-function TTT.Weapons.Precache()
+-- 				Then also cache weaponASDASD
+function TTT.Weapons.CreateCaches()
 	local util_PrecacheModel = util.PrecacheModel
 	for k, wep in ipairs(weapons.GetList()) do
 		if wep.WorldModel then
@@ -149,6 +156,22 @@ function TTT.Weapons.Precache()
 		end
 		if wep.ViewModel then
 			util_PrecacheModel(wep.ViewModel)
+		end
+
+		local wepClass = wep.ClassName
+		local roleForWep = wep.RoleWeapon
+		if roleForWep then
+			if isnumber(roleForWep) then
+				table.insert(TTT.Weapons.RoleWeapons[roleForWep], wepClass)
+			elseif istable(roleForWep) then
+				for i, r in ipairs(roleForWep) do
+					table.insert(TTT.Weapons.RoleWeapons[r], wepClass)
+				end
+			end
+		end
+
+		if wep.SpawnWith then
+			table.insert(TTT.Weapons.SpawnWithWeapons, wepClass)
 		end
 	end
 end
@@ -184,6 +207,10 @@ if CLIENT then
 		net.Start("TTT.Weapons.RequestDropCurrentWeapon")
 		net.SendToServer()
 	end
+
+	net.Receive("TTT.Weapons.RequestDropCurrentWeapon", function()
+		chat.AddText(Color(255, 0, 0), TTT.Languages.GetPhrase("dropweapon_noroom"))
+	end)
 else
 	-----------------------------
 	-- TTT.Weapons.CanDropWeapon
@@ -195,11 +222,19 @@ else
 		if not IsValid(ply) or not IsValid(wep) or not wep.CanDrop then
 			return false
 		end
+
+		local result = hook.Call("TTT.Weapons.CanDropWeapon", nil, ply, wep)
+		if result == true then
+			return true
+		elseif result == false then
+			return false
+		end
 		
 		-- Thanks TTT.
 		local tr = util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * 32, ply)
 		if tr.HitWorld then
-			-- TODO: Add warning message.
+			net.Start("TTT.Weapons.RequestDropCurrentWeapon")	-- Tell them theres no room to drop their weapon, reuse the same network string.
+			net.Send(ply)
 			return false
 		end
 
@@ -217,16 +252,20 @@ else
 			return
 		end
 
+		local weaponIsValid = true
 		if wep.PreDrop then
 			wep:PreDrop()
 
 			if not IsValid(wep) then
-				return
+				weaponIsValid = false
 			end
 		end
 
-		ply:DropWeapon(wep)
-		wep:PhysWake()
+		if weaponIsValid then
+			ply:DropWeapon(wep)
+			wep:PhysWake()
+		end
+		
 		ply:SelectWeapon("weapon_ttt2_unarmed")
 		hook.Call("TTT.Weapons.DroppedWeapon", nil, ply, wep)
 	end
