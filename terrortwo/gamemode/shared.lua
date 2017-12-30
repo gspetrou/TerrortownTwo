@@ -45,7 +45,7 @@ GM.Name = "Trouble in Terrorist Town Two"
 GM.Author = "George 'Stalker' Petrou"
 GM.Email = "N/A"
 GM.Website = "N/A"
-TTT.Version = 20171207					-- YearMonthDay
+TTT.Version = 20171230					-- YearMonthDay
 DEFINE_BASECLASS("gamemode_base")
 
 hook.Add("TTT.PreLibraryLoaded", "TTT", function()
@@ -62,17 +62,22 @@ GM:LoadLibraries()	-- Load the gamemode's library. Also gets called on auto-refr
 -- General Gamemode Hooks
 --------------------------
 function GM:Initialize()
+	math.randomseed(os.time())
+	
 	TTT.Languages.Initialize()			-- Load the languages.
 	TTT.VGUI.Initialize()				-- Get their HUDs working.
+	TTT.Scoreboard.Initialize()			-- Load up the scoreboard.
 
 	if SERVER then
 		RunConsoleCommand("mp_friendlyfire", "1")	-- Enables lag compensation.
 		TTT.Player.Initialize()	-- Select the player models for the map.
-	else
-		TTT.Scoreboard.Initialize()
 	end
 	
-	TTT.Rounds.Initialize()				-- Begin the round managing system.
+	TTT.Rounds.Initialize()				-- Begin the round managing system.	
+end
+
+function GM:InitPostEntity()
+	TTT.Weapons.CreateCaches()		-- Cache some weapons for quick retrieval later.
 end
 
 ---------------
@@ -84,6 +89,12 @@ hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
 			if not v:IsSpectator() then
 				v:SetRole(ROLE_WAITING)
 			end
+		end
+	end
+
+	if CLIENT and (state == ROUND_WAITING or state == ROUND_PREP) then
+		for i, v in ipairs(player.GetAll()) do
+			TTT.Scoreboard.ClearTag(v)
 		end
 	end
 end)

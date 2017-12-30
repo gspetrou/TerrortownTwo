@@ -51,10 +51,17 @@ function GM:ScoreboardHide()
 	TTT.Scoreboard.Close()
 end
 
-hook.Add("TTT.Scoreboard.InitializeItems", "TTT", function(panel)
+hook.Add("TTT.Scoreboard.Initialize", "TTT", function()
 	--------------
 	-- COLUMNS
 	--------------
+	TTT.Scoreboard.AddColumn("tag", "", 60, 0, function(ply)
+		local tagdata = TTT.Scoreboard.GetTag(ply)
+		if ply:Alive() and tagdata then
+			return TTT.Languages.GetPhrase(tagdata.phrase), tagdata.color
+		end
+		return ""
+	end)
 	TTT.Scoreboard.AddColumn("karma", "sb_karma", 50, 10, function(ply)
 		return 1337
 	end)
@@ -62,19 +69,19 @@ hook.Add("TTT.Scoreboard.InitializeItems", "TTT", function(panel)
 	TTT.Scoreboard.AddColumn("score", "sb_score", 50, 20, function(ply)
 		return ply:Frags()
 	end, function(plyA, plyB)
-		return plyA:Frags() < plyB:Frags()
+		return plyA:Frags() - plyB:Frags()
 	end)
 
 	TTT.Scoreboard.AddColumn("deaths", "sb_deaths", 50, 30, function(ply)
 		return ply:Deaths()
 	end, function(plyA, plyB)
-		return plyA:Deaths() < plyB:Deaths()
+		return plyA:Deaths() - plyB:Deaths()
 	end)
 
 	TTT.Scoreboard.AddColumn("ping", "sb_ping", 50, 40, function(ply)
 		return ply:Ping()
 	end, function(plyA, plyB)
-		return plyA:Ping() < plyB:Ping()
+		return plyA:Ping() - plyB:Ping()
 	end)
 
 	------------
@@ -82,9 +89,7 @@ hook.Add("TTT.Scoreboard.InitializeItems", "TTT", function(panel)
 	------------
 	TTT.Scoreboard.AddGroup("terrorists", "sb_terrorists", 10, Color(40, 200, 40, 100), function(ply)
 		return ply:Alive()
-	end, function(pnl, ply)
-		--
-	end)
+	end, TTT.Scoreboard.DrawTags, 40)
 /*
 	--TTT.Scoreboard.AddGroup("missing", "sb_missing", 20, Color(130, 190, 130, 100), function(ply) return false end)
 
@@ -105,6 +110,19 @@ hook.Add("TTT.Scoreboard.InitializeItems", "TTT", function(panel)
 	TTT.Scoreboard.AddExtraSortingOption("role", "sb_role", 20, function(plyA, plyB)
 		return plyA:GetRole() > plyB:GetRole()
 	end)
+
+	---------------
+	-- Info Tags
+	---------------
+	TTT.Scoreboard.InitializeTags()
+end)
+
+hook.Add("TTT.Scoreboard.InitializeTags", "TTT", function()
+	TTT.Scoreboard.AddTag("sb_tag_friend", TTT.Colors.Green)
+	TTT.Scoreboard.AddTag("sb_tag_suspect", TTT.Colors.Yellow)
+	TTT.Scoreboard.AddTag("sb_tag_avoid", Color(255, 150, 0, 255))
+	TTT.Scoreboard.AddTag("sb_tag_kill", TTT.Colors.Red)
+	TTT.Scoreboard.AddTag("sb_tag_missing", Color(130, 190, 130, 255))
 end)
 
 ---------------

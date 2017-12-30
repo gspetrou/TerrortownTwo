@@ -24,5 +24,10 @@ L.sb_playingon = "You are playing on..."
 L.sb_name = "Name"
 L.sb_role = "Role"
 L.sb_sort_by = "Sort By"
+L.sb_tag_friend = "Friend"
+L.sb_tag_suspect = "Suspect"
+L.sb_tag_avoid = "Avoid"
+L.sb_tag_kill = "Kill"
+L.sb_tag_missing = "Missing"
 
 L.invalid = "bork" -- This is used for any invalid text.
