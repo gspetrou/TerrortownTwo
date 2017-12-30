@@ -7,9 +7,9 @@ concommand.Add("ttt_always_spectator", function(ply)
 end)
 
 local PLAYER = FindMetaTable("Player")
-local oldAlive = PLAYER.Alive
+TTT.OldAlive = TTT.OldAlive or PLAYER.Alive
 function PLAYER:Alive()
-	return not self:IsSpectator() and oldAlive(self)
+	return not self:IsSpectator() and TTT.OldAlive(self)
 end
 
 ------------------------

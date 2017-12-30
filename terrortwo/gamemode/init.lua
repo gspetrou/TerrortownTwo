@@ -100,6 +100,14 @@ function GM:PlayerShouldTaunt()
 	return false
 end
 
+local PLAYER = FindMetaTable("Player")
+TTT.OldAlive = TTT.OldAlive or PLAYER.Alive
+function PLAYER:Alive()
+	if self:IsSpectator() or self:IsInFlyMode() then
+		return false
+	end
+	return TTT.OldAlive(self)
+end
 ---------------
 -- Round Hooks
 ---------------

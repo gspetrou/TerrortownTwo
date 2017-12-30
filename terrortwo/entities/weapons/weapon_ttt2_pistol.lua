@@ -2,7 +2,7 @@
 SWEP.Base		= "weapon_ttt2_base"
 DEFINE_BASECLASS(SWEP.Base)
 
-SWEP.PrintName	= "Glock"
+SWEP.PrintName	= "Pistol"
 SWEP.Kind		= WEAPON_SECONDARY
 SWEP.AutoSpawnable	= true
 
