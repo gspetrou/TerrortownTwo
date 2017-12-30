@@ -5,12 +5,67 @@ AddCSLuaFile("shared.lua")
 include("util.lua")
 include("lib_loader.lua")
 include("shared.lua")
-
+--
 -----------------
 -- General Hooks
 -----------------
-function GM:InitPostEntity()
-	TTT.Weapons.Precache()
+function GM:IsSpawnpointSuitable(ply, spawn, force, rigged)
+	if not IsValid(ply) or not ply:Alive() then
+		return true
+	end
+
+	local spawnPos = rigged and spawn or spawn:GetPos()
+	if not util.IsInWorld(spawnPos) then
+		return false
+	end
+
+	local blocking = ents.FindInBox(spawnPos + Vector(-16, -16, 0), spawnPos + Vector(16, 16, 64))
+	for i, ply in ipairs(blocking) do
+		if IsValid(ply) and ply:IsPlayer() and ply:Alive() then
+			if force then
+ 				ply:Kill()
+			else
+				return false
+			end
+		end
+	end
+	return true
+end
+
+function GM:PlayerSelectSpawn(ply)
+	local spawnEntities = TTT.Map.GetSpawnEntities()
+	for i, spawn in ipairs(spawnEntities) do
+		if self:IsSpawnpointSuitable(ply, spawn, false, false) then
+			return spawn
+		end
+	end
+
+	-- If we make it here then that means no spawns were found. Look for points around spawns.
+	local foundSpawn
+	for i, spawn in ipairs(spawnEntities) do
+		foundSpawn = spawn
+		local pointsAround = TTT.Map.PointsAroundSpawn(spawn)
+		for j, point in ipairs(pointsAround) do
+			if self:IsSpawnpointSuitable(ply, point, false, true) then
+				local rigged_spawn = ents.Create("info_player_terrorist")
+				if IsValid(riggedSpawn) then
+					riggedSpawn:SetPos(point)
+					riggedSpawn:Spawn()
+					ErrorNoHalt("TTT WARNING: Map has too few spawn points, using a rigged spawn for ".. tostring(ply) .. "\n")
+					return riggedSpawn
+				end
+			end
+		end
+	end
+
+	-- Well, everything we tried failed. So lets try forcing a spawn.
+	for i, spawn in ipairs(spawnEntities) do
+		if self:IsSpawnpointSuitable(ply, spawn, true, false) then
+			return spawn
+		end
+	end
+
+	return foundSpawn -- Well... they're probably gonna be stuck.
 end
 
 ----------------
@@ -24,6 +79,8 @@ function GM:PlayerInitialSpawn(ply)
 end
 
 function GM:PlayerSpawn(ply)
+	ply:ResetViewRoll()
+
 	-- If something needs to spawn a player mid-game and doesn't want to deal with this function it can enable ply.ttt_OverrideSpawn.
 	if ply.ttt_OverrideSpawn ~= true then
 		if ply:IsSpectator() or TTT.Rounds.IsActive() or TTT.Rounds.IsPost() then
@@ -32,7 +89,7 @@ function GM:PlayerSpawn(ply)
 		else
 			ply:UnSpectate()
 			ply.ttt_InFlyMode = false
-			ply:SetupHands()					-- Get c_ hands working.
+			ply:SetupHands()
 			hook.Call("TTT.Player.PostPlayerSpawn", nil, ply, false)
 		end
 	end
@@ -58,6 +115,14 @@ function GM:PlayerSpawnAsSpectator(ply)	-- For backwards compatability.
 	TTT.Player.SpawnInFlyMode(ply)
 end
 
+function GM:DoPlayerDeath(ply, attacker, dmginfo)
+	--ply.ttt_deathrag = TTT.Corpse.Create(ply, dmginfo)
+	--TTT.Corpse.SetRagdollData(ply.ttt_deathrag, ply, attacker, dmginfo)
+end
+
+-- Get rid of the death beeps.
+function GM:PlayerDeathSound()
+	return true
 end
 
 function GM:PlayerDeath(ply)
