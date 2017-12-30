@@ -5,33 +5,85 @@ local light_row_bg = Color(75, 75, 75, 100)	-- Color of the light rows in a grou
 local dark_column_bg = Color(0, 0, 0, 150)	-- Color of the darker columns in the group.
 
 function PANEL:Init()
+	self:SetName("TTT.Scoreboard.Group")
 	self.label = ""
 	self.Columns = {}
 	self.ContainnedRows = {}
 	self.order = 0
 	self.color = Color(255, 255, 255, 0)
 	self.RowDoClickFunc = nil
+	self.OpenRowHeight = 50
 	self.SortingFunction = function() ErrorNoHalt("No sorting function set on TTT Scoreboard score group.\n") return false end
 end
 
+------------------
+-- PANEL:SetLabel
+------------------
+-- Desc:		Sets the label on the top left of the group.
+-- Arg One:		String, for the label.
 function PANEL:SetLabel(text)
 	self.label = text
 end
 
+------------------
+-- PANEL:SetOrder
+------------------
+-- Desc:		Sets the order for the group to appear.
+-- Arg One:		Number, for the order on the list of groups.
 function PANEL:SetOrder(odr)
 	self.order = odr
 end
 
+----------------------------
+-- PANEL:SetSortingFunction
+----------------------------
+-- Desc:		Sets the function to sort out what players should be in this group.
+-- Arg One:		Function, used by table.sort
+-- 				Arg One:	Player, player A to be compared with player B.
+-- 				Arg Two:	Player, player B to compare with A.
+-- 				Returns:	Boolean, should A come before B.
 function PANEL:SetSortingFunction(func)
 	self.SortingFunction = func
 end
 
+-------------------------------
+-- PANEL:SetRowDoClickFunction
+-------------------------------
+-- Desc:		Sets the function for this group's rows to be called on DoClick.
+-- Arg One:		Function called on DoClick.
+-- 				Arg One:	TTT.Scoreboard.Row panel for the current row.
+-- 				Arg Two:	DPanel, info panel openned underneath row.
+-- 				Arg Three:	Player, for the row.
 function PANEL:SetRowDoClickFunction(fn)
 	self.RowDoClickFunc = fn
 end
 
+-----------------------
+-- PANEL:SetLabelColor
+-----------------------
+-- Desc:		Sets the label color of the group.
+-- Arg One:		Color, for that label.
 function PANEL:SetLabelColor(col)
 	self.color = col
+end
+
+--------------------------
+-- PANEL:SetRowOpenHeight
+--------------------------
+-- Desc:		Sets the height of the group's rows when they are open.
+-- Arg One:		Number, for the row heights.
+function PANEL:SetRowOpenHeight(h)
+	self.OpenRowHeight = h
+end
+
+-------------------
+-- PANEL:AddColumn
+-------------------
+-- Desc:		Registers a panel with the group.
+-- Arg One:		Table, column data.
+-- Note:		Dont call this directly, don't even make groups directly like this.
+function PANEL:AddColumn(colData)
+	table.insert(self.Columns, colData)
 end
 
 -------------------
@@ -41,9 +93,12 @@ end
 -- Arg One:		Player, to add to group.
 function PANEL:AddPlayer(ply)
 	local row = vgui.Create("TTT.Scoreboard.Row", self)
-	row:SetPlayer(ply)
 	row:SetupDoClickFunction(self.RowDoClickFunc)
+	row:SetOpenHeight(self.OpenRowHeight)
+	row:SetPlayer(ply)
 	row:SetContentAlignment(1)
+	row:SetText("")	-- We're based off DLabel so we need to do this.
+	row:SetMouseInputEnabled(true)
 
 	for i, colData in ipairs(self.Columns) do
 		row:AddColumn(colData)
@@ -52,6 +107,12 @@ function PANEL:AddPlayer(ply)
 	table.insert(self.ContainnedRows, row)
 end
 
+-------------------
+-- PANEL:HasPlayer
+-------------------
+-- Desc:		Does the group contain the given player.
+-- Arg One:		Player, to see if the group has.
+-- Returns:		Boolean, does this group have the given player.
 function PANEL:HasPlayer(ply)
 	for i, v in ipairs(self.ContainnedRows) do
 		if v:GetPlayer() == v then
@@ -61,6 +122,20 @@ function PANEL:HasPlayer(ply)
 	return false
 end
 
+--------------------
+-- PANEL:HasPlayers
+--------------------
+-- Desc:		Does the group have any players in it.
+-- Returns:		Boolean
+function PANEL:HasPlayers()
+	return #self.ContainnedRows > 0
+end
+
+----------------------
+-- PANEL:RemovePlayer
+----------------------
+-- Desc:		Removes the given player from the group.
+-- Arg One:		Player, to remove from the scoreboard group.
 function PANEL:RemovePlayer(ply)
 	for i, v in ipairs(self.ContainnedRows) do
 		if v:GetPlayer() == ply then
@@ -70,6 +145,10 @@ function PANEL:RemovePlayer(ply)
 	end
 end
 
+-----------------------
+-- PANEL:UpdatePlayers
+-----------------------
+-- Desc:		Updates the players in the group.
 function PANEL:UpdatePlayers()
 	-- Its faster to remove everyone and then re-add the players this group applies to
 	self:ClearGroup()
@@ -89,15 +168,15 @@ function PANEL:UpdatePlayers()
 	end
 end
 
+--------------------
+-- PANEL:ClearGroup
+--------------------
+-- Desc:		Clears the group of all players.
 function PANEL:ClearGroup()
 	for i, v in ipairs(self.ContainnedRows) do
 		v:Remove()
 	end
 	self.ContainnedRows = {}
-end
-
-function PANEL:HasPlayers()
-	return #self.ContainnedRows > 0
 end
 
 function PANEL:Paint(w, h)
@@ -115,8 +194,13 @@ function PANEL:Paint(w, h)
 
 	-- Give a light background to every other row.
 	surface.SetDrawColor(light_row_bg.r, light_row_bg.g, light_row_bg.b, light_row_bg.a)
-	for i = 1, #self.ContainnedRows, 2 do
-		surface.DrawRect(0, SB_ROW_HEIGHT*i, w, SB_ROW_HEIGHT)
+	local offset = SB_ROW_HEIGHT
+	for i, v in ipairs(self.ContainnedRows) do
+		local pnlTall = v:GetTall()
+		if i%2 == 1 then
+			surface.DrawRect(0, offset, w, pnlTall)
+		end
+		offset = offset + pnlTall
 	end
 
 	-- Draw the group label with shadow.
@@ -141,18 +225,20 @@ function PANEL:Paint(w, h)
 	surface.DrawText(text)
 end
 
-function PANEL:PerformLayout(w, h)
-	self:SetWidth(self:GetParent():GetWide())
+function PANEL:PerformLayout()
+	local cur_width = self:GetWide()
+	local parent_w = self:GetParent():GetWide()
+	self:SetWidth(parent_w)
 
+	local offset = SB_ROW_HEIGHT
 	for i, v in ipairs(self.ContainnedRows) do
-		v:SetPos(0, SB_ROW_HEIGHT*i)
-		v:SetSize(w, SB_ROW_HEIGHT)
+		v:SetPos(0, offset)
+
+		local newOff = v:GetTall()
+		v:SetSize(cur_width, newOff)
+		offset = offset + newOff
 	end
 
-	self:SetHeight((#self.ContainnedRows+1) * SB_ROW_HEIGHT)
-end
-
-function PANEL:AddColumn(colData)
-	table.insert(self.Columns, colData)
+	self:SetHeight(offset)
 end
 vgui.Register("TTT.Scoreboard.Group", PANEL, "Panel")

@@ -36,7 +36,7 @@ function GM:PlayerSpawn(ply)
 			hook.Call("TTT.Player.PostPlayerSpawn", nil, ply, false)
 		end
 	end
-	
+
 	self:PlayerSetModel(ply)
 	self:PlayerLoadout(ply)		-- Doesn't do anything, backwards compatability.
 end
@@ -51,16 +51,19 @@ end)
 
 function GM:PlayerSetModel(ply)			-- For backwards compatability.
 	TTT.Player.SetModel(ply)
+	TTT.Player.SetModelColor(ply)
 end
 
 function GM:PlayerSpawnAsSpectator(ply)	-- For backwards compatability.
-	TTT.Roles.SpawnInFlyMode(ply)
+	TTT.Player.SpawnInFlyMode(ply)
+end
+
 end
 
 function GM:PlayerDeath(ply)
-	ply.ttt_deathpos = ply:GetPos()
-	ply.ttt_deathang = ply:GetAngles()
-	ply.ttt_deathpos_set = true
+	TTT.Player.RecordDeathPos(ply)
+	ply:Flashlight(false)
+	ply:Extinguish()
 end
 
 function GM:PostPlayerDeath(ply)
@@ -108,6 +111,18 @@ function PLAYER:Alive()
 	end
 	return TTT.OldAlive(self)
 end
+
+hook.Add("TTT.Player.ForceSpawnedPlayer", "TTT", function(ply, resetSpawn, shouldarm)
+	if resetSpawn then
+		TTT.Map.PutPlayerAtRandomSpawnPoint(ply)
+	end
+	if shouldarm then
+		TTT.Weapons.StripCompletely(ply)
+		TTT.Weapons.GiveStarterWeapons(ply)
+		TTT.Weapons.GiveRoleWeapons(ply)
+	end
+end)
+
 ---------------
 -- Round Hooks
 ---------------
@@ -137,7 +152,7 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 	end
 
 	local numAlive, numaliveTraitors, numaliveInnocents, numaliveDetectives = 0, 0, 0, 0
-	for i, v in ipairs(TTT.Roles.GetAlivePlayers()) do
+	for i, v in ipairs(TTT.Player.GetAlivePlayers()) do
 		numAlive = numAlive + 1
 
 		if v:IsInnocent() then
@@ -153,7 +168,7 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 		return WIN_TRAITOR
 	end
 
-	local numplys = #TTT.Roles.GetAlivePlayers()
+	local numplys = #TTT.Player.GetAlivePlayers()
 	if numplys == numaliveTraitors then
 		return WIN_TRAITOR
 	elseif numplys == (numaliveInnocents + numaliveDetectives) then
@@ -164,13 +179,15 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 end)
 
 hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
-	for i, v in ipairs(TTT.Roles.GetDeadPlayers()) do
-		TTT.Roles.ForceSpawnPlayer(v, true) -- Technically the round already started.
+	for i, v in ipairs(TTT.Player.GetDeadPlayers()) do
+		TTT.Player.ForceSpawnPlayer(v, true) -- Technically the round already started.
 	end
 	TTT.Roles.PickRoles()
 	TTT.Roles.Sync()
 
-	TTT.Weapons.GiveRoleWeapons()
+	for i, ply in ipairs(player.GetAll()) do
+		TTT.Weapons.GiveRoleWeapons(ply)	-- Give all player's the weapons for their newly given roles.
+	end
 
 	timer.Simple(1, function()
 		TTT.Rounds.CheckForRoundEnd()	-- Could happen if ttt_dev_preventwin is 0 and ttt_minimum_players is <= 1.
@@ -179,11 +196,11 @@ end)
 
 hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
 	TTT.Player.SetDefaultModelColor(TTT.Player.GetRandomPlayerColor())
-	TTT.MapHandler.ResetMap()
+	TTT.Map.ResetMap()
 	TTT.Roles.Clear()
 
 	local defaultWeapon = GetConVar("ttt_weapons_default"):GetString()
-	for i, ply in ipairs(TTT.Roles.GetAlivePlayers()) do
+	for i, ply in ipairs(TTT.Player.GetAlivePlayers()) do
 		TTT.Weapons.StripCompletely(ply)
 		TTT.Weapons.GiveStarterWeapons(ply)
 
@@ -200,18 +217,8 @@ end)
 
 hook.Add("TTT.Roles.PlayerExittedSpectator", "TTT", function(ply)
 	if not TTT.Rounds.IsActive() and not TTT.Rounds.IsPost() then
-		TTT.Roles.ForceSpawnPlayer(ply, true)
-		TTT.Player.SetModel(ply)
-	end
-end)
-
-hook.Add("TTT.Roles.ForceSpawnedPlayer", "TTT", function(ply, resetSpawn, shouldarm)
-	if resetSpawn then
-		TTT.MapHandler.PutPlayerAtRandomSpawnPoint(ply)
-	end
-	if shouldarm then
-		TTT.Weapons.StripCompletely(ply)
-		TTT.Weapons.GiveStarterWeapons(ply)
+		TTT.Player.ForceSpawnPlayer(ply, true)
+		hook.Call("PlayerSetModel", nil, ply)
 	end
 end)
 
@@ -219,24 +226,7 @@ end)
 -- Weapon Hooks
 ----------------
 function GM:PlayerCanPickupWeapon(ply, wep)
-	if not IsValid(ply) or not ply:Alive() then
-		return false
-	end
-
-	-- This may be useful for some people at some point.
-	if wep:GetClass() == "weapon_physgun" then
-		return not ply:HasWeapon("weapon_physgun")
-	end
-
-	if wep.Kind == nil then
-		error("Player tried to pickup weapon with missing SWEP.Kind. Class name: '".. wep.ClassName .."'.")
-	end
-
-	if TTT.Weapons.HasWeaponInSlot(ply, wep.Kind) then
-		return false
-	end
-
-	return true
+	return TTT.Weapons.CanPickupWeapon(ply, wep)
 end
 
 hook.Add("TTT.Weapons.DroppedWeapon", "TTT", function(ply, wep)

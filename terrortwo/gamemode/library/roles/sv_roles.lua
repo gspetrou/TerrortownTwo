@@ -10,95 +10,6 @@ local traitor_percent = CreateConVar("ttt_traitor_percent", "0.25", FCVAR_ARCHIV
 local detective_threshold = CreateConVar("ttt_detective_threshold", "8", FCVAR_ARCHIVE, "There must be at least this many players before there can be detectives.")
 local detective_percent = CreateConVar("ttt_detective_percent", "0.15", FCVAR_ARCHIVE, "Percentage of players that will be detectives.")
 local PLAYER = FindMetaTable("Player")
-local oldAlive = PLAYER.Alive
-
--- Being dead and spectating is called fly mode. Being a spectator and spectating is called being a spectator.
-------------------------------
--- TTT.Roles.SpawnInFlyMode
-------------------------------
--- Desc:		Spawns the player in a flying mode.
--- Arg One:		Player, to be set as a spectator.
-function TTT.Roles.SpawnInFlyMode(ply)
-	-- If the player is actually dead, spawn them first.
-	if not oldAlive(ply) then
-		ply.ttt_OverrideSpawn = true
-		ply:Spawn()
-		ply.ttt_OverrideSpawn = false
-	end
-
-	if not ply.ttt_InFlyMode then
-		ply:Spectate(OBS_MODE_ROAMING)
-		ply.ttt_InFlyMode = true
-	end
-
-	-- If the player spawns in fly mode after dying as a player, spawm them at their death position.
-	if ply.ttt_deathpos_set then
-		ply:SetPos(ply.ttt_deathpos)
-		ply:SetAngles(ply.ttt_deathang)
-		ply.ttt_deathpos_set = false
-	end
-end
-
-----------------------
--- PLAYER:IsInFlyMode
-----------------------
--- Desc:		Is the player in fly mode.
--- Returns:		Boolean, are they in fly mode.
-function PLAYER:IsInFlyMode()
-	return self.ttt_InFlyMode or false
-end
-
-------------------------------
--- TTT.Roles.ForceSpawnPlayer
-------------------------------
--- Desc:		Forces a player to spawn.
--- Arg One:		Player, to be spawned.
--- Arg Two:		Boolean, should we reset their spawn position to a map spawn spot.
--- Arg Three:	Boolean, should we arm the player with the default weapons when they spawn. Optional, true by default.
-function TTT.Roles.ForceSpawnPlayer(ply, resetspawn, shouldarm)
-	if not oldAlive(ply) then
-		local pos = ply:GetPos()
-		local ang = ply:GetAngles()
-		ply:Spawn()
-		if not resetspawn then
-			ply:SetPos(pos)
-			ply:SetEyeAngles(ang)
-		end
-	end
-	ply:UnSpectate()
-	ply.ttt_InFlyMode = false
-	ply:SetNoDraw(false)
-	hook.Call("TTT.Roles.ForceSpawnedPlayer", nil, ply, resetspawn, shouldarm or true)
-end
-
-function PLAYER:Alive()
-	if self:IsSpectator() or self:IsInFlyMode() then
-		return false
-	end
-	return oldAlive(self)
-end
-
------------------------------
--- TTT.Roles.GetAlivePlayers
------------------------------
--- Desc:		Gets all the alive players.
--- Returns:		Table, containning alive players.
-function TTT.Roles.GetAlivePlayers()
-	return table.Filter(player.GetAll(), function(ply)
-		return ply:Alive()
-	end)
-end
-
-----------------------------
--- TTT.Roles.GetDeadPlayers
-----------------------------
--- Desc:		Gets a table containning all dead players, does not include spectators.
--- Returns:		Table, all dead players that are not spectators.
-function TTT.Roles.GetDeadPlayers()
-	return table.Filter(player.GetAll(), function(ply)
-		return not oldAlive(ply) and not ply:IsSpectator()
-	end)
-end
 
 ------------------------------
 -- TTT.Roles.GetActivePlayers
@@ -235,10 +146,6 @@ function PLAYER:ForceSpectator()
 	self:ForceRole(ROLE_SPECTATOR, true)
 end
 function PLAYER:ForceInnocent()
-	self:SetRole(ROLE_INNOCENT)
-	self:SetRoleClientside(ROLE_INNOCENT, self)
-
-	-- Tell everyone but self that we are an unknown rank.
 	local allplayers_exceptself = player.GetAll()
 	for i, v in ipairs(allplayers_exceptself) do
 		if v == self then
@@ -247,21 +154,14 @@ function PLAYER:ForceInnocent()
 		end
 	end
 
-	-- Tell self that we are an innocent.
+	-- Tell self that we are an innocent, tell everyone else that we're unknown.
+	self:ForceRole(ROLE_INNOCENT, self)
 	self:SetRoleClientside(ROLE_UNKNOWN, allplayers_exceptself)
 end
 function PLAYER:ForceTraitor()
-	-- Because other players know if self is one of these two ranks we need
-	-- to tell them that self is now an unknown rank.
-	if self:IsDetective() or self:IsSpectator() then
-		self:SetRoleClientside(ROLE_UNKNOWN, TTT.Roles.GetPlayersNotOfRole(ROLE_TRAITOR))
-	end
-
-	-- Now tell other traitors and ourselves that we are a traitor.
 	self:SetRole(ROLE_TRAITOR)
-	local traitors = TTT.Roles.GetTraitors()
-	table.insert(traitors, self)
-	self:SetRoleClientside(ROLE_TRAITOR, traitors)
+	self:SetRoleClientside(ROLE_TRAITOR, TTT.Roles.GetTraitors())
+	self:SetRoleClientside(ROLE_UNKNOWN, TTT.Roles.GetNotTraitors())
 end
 function PLAYER:ForceDetective()
 	self:ForceRole(ROLE_DETECTIVE, true)

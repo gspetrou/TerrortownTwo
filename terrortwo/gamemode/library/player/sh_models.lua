@@ -41,50 +41,45 @@ TTT.Player.PlayerColors = TTT.Player.PlayerColors or {
 -------------------------
 -- TTT.Player.Initialize
 -------------------------
--- Desc:		Sets the active player model for the map.
+-- Desc:		Set the default spawn model and color for the duration of the map.
 function TTT.Player.Initialize()
-	-- Set the map default spawn model.
-	local mdl = hook.Call("TTT.Player.SetSpawnModel")
+	local mdl = hook.Call("TTT.Player.SetDefaultSpawnModel")
 	if not isstring(mdl) then
-		math.randomseed(os.time())
 		mdl = table.RandomSequential(TTT.Player.DefaultModels)
 	end
-	TTT.Player.SetSpawnModel(mdl)
+	TTT.Player.SetDefaultSpawnModel(mdl)
 
-	-- Set the map default spawn color.
-	TTT.Player.DefaultColor = TTT.Player.GetRandomPlayerColor()
+	local col = hook.Call("TTT.Player.SetDefaultSpawnColor")
+	if not IsColor(col) then
+		col = TTT.Player.GetRandomPlayerColor()
+	end
+	TTT.Player.SetDefaultModelColor(col)
 end
 
 -----------------------------------
 -- TTT.Player.GetRandomPlayerColor
 -----------------------------------
 -- Desc:		Gets a random player color.
--- Returns:		Color, random player color.
+-- Returns:		Color.
 function TTT.Player.GetRandomPlayerColor()
-	local col = hook.Call("TTT.Player.SetSpawnColor")
-	if not IsColor(col) then
-		math.randomseed(os.time())
-		
-		local mode = colormode:GetInt() or 0
-		if mode == 1 then
-			col = table.RandomSequential(TTT.Player.PlayerColors.serious)
-		elseif mode == 2 then
-			col = table.RandomSequential(TTT.Player.PlayerColors.all)
-		elseif mode == 3 then
-			col = Color(math.random(0, 255), math.random(0, 255), math.random(0, 255))
-		else
-			col = TTT.Colors.White
-		end
+	local mode = colormode:GetInt() or 0
+	if mode == 1 then
+		return table.RandomSequential(TTT.Player.PlayerColors.serious)
+	elseif mode == 2 then
+		return table.RandomSequential(TTT.Player.PlayerColors.all)
+	elseif mode == 3 then
+		return Color(math.random(0, 255), math.random(0, 255), math.random(0, 255))
 	end
-	return col
+
+	return TTT.Colors.White
 end
 
-----------------------------
--- TTT.Player.SetSpawnModel
-----------------------------
+-----------------------------------
+-- TTT.Player.SetDefaultSpawnModel
+-----------------------------------
 -- Desc:		Sets the model people will spawn in with.
 -- ARg One:		String, path to the model.
-function TTT.Player.SetSpawnModel(mdl)
+function TTT.Player.SetDefaultSpawnModel(mdl)
 	util.PrecacheModel(mdl)
 	TTT.Player.DefaultModel = mdl
 end
@@ -101,7 +96,6 @@ function TTT.Player.SetModel(ply)
 	end
 	ply:SetModel(mdl)
 	ply:SetColor(COLOR_WHITE)
-	TTT.Player.SetModelColor(ply)
 end
 
 -----------------------------------

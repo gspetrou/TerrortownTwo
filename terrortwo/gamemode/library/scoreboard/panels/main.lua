@@ -24,6 +24,8 @@ local sortType = CreateClientConVar("ttt_scoreboard_sorting", "name", false, fal
 local sortAscending = CreateClientConVar("ttt_scoreboard_sort_ascending", "1", false, false, "Sort with the numbers going up (ascending)?")
 
 function PANEL:Init()
+	self:SetName("TTT.Scoreboard")
+	self:SetMouseInputEnabled(true)
 	self.header = vgui.Create("Panel", self)
 	self.hostname = vgui.Create("DLabel", self.header)
 	self.playingOn = vgui.Create("DLabel", self.header)
@@ -35,6 +37,7 @@ function PANEL:Init()
 	end
 
 	self.GroupScrollPanel = vgui.Create("DScrollPanel", self)
+	self.GroupScrollPanel:SetMouseInputEnabled(true)
 	self.GroupScrollPanel.pnlCanvas.PerformLayout = function() end	-- Ill handle you, pal.
 	self.Groups = {}
 	for i, groupData in ipairs(TTT.Scoreboard.Groups) do
@@ -60,6 +63,7 @@ function PANEL:Init()
 
 	self:UpdateScoreboard()	-- Populate the groups and then sort them.
 	self:StartUpdateTimer()	-- Start a timer to update the scoreboard info while its open.
+	TTT.Scoreboard.InitWidth = math.max(ScrW() * width_multiplier, sb_min_width)	-- Some stuff needs the width of the scoreboard on init. This is kinda hacky but works.
 end
 
 function PANEL:Paint(w, h)
@@ -77,38 +81,32 @@ function PANEL:Paint(w, h)
 	surface.DrawTexturedRect(0, 0, logo_size, logo_size)
 end
 
-function PANEL:IsScrollBarVisible()
-	if IsValid(self.GroupScrollPanel) and IsValid(self.GroupScrollPanel:GetVBar()) then
-		return self.GroupScrollPanel:GetVBar().Enabled or false
-	end
-	return false
-end
-
-function PANEL:PerformLayout(w, h)
-	self:SetWide(math.max(ScrW() * width_multiplier, sb_min_width))
+-- I made all the PerformLayout functions for the scoreboard not rely on it's two arguement so that we can call this function directly.
+-- I know you're not supposed to but Garry sometimes leaves us with no other option.
+function PANEL:PerformLayout()
+	local w = math.max(ScrW() * width_multiplier, sb_min_width)
+	TTT.Scoreboard.InitWidth = w
+	local h = self:GetTall()
+	self:SetWide(w)
 	self:SetPos(ScrW()/2 - w/2, math.min(72, (ScrH() - h)/4))
 
 	self.header:SetSize(w, header_height)
 	self.header:SetPos(0, logo_offset)
-	self.header:SetContentAlignment(8)
 
 	self.hostname:SetText(GetHostName())
 	self.hostname:SizeToContents()
 	self.hostname:SetPos(w - self.hostname:GetWide() - right_padding, bar_pos_y/2 + bar_pos_h/2)
-	self.hostname:SetContentAlignment(8)
 
 	self.playingOn:SetText(TTT.Languages.GetPhrase("sb_playingon"))
 	self.playingOn:SizeToContents()
 	self.playingOn:SetPos(w - self.playingOn:GetWide() - right_padding, bar_pos_y/2 - self.playingOn:GetTall()/2)
-	self.playingOn:SetContentAlignment(8)
 
 	self.roundInfo:SetText(TTT.Languages.GetPhrase("sb_roundinfo", TTT.Rounds.GetRoundsLeft(), TTT.Rounds.GetFormattedRemainingTime()))
 	self.roundInfo:SizeToContents()
 	self.roundInfo:SetPos(w - self.roundInfo:GetWide() - right_padding, bar_pos_y + bar_pos_h)
-	self.roundInfo:SetContentAlignment(8)
 
 	-- Position the column header labels.
-	local cur_x_offset = SB_ROW_HEIGHT + (self:IsScrollBarVisible() and scrollbar_w or 0)	-- SB_ROW_HEIGHT is the width of the mute button section.
+	local cur_x_offset = SB_ROW_HEIGHT
 	for i, v in ipairs(self.Columns) do
 		v.labelPanel:SizeToContents()
 		v.labelPanel:SetPos(w - cur_x_offset - v.width/2 - v.labelPanel:GetWide()/2, column_label_y)
@@ -162,6 +160,10 @@ function PANEL:ApplySchemeSettings()
 	self:ApplySortingLabelSchemeSettings()
 end
 
+-----------------------------------------
+-- PANEL:ApplySortingLabelSchemeSettings
+-----------------------------------------
+-- Desc:		Applys the scheme settings to the sorting labels... in case you couldn't read the function's name.
 function PANEL:ApplySortingLabelSchemeSettings()
 	local sortingType = sortType:GetString()
 	for i, v in pairs(self.ExtraSortButtons) do
@@ -185,7 +187,24 @@ function PANEL:ApplySortingLabelSchemeSettings()
 	end
 end
 
--- It would be better to not call this function directly and instead use TTT.Scoreboard.AddGroup in the TTT.Scoreboard.InitializeGroups hook.
+----------------------------
+-- PANEL:IsScrollBarVisible
+----------------------------
+-- Desc:		Checks if the scrollbar for the scoreboard is visible.
+-- Returns:		Boolean, is it visible.
+function PANEL:IsScrollBarVisible()
+	if IsValid(self.GroupScrollPanel) and IsValid(self.GroupScrollPanel:GetVBar()) then
+		return self.GroupScrollPanel:GetVBar().Enabled or false
+	end
+	return false
+end
+
+------------------
+-- PANEL:AddGroup
+------------------
+-- Desc:		Adds a group to the scoreboard.
+-- Arg One:		Table, data for the group.
+-- Notice:		Don't call directly.
 function PANEL:AddGroup(data)
 	local group = vgui.Create("TTT.Scoreboard.Group", self.GroupScrollPanel)
 	group.ID = data.id
@@ -194,11 +213,18 @@ function PANEL:AddGroup(data)
 	group:SetLabelColor(data.color)
 	group:SetSortingFunction(data.func)
 	group:SetRowDoClickFunction(data.rowDoClickFunc)
+	group:SetRowOpenHeight(data.openHeight)
+	group:SetMouseInputEnabled(true)
 	table.insert(self.Groups, group)
 	self.GroupScrollPanel:AddItem(group)
 end
 
--- Creates the column header label and sets up for sorting.
+---------------------
+-- PANEL:SetupColumn
+---------------------
+-- Desc:		Sets up a new column to the scoreboard.
+-- Arg One:		Table, column data.
+-- Notice:		Don't call directly.
 function PANEL:SetupColumn(data)
 	local col_label = vgui.Create("DLabel", self.header)
 	col_label:SetText(TTT.Languages.GetPhrase(data.label))
@@ -225,6 +251,12 @@ function PANEL:SetupColumn(data)
 	table.insert(self.Columns, data)
 end
 
+-------------------------------
+-- PANEL:AddExtraSortingOption
+-------------------------------
+-- Desc:		Adds an extra sorting option to the top of the menu.
+-- Arg One:		Table, data for the option.
+-- Notice:		Don't call directly.
 function PANEL:AddExtraSortingOption(data)
 	local label = vgui.Create("DLabel", self.header)
 	label:SetText(TTT.Languages.GetPhrase(data.phrase))
@@ -248,33 +280,31 @@ function PANEL:AddExtraSortingOption(data)
 	table.insert(self.ExtraSortButtons, label)
 end
 
-function PANEL:StartUpdateTimer()
-	if timer.Exists("TTT.Scoreboard.Updater") then
-		timer.Remove("TTT.Scoreboard.Updater")
-	end
-
-	timer.Create("TTT.Scoreboard.Updater", 0.3, 0, function()
-		self:UpdateScoreboard()
-	end)
+--------------------------
+-- PANEL:UpdateScoreboard
+--------------------------
+-- Desc:		Updates the scoreboard's information.
+function PANEL:UpdateScoreboard()
+	self:UpdateGroupData()
+	self:UpdateSorting()
+	self:InvalidateChildren()
 end
 
-function PANEL:RemoveUpdateTimer()
-	if timer.Exists("TTT.Scoreboard.Updater") then
-		timer.Remove("TTT.Scoreboard.Updater")
-	end
-end
-
-function PANEL:OnRemove()
-	self:RemoveUpdateTimer()
-end
-
+-------------------------
+-- PANEL:UpdateGroupData
+-------------------------
+-- Desc:		Updates the players in the groups of the scoreboard.
+-- Notice:		Shouldn't be called directly. Use PANEL.UpdateScoreboard instead.
 function PANEL:UpdateGroupData()
 	for i, group in ipairs(self.Groups) do
 		group:UpdatePlayers()
 	end
 end
 
--- Updates the sorting to the current sorting type.
+-----------------------
+-- PANEL:UpdateSorting
+-----------------------
+-- Desc:		Sorts the scoreboard by the current sorting type.
 function PANEL:UpdateSorting()
 	local sort = sortType:GetString()
 	local sortFunction
@@ -297,7 +327,7 @@ function PANEL:UpdateSorting()
 		-- Fallback to sorting by names if all else fails.
 		if not isfunction(sortFunction) then
 			sortFunction = function(plyA, plyB)
-				return string.lower(plyA:Nick()) > string.lower(plyB:Nick())
+				return 0
 			end
 		end
 	end
@@ -306,7 +336,13 @@ function PANEL:UpdateSorting()
 	for i, group in ipairs(self.Groups) do
 		table.sort(group.ContainnedRows, function(rowA, rowB)
 			local plyA, plyB = rowA:GetPlayer(), rowB:GetPlayer()
-			local retVal = sortFunction(plyB, plyA)
+			local retVal = sortFunction(plyA, plyB)
+			if retVal == 0 then
+				retVal = string.lower(plyA:Nick()) > string.lower(plyB:Nick())
+			else
+				retVal = retVal > 0
+			end
+
 			if not isbool(retVal) then
 				error("Non-boolean value returned for TTT Scoreboard sorting option with ID of '".. sort .."'")
 			end
@@ -317,11 +353,34 @@ function PANEL:UpdateSorting()
 			return not retVal
 		end)
 	end
+	self:InvalidateChildren()
 end
 
-function PANEL:UpdateScoreboard()
-	self:UpdateGroupData()
-	self:UpdateSorting()
-	self:InvalidateLayout()
+--------------------------
+-- PANEL:StartUpdateTimer
+--------------------------
+-- Desc:		Starts a timer to update the scoreboard.
+function PANEL:StartUpdateTimer()
+	if timer.Exists("TTT.Scoreboard.Updater") then
+		timer.Remove("TTT.Scoreboard.Updater")
+	end
+
+	timer.Create("TTT.Scoreboard.Updater", 0.3, 0, function()
+		self:UpdateScoreboard()
+	end)
 end
-vgui.Register("TTT.Scoreboard", PANEL, "Panel")
+
+---------------------------
+-- PANEL:RemoveUpdateTimer
+---------------------------
+-- Desc:		Removes the scoreboard update timer.
+function PANEL:RemoveUpdateTimer()
+	if timer.Exists("TTT.Scoreboard.Updater") then
+		timer.Remove("TTT.Scoreboard.Updater")
+	end
+end
+
+function PANEL:OnRemove()
+	self:RemoveUpdateTimer()
+end
+vgui.Register("TTT.Scoreboard", PANEL, "DPanel")
