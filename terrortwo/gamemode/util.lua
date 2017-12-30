@@ -116,3 +116,21 @@ function table.SortCopy(original, sortFunc)
 	table.sort(tbl, sortFunc)
 	return tbl
 end
+
+-----------------
+-- table.Shuffle
+-----------------
+-- Desc:		Shuffles a sequential table, straight copy from TTT.
+-- Arg One:		Table, to be shuffled.
+-- Returns:		Table, thats been shuffled.
+function table.Shuffle(tbl)
+	local n = #tbl
+
+	while n > 2 do
+		local k = math.random(n)
+		tbl[n], tbl[k] = tbl[k], tbl[n]
+		n = n - 1
+	end
+
+	return tbl
+end
