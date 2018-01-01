@@ -135,11 +135,11 @@ end
 -- Arg One:		Entity, spawn entity to look around.
 -- Returns:		Table, of vectors of positions.
 function TTT.Map.PointsAroundSpawn(spawnEnt)
-	if not IsValid(spwn) then
+	if not IsValid(spawnEnt) then
 		return {}
 	end
 	
-	local pos = spwn:GetPos()
+	local pos = spawnEnt:GetPos()
 	local w, h = 36, 72 -- bit roomier than player hull
 
 	return {
@@ -152,4 +152,82 @@ function TTT.Map.PointsAroundSpawn(spawnEnt)
 		pos + Vector(-w,  w,  0),
 		pos + Vector(w, -w,  0)
 	}
+end
+
+------------------------
+-- TTT.Map.CanSpawnHere
+------------------------
+-- Desc:		Determines if the given player can spawn at the given spawn.
+-- Arg One:		Player, to see if they can spawn.
+-- Arg Two:		Entity or vector, spawn point entity or position to test.
+-- Arg Three:	Boolean, when checking this spot, should we kill whatever is in the way.
+-- Return:		Boolean, can they spawn here.
+function TTT.Map.CanSpawnHere(ply, spawn, force)
+	if not IsValid(ply) or not ply:Alive() then
+		return true
+	end
+
+	local spawnPos = type(spawn) == "Vector" and spawn or spawn:GetPos()
+	if not util.IsInWorld(spawnPos) then
+		return false
+	end
+
+	local blocking = ents.FindInBox(spawnPos + Vector(-16, -16, 0), spawnPos + Vector(16, 16, 64))
+	for i, ply in ipairs(blocking) do
+		if IsValid(ply) and ply:IsPlayer() and ply:Alive() then
+			if force then
+ 				ply:Kill()
+			else
+				return false
+			end
+		end
+	end
+	return true
+end
+
+----------------------------
+-- TTT.Map.SelectSpawnPoint
+----------------------------
+-- Desc:		Finds a suitable spawn point for the given player.
+-- Arg One:		Player, to find a spawn for.
+-- Returns:		Entity, spawn point entity.
+function TTT.Map.SelectSpawnPoint(ply)
+	local spawnEntities = TTT.Map.GetSpawnEntities()
+	if #spawnEntities == 0 then
+		error("No spawn entities found!")
+		return
+	end
+
+	for i, spawn in ipairs(spawnEntities) do
+		if GAMEMODE:IsSpawnpointSuitable(ply, spawn, false) then
+			return spawn
+		end
+	end
+
+	-- If we make it here then that means no spawns were found. Look for points around spawns.
+	local foundSpawn
+	for i, spawn in ipairs(spawnEntities) do
+		foundSpawn = spawn
+		local pointsAround = TTT.Map.PointsAroundSpawn(spawn)
+		for j, point in ipairs(pointsAround) do
+			if GAMEMODE:IsSpawnpointSuitable(ply, point, false) then
+				local rigged_spawn = ents.Create("info_player_terrorist")
+				if IsValid(rigged_spawn) then
+					rigged_spawn:SetPos(point)
+					rigged_spawn:Spawn()
+					ErrorNoHalt("TTT WARNING: Map has too few spawn points, using a rigged spawn for ".. tostring(ply) .. "\n")
+					return rigged_spawn
+				end
+			end
+		end
+	end
+
+	-- Everything we tried failed. So lets try forcing a spawn.
+	for i, spawn in ipairs(spawnEntities) do
+		if GAMEMODE:IsSpawnpointSuitable(ply, spawn, true) then
+			return spawn
+		end
+	end
+
+	return foundSpawn -- Well... they're probably gonna be stuck.
 end

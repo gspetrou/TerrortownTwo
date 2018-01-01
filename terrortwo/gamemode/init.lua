@@ -9,63 +9,12 @@ include("shared.lua")
 -----------------
 -- General Hooks
 -----------------
-function GM:IsSpawnpointSuitable(ply, spawn, force, rigged)
-	if not IsValid(ply) or not ply:Alive() then
-		return true
-	end
-
-	local spawnPos = rigged and spawn or spawn:GetPos()
-	if not util.IsInWorld(spawnPos) then
-		return false
-	end
-
-	local blocking = ents.FindInBox(spawnPos + Vector(-16, -16, 0), spawnPos + Vector(16, 16, 64))
-	for i, ply in ipairs(blocking) do
-		if IsValid(ply) and ply:IsPlayer() and ply:Alive() then
-			if force then
- 				ply:Kill()
-			else
-				return false
-			end
-		end
-	end
-	return true
+function GM:IsSpawnpointSuitable(ply, spawn, force)
+	return TTT.Map.CanSpawnHere(ply, spawn, force)
 end
 
 function GM:PlayerSelectSpawn(ply)
-	local spawnEntities = TTT.Map.GetSpawnEntities()
-	for i, spawn in ipairs(spawnEntities) do
-		if self:IsSpawnpointSuitable(ply, spawn, false, false) then
-			return spawn
-		end
-	end
-
-	-- If we make it here then that means no spawns were found. Look for points around spawns.
-	local foundSpawn
-	for i, spawn in ipairs(spawnEntities) do
-		foundSpawn = spawn
-		local pointsAround = TTT.Map.PointsAroundSpawn(spawn)
-		for j, point in ipairs(pointsAround) do
-			if self:IsSpawnpointSuitable(ply, point, false, true) then
-				local rigged_spawn = ents.Create("info_player_terrorist")
-				if IsValid(riggedSpawn) then
-					riggedSpawn:SetPos(point)
-					riggedSpawn:Spawn()
-					ErrorNoHalt("TTT WARNING: Map has too few spawn points, using a rigged spawn for ".. tostring(ply) .. "\n")
-					return riggedSpawn
-				end
-			end
-		end
-	end
-
-	-- Well, everything we tried failed. So lets try forcing a spawn.
-	for i, spawn in ipairs(spawnEntities) do
-		if self:IsSpawnpointSuitable(ply, spawn, true, false) then
-			return spawn
-		end
-	end
-
-	return foundSpawn -- Well... they're probably gonna be stuck.
+	return TTT.Map.SelectSpawnPoint(ply)
 end
 
 ----------------
