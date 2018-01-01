@@ -69,11 +69,6 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	--TTT.Corpse.SetRagdollData(ply.ttt_deathrag, ply, attacker, dmginfo)
 end
 
--- Get rid of the death beeps.
-function GM:PlayerDeathSound()
-	return true
-end
-
 function GM:PlayerDeath(ply)
 	TTT.Player.RecordDeathPos(ply)
 	ply:Flashlight(false)
@@ -104,28 +99,6 @@ function GM:PlayerSetHandsModels(ply, ent)
 	end
 end
 
--- Only allow people who are actually alive to die.
-function GM:CanPlayerSuicide(ply)
-	if ply:Alive() then
-		return true
-	end
-	return false
-end
-
--- Disallow player taunting.
-function GM:PlayerShouldTaunt()
-	return false
-end
-
-local PLAYER = FindMetaTable("Player")
-TTT.OldAlive = TTT.OldAlive or PLAYER.Alive
-function PLAYER:Alive()
-	if self:IsSpectator() or self:IsInFlyMode() then
-		return false
-	end
-	return TTT.OldAlive(self)
-end
-
 hook.Add("TTT.Player.ForceSpawnedPlayer", "TTT", function(ply, resetSpawn, shouldarm)
 	if resetSpawn then
 		TTT.Map.PutPlayerAtRandomSpawnPoint(ply)
@@ -136,6 +109,45 @@ hook.Add("TTT.Player.ForceSpawnedPlayer", "TTT", function(ply, resetSpawn, shoul
 		TTT.Weapons.GiveRoleWeapons(ply)
 	end
 end)
+
+-- Only spray when alive.
+function GM:PlayerSpray(ply)
+	if not IsValid(ply) or not ply:Alive() then
+		return true
+	end
+end
+
+-- Disallow player taunting.
+function GM:PlayerShouldTaunt()
+	return false
+end
+
+-- Only allow people who are actually alive to die.
+function GM:CanPlayerSuicide(ply)
+	if ply:Alive() then
+		return true
+	end
+	return false
+end
+
+-- Get rid of the death beeps.
+function GM:PlayerDeathSound()
+	return true
+end
+
+-- Disable pressing USE to pick stuff up.
+function GM:AllowPlayerPickup()
+   return false
+end
+
+local PLAYER = FindMetaTable("Player")
+TTT.OldAlive = TTT.OldAlive or PLAYER.Alive
+function PLAYER:Alive()
+	if self:IsSpectator() or self:IsInFlyMode() then
+		return false
+	end
+	return TTT.OldAlive(self)
+end
 
 ---------------
 -- Round Hooks
@@ -165,10 +177,8 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 		return WIN_TIME
 	end
 
-	local numAlive, numaliveTraitors, numaliveInnocents, numaliveDetectives = 0, 0, 0, 0
+	local numaliveTraitors, numaliveInnocents, numaliveDetectives = 0, 0, 0
 	for i, v in ipairs(TTT.Player.GetAlivePlayers()) do
-		numAlive = numAlive + 1
-
 		if v:IsInnocent() then
 			numaliveInnocents = numaliveInnocents + 1
 		elseif v:IsTraitor() then
@@ -178,7 +188,7 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 		end
 	end
 
-	if numAlive == 0 then
+	if (numaliveTraitors + numaliveInnocents + numaliveDetectives) == 0 then
 		return WIN_TRAITOR
 	end
 
@@ -194,8 +204,10 @@ end)
 
 hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	for i, v in ipairs(TTT.Player.GetDeadPlayers()) do
-		TTT.Player.ForceSpawnPlayer(v, true) -- Technically the round already started.
+		TTT.Player.ForceSpawnPlayer(v, true, false) -- Technically the round already started. Force spawn all players that managed to die in prep.
+		TTT.Weapons.GiveStarterWeapons(v)
 	end
+
 	TTT.Roles.PickRoles()
 	TTT.Roles.Sync()
 
@@ -209,9 +221,14 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 end)
 
 hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
-	TTT.Player.SetDefaultModelColor(TTT.Player.GetRandomPlayerColor())
 	TTT.Map.ResetMap()
 	TTT.Roles.Clear()
+	
+	local col = hook.Call("TTT.Player.SetDefaultSpawnColor")
+	if not IsColor(col) then
+		col = TTT.Player.GetRandomPlayerColor()
+	end
+	TTT.Player.SetDefaultModelColor(col)	-- Set a new color for players each round.
 
 	local defaultWeapon = GetConVar("ttt_weapons_default"):GetString()
 	for i, ply in ipairs(TTT.Player.GetAlivePlayers()) do
