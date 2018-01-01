@@ -184,7 +184,7 @@ end
 -- Arg Four:	Function, used in table.sort to sort the players by.
 -- 				Arg One:	Player, to be compare with the other player.
 -- 				Arg Two:	To be compared with the arg one player.
--- 				Return:		Boolean, should the player in arg one come before the player for arg two.
+-- 				Return:		Number, should the player in arg one come before the player for arg two. Greater than 0 for true, less than 0 for false, if you return 0 then this will sort by name.
 function TTT.Scoreboard.AddExtraSortingOption(sort_id, phr, ordr, sorter)
 	table.insert(TTT.Scoreboard.ExtraSortingOptions, {
 		id = sort_id,

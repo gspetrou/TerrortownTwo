@@ -54,7 +54,7 @@ function TTT.Player.ForceSpawnPlayer(ply, resetspawn, shouldarm)
 	ply:UnSpectate()
 	ply.ttt_InFlyMode = false
 	ply:SetNoDraw(false)
-	hook.Call("TTT.Player.ForceSpawnedPlayer", nil, ply, resetspawn, shouldarm or true)
+	hook.Call("TTT.Player.ForceSpawnedPlayer", nil, ply, resetspawn, isbool(shouldarm) and shouldarm or true)
 end
 
 -----------------------------

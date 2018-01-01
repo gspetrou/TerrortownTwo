@@ -75,14 +75,15 @@ function PANEL:SetupDoClickFunction(func)
 end
 
 function PANEL:DoClick()
-	if isfunction(self.DoClickFunc) and IsValid(TTT.Scoreboard.Scoreboard) then
+	local ply = self:GetPlayer()
+	if isfunction(self.DoClickFunc) and IsValid(TTT.Scoreboard.Scoreboard) and IsValid(ply) and ply ~= LocalPlayer() then
 		local isOpen = self:IsOpen()
 		self:SetOpen(not isOpen)
 		self:GetParent():PerformLayout()
 		TTT.Scoreboard.Scoreboard:PerformLayout()
 		if isOpen then
 			surface.PlaySound("ui/buttonclickrelease.wav")
-			self.DoClickFunc(self, self.OpenPanel, self:GetPlayer(), TTT.Scoreboard.InitWidth, self.OpenHeight, SB_ROW_HEIGHT)
+			self.DoClickFunc(self, self.OpenPanel, ply, TTT.Scoreboard.InitWidth, self.OpenHeight, SB_ROW_HEIGHT)
 			self.OpenPanel:InvalidateLayout(true)
 		else
 			surface.PlaySound("ui/buttonclick.wav")

@@ -105,19 +105,15 @@ hook.Add("TTT.Scoreboard.Initialize", "TTT", function()
 	-- EXTRA SORTING
 	-------------------
 	TTT.Scoreboard.AddExtraSortingOption("name", "sb_name", 10, function(plyA, plyB)
-		return string.lower(plyA:Nick()) > string.lower(plyB:Nick())
+		return 0	-- Returning 0 in this function defaults to sorting by name.
 	end)
 	TTT.Scoreboard.AddExtraSortingOption("role", "sb_role", 20, function(plyA, plyB)
-		return plyA:GetRole() > plyB:GetRole()
+		return plyA:GetRole() - plyB:GetRole()
 	end)
 
 	---------------
 	-- Info Tags
 	---------------
-	TTT.Scoreboard.InitializeTags()
-end)
-
-hook.Add("TTT.Scoreboard.InitializeTags", "TTT", function()
 	TTT.Scoreboard.AddTag("sb_tag_friend", TTT.Colors.Green)
 	TTT.Scoreboard.AddTag("sb_tag_suspect", TTT.Colors.Yellow)
 	TTT.Scoreboard.AddTag("sb_tag_avoid", Color(255, 150, 0, 255))

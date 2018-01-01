@@ -1,13 +1,8 @@
 TTT.Scoreboard = TTT.Scoreboard or {}
 
----------------------------------
--- TTT.Scoreboard.InitializeTags
----------------------------------
--- Desc:		Loads all the various tags to tag players by.
-function TTT.Scoreboard.InitializeTags()
-	TTT.Scoreboard.Tags = {}
-	hook.Call("TTT.Scoreboard.InitializeTags")
-end
+hook.Add("TTT.PostLibraryLoaded", "TTT.Scoreboard.Tags", function()
+	TTT.Scoreboard.Tags = {}	-- This is done so that tags refresh on lua autorefresh.
+end)
 
 ---------------------------
 -- TTT.Scoreboard.DrawTags

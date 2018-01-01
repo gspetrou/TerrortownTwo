@@ -109,6 +109,8 @@ function TTT.Library.Initialize()
 			TTT.Debug.Print("Loaded libary file '".. rootPathAndFolder .."/".. d .."'.")
 		end
 	end
+
+	TTT.LibraryFirstInitialized = true	-- Might be useful to someone.
 end
 
 function GM:LoadLibraries()
@@ -118,6 +120,5 @@ function GM:LoadLibraries()
 	
 	hook.Call("TTT.PreLibraryLoaded")
 	TTT.Library.Initialize()			-- Load the libraries.
-	TTT.LibraryInitialized = true
 	hook.Call("TTT.PostLibraryLoaded")
 end
