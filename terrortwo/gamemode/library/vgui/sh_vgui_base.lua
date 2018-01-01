@@ -5,15 +5,15 @@ if CLIENT then
 	TTT.VGUI.Elements = TTT.VGUI.Elements or {}
 
 	surface.CreateFont("TTT_HudText", {
-		font = "Trebuchet24",
-		size = 30,
-		weight = 800
+		font = "Verdana",
+		size = 28,
+		weight = 900
 	})
 
 	surface.CreateFont("TTT_WeaponSwitchText", {
-		font = "Trebuchet22",
-		size = 22,
-		weight = 800
+		font = "Verdana",
+		size = 20,
+		weight = 900
 	})
 
 	-----------------------

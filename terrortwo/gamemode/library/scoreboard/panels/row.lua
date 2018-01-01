@@ -150,7 +150,7 @@ function PANEL:Paint(w, h)
 	local name_col = self:GetNameColor()
 	local _, name_h = surface.GetTextSize(self.Name)
 	local name_y = SB_ROW_HEIGHT/2 - name_h/2
-	surface.SetFont("treb_small")
+	surface.SetFont("TTT_SBBody")
 
 	-- Name shadow
 	surface.SetTextColor(0, 0, 0, 255)

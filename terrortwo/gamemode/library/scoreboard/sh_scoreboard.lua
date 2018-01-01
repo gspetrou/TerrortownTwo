@@ -66,20 +66,20 @@ concommand.Add("ttt_scoreboard_list_sorting", function()
 	Msg("\n")
 end)
 
-surface.CreateFont("cool_large", {
-	font = "coolvetica",
+surface.CreateFont("TTT_SBHeaderLarge", {
+	font = "Coolvetica",
 	size = 24,
 	weight = 400
 })
-surface.CreateFont("cool_small", {
-	font = "coolvetica",
+surface.CreateFont("TTT_SBHeaderSmall", {
+	font = "Coolvetica",
 	size = 20,
 	weight = 400
 })
-surface.CreateFont("treb_small", {
-	font = "Trebuchet18",
-	size = 14,
-	weight = 700
+surface.CreateFont("TTT_SBBody", {
+	font = "Verdana",
+	size = 16,
+	weight = 900
 })
 
 -----------------------

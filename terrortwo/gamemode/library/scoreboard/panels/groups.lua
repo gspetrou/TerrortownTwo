@@ -204,7 +204,7 @@ function PANEL:Paint(w, h)
 	end
 
 	-- Draw the group label with shadow.
-	surface.SetFont("treb_small")
+	surface.SetFont("TTT_SBBody")
 	local text = self.label.." ("..#self.ContainnedRows..")"
 	local text_w, text_h = surface.GetTextSize(text)
 	local text_y = SB_ROW_HEIGHT/2 - text_h/2

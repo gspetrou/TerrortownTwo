@@ -147,10 +147,10 @@ function PANEL:PerformLayout()
 end
 
 function PANEL:ApplySchemeSettings()
-	self.hostname:SetFont("cool_large")
-	self.playingOn:SetFont("cool_small")
-	self.roundInfo:SetFont("cool_small")
-	self.SortBy:SetFont("cool_small")
+	self.hostname:SetFont("TTT_SBHeaderLarge")
+	self.playingOn:SetFont("TTT_SBHeaderSmall")
+	self.roundInfo:SetFont("TTT_SBHeaderSmall")
+	self.SortBy:SetFont("TTT_SBHeaderSmall")
 
 	self.hostname:SetTextColor(color_black)
 	self.playingOn:SetTextColor(color_white)
@@ -167,7 +167,7 @@ end
 function PANEL:ApplySortingLabelSchemeSettings()
 	local sortingType = sortType:GetString()
 	for i, v in pairs(self.ExtraSortButtons) do
-		v:SetFont("cool_small")
+		v:SetFont("TTT_SBHeaderSmall")
 
 		if v.id == sortingType then
 			v:SetTextColor(col_active_sort)
@@ -177,7 +177,7 @@ function PANEL:ApplySortingLabelSchemeSettings()
 	end
 
 	for i, v in ipairs(self.Columns) do
-		v.labelPanel:SetFont("cool_small")
+		v.labelPanel:SetFont("TTT_SBHeaderSmall")
 
 		if v.id == sortingType then
 			v.labelPanel:SetTextColor(col_active_sort)
