@@ -79,11 +79,14 @@ function TTT.Player.SpawnInFlyMode(ply)
 	if IsValid(ply.ttt_deathrag) then
 		ply:Spectate(OBS_MODE_IN_EYE)
 		ply:SpectateEntity(ply.ttt_deathrag)
-	elseif ply.ttt_deathpos_set then
+	else
 		ply:Spectate(OBS_MODE_ROAMING)
-		ply:SetPos(ply.ttt_deathpos)
-		ply:SetAngles(ply.ttt_deathang)
-		ply.ttt_deathpos_set = false
+
+		if ply.ttt_deathpos_set then
+			ply:SetPos(ply.ttt_deathpos)
+			ply:SetAngles(ply.ttt_deathang)
+			ply.ttt_deathpos_set = false
+		end
 	end
 end
 

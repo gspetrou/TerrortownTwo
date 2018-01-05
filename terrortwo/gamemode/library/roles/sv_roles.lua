@@ -32,6 +32,7 @@ function TTT.Roles.SetupAlwaysSpectate(ply)
 	local should_spec = q == "1" and true or false
 	if should_spec then
 		ply:SetRole(ROLE_SPECTATOR)
+		ply:Kill()	-- Killing them after setting their role to spectator will spawn them properly as a spectator.
 	else
 		ply:SetRole(ROLE_WAITING)
 	end
