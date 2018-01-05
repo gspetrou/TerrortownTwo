@@ -17,6 +17,21 @@ function GM:PlayerSelectSpawn(ply)
 	return TTT.Map.SelectSpawnPoint(ply)
 end
 
+hook.Add("TTT.Map.OnReset", "TTT", function()
+	local randomSpawnPoint = TTT.Map.GetSpawnEntities()[1]:GetPos() + Vector(0, 0, 64) -- Put spectators at a random spawn point, doesn't matter if its all the same.
+	for i, ply in ipairs(player.GetAll()) do
+		if not ply:IsSpectator() then
+			if ply.ttt_inflymode then
+				ply:UnSpectate()
+			end
+
+			ply:Spawn()
+		else
+			ply:SetPos(randomSpawnPoint)
+		end
+	end
+end)
+
 ----------------
 -- Player Hooks
 ----------------
@@ -25,6 +40,11 @@ function GM:PlayerInitialSpawn(ply)
 	TTT.Roles.SetupAlwaysSpectate(ply)
 	TTT.Languages.SendDefaultLanguage(ply)
 	TTT.Player.SetSpeeds(ply)
+	TTT.Equipment.InitEquipment(ply)
+
+	if ply:IsSpectator() then
+		ply:SetPos(TTT.Map.GetSpawnEntities()[1]:GetPos() + Vector(0, 0, 64))
+	end
 end
 
 function GM:PlayerSpawn(ply)
@@ -32,19 +52,21 @@ function GM:PlayerSpawn(ply)
 
 	-- If something needs to spawn a player mid-game and doesn't want to deal with this function it can enable ply.ttt_OverrideSpawn.
 	if ply.ttt_OverrideSpawn ~= true then
+		local isspec
 		if ply:IsSpectator() or TTT.Rounds.IsActive() or TTT.Rounds.IsPost() then
 			self:PlayerSpawnAsSpectator(ply)
-			hook.Call("TTT.Player.PostPlayerSpawn", nil, ply, true)
+			isspec = true
 		else
 			ply:UnSpectate()
 			ply.ttt_InFlyMode = false
 			ply:SetupHands()
-			hook.Call("TTT.Player.PostPlayerSpawn", nil, ply, false)
+			isspec = false
 		end
-	end
 
-	self:PlayerSetModel(ply)
-	self:PlayerLoadout(ply)		-- Doesn't do anything, backwards compatability.
+		self:PlayerSetModel(ply)
+		self:PlayerLoadout(ply)		-- Doesn't do anything, backwards compatability.
+		hook.Call("TTT.Player.PostPlayerSpawn", nil, ply, isspec)
+	end
 end
 
 hook.Add("TTT.Player.PostPlayerSpawn", "TTT", function(ply, isSpec)

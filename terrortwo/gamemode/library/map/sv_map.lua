@@ -6,14 +6,7 @@ TTT.Map = TTT.Map or {}
 -- Desc:		Resets the map to its original state and respawns players.
 function TTT.Map.ResetMap()
 	game.CleanUpMap()
-	local plys = TTT.Roles.GetNotSpectators()
-	for i, v in ipairs(plys) do
-		if v.ttt_inflymode then
-			v:UnSpectate()
-		end
-
-		v:Spawn()
-	end
+	hook.Call("TTT.Map.OnReset")
 end
 
 -- NOTICE:	A decent amount of the spawning and placement code below was adapted
@@ -55,7 +48,6 @@ function TTT.Map.GetSpawnEntities()
 		end
 	end
 
-	math.randomseed(os.time())
 	return table.Shuffle(spawns)
 end
 
@@ -65,8 +57,6 @@ end
 -- Desc:		Gets a random spawn point entity for the player that is safe to spawn at (E.g. nothing blocking it).
 -- Returns:		Entity, the spawn point.
 function TTT.Map.GetRandomSpawnPoint()
-	math.randomseed(os.time())
-
 	local spawnpoints = TTT.Map.GetSpawnEntities()
 	local spawn, index = table.RandomSequential(spawnpoints)
 	table.remove(spawnpoints, index)
