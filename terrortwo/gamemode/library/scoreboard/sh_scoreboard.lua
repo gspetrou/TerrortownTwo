@@ -8,33 +8,7 @@ CreateConVar("ttt_scoreboard_highlight_admins", "1", {FCVAR_ARCHIVE, FCVAR_REPLI
 -- Desc:		Loads the panels, groups, columns, and extra sorting options.
 -- Notice:		Rather than changing maps to test your new scoreboard stuff, just call this.
 function TTT.Scoreboard.Initialize()
-	-- Load files in addons/library/scoreboard/panels.
-	local path = "library/scoreboard/panels/"
-	local loadedfiles = {}
-	local files, _ = file.Find(path.."*.lua", "LUA")
-	for i, v in ipairs(files) do
-		if SERVER then
-			AddCSLuaFile(path..v)
-		else
-			include(path..v)
-		end
-		loadedfiles[v] = true
-	end
-
-	-- Now load files in terrortwo/gamemode/ibrary/scoreboard/panels and if there
-	-- is a file with the same name as a file in the addons folder then skip over it.
-	path = GAMEMODE.FolderName.."/gamemode/library/scoreboard/panels/"
-	files, _ = file.Find(path.."*.lua", "LUA")
-	for i, v in ipairs(files) do
-		if not loadedfiles[v] then
-			if SERVER then
-				AddCSLuaFile(path..v)
-			else
-				include(path..v)
-			end
-			loadedfiles[v] = true
-		end
-	end
+	TTT.Library.LoadOverridableFolder("library/scoreboard/panels/", "ttt/scoreboardpanels/", "client")
 
 	if CLIENT then
 		TTT.Scoreboard.Columns = {}

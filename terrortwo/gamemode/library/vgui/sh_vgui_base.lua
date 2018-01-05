@@ -66,31 +66,5 @@ end
 -----------------------
 -- Protip:		If you're working on your own HUD, rather than constantly changing maps simply call this function to refresh your HUD.
 function TTT.VGUI.Initialize()
-	-- Load files in addons/library/vgui/vgui.
-	local path = "library/vgui/vgui/"
-	local loadedfiles = {}
-	local files, _ = file.Find(path.."*.lua", "LUA")
-	for i, v in ipairs(files) do
-		if SERVER then
-			AddCSLuaFile(path..v)
-		else
-			include(path..v)
-		end
-		loadedfiles[v] = true
-	end
-
-	-- Now load files in terrortwo/gamemode/ibrary/vgui/vgui and if there
-	-- are files with same names as the ones in the addons folder then skip over it.
-	path = GAMEMODE.FolderName.."/gamemode/library/vgui/vgui/"
-	files, _ = file.Find(path.."*.lua", "LUA")
-	for i, v in ipairs(files) do
-		if not loadedfiles[v] then
-			if SERVER then
-				AddCSLuaFile(path..v)
-			else
-				include(path..v)
-			end
-			loadedfiles[v] = true
-		end
-	end
+	TTT.Library.LoadOverridableFolder("library/vgui/vgui/", "ttt/vgui/", "client")
 end

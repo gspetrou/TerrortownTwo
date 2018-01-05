@@ -57,6 +57,57 @@ function TTT.Library.InitPlayerSQLData(ply)
 	end
 end
 
+-------------------------------------
+-- TTT.Library.LoadOverridableFolder
+-------------------------------------
+-- Desc:		Loads files from a given folder in the addons directory and records the file name.
+-- 				Then loads files from the given directory in the gamemode and records the file name.
+-- 				If the file name of a file found in the gamemodes folder is the same as an addon's file name, it will not be loaded.
+-- Arg One:		String, path to gamemode folder to load. Starts at garrysmod/GAMEMODENAME/gamemode/.
+-- Arg Two:		String, path to addon folder to load. Starts at garrysmod/addons/*/lua/.
+-- Arg Three:	String, realm to load the file. "client" for client files, "server" for server files, "shared" for shared files.
+local loadFunctions = {
+	client = function(path)
+		if SERVER then
+			AddCSLuaFile(path)
+		else
+			include(path)
+		end
+	end,
+	server = function(path) include(path) end,
+	shared = function(path)
+		if SERVER then
+			AddCSLuaFile(path)
+		end
+		include(path)
+	end
+}
+function TTT.Library.LoadOverridableFolder(localpath, addonpath, realm)
+	local loadedfiles = {}
+	local loadFn = loadFunctions[realm]
+	if not isfunction(loadFn) then
+		error("Tried to call TTT.Library.LoadOverridableFolder with invalid realm '"..realm.."'.")
+	end
+
+	-- Load files in garrysmod/addons/*/lua/addonpath/
+	local files, _ = file.Find(addonpath.."*.lua", "LUA")
+	for i, v in ipairs(files) do
+		loadFn(addonpath..v)
+		loadedfiles[v] = true
+	end
+
+	-- Now load files in gamemodename/gamemode/localpath/ and if there
+	-- are files with same names as the ones in the addons folder then skip over it.
+	local path = GAMEMODE.FolderName.."/gamemode/"..localpath
+	files, _ = file.Find(path.."*.lua", "LUA")
+	for i, v in ipairs(files) do
+		if not loadedfiles[v] then
+			loadFn(path..v)
+			loadedfiles[v] = true
+		end
+	end
+end
+
 -------------------------
 -- TTT.Library.SetupFile
 -------------------------

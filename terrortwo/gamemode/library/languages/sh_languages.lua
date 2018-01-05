@@ -109,23 +109,28 @@ end
 -------------------------------
 -- TTT.Languages.LoadLanguages
 -------------------------------
--- Desc:		Loads the languages. Addons should place languages in "addonname/lua/tttlanguages/".
+-- Desc:		Loads the languages. Addons should place languages in "garrysmod/addonname/lua/ttt/languages/".
 function TTT.Languages.LoadLanguages()
 	local langFiles = {}
 	local idnum = -1
 
 	-- Addon languages take priority.
-	local files = file.Find("tttlanguages/*.lua", "LUA")
+	local files = file.Find("ttt/languages/*.lua", "LUA")
 	for i, v in ipairs(files) do
 		local filename = v:sub(1, #v - 4)
 		langFiles[filename] = true
 		idnum = idnum + 1
 
 		if SERVER then
-			AddCSLuaFile("tttlanguages/".. v)
+			AddCSLuaFile("ttt/languages/".. v)
 			TTT.Languages.Languages[filename] = true
 		else
-			TTT.Languages.Languages[filename] = include("tttlanguages/".. v)
+			local oldL = L
+			L = {}
+			include("ttt/languages/".. v)
+			
+			TTT.Languages.Languages[filename] = L
+			L = oldL
 		end
 		TTT.Languages.NWLang[filename] = idnum
 	end
@@ -135,8 +140,8 @@ function TTT.Languages.LoadLanguages()
 	files = file.Find(root .."*.lua", "LUA")
 	for i, v in ipairs(files) do
 		local filename = v:sub(1, #v - 4)
-		if not langFiles[v] then
-			langFiles[v] = true
+		if not langFiles[filename] then
+			langFiles[filename] = true
 			idnum = idnum + 1
 
 			if SERVER then

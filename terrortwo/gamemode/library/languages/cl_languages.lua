@@ -77,7 +77,7 @@ end
 ---------------------------
 -- Desc:		Gets a phrase that is translated to the player's currently set language.
 -- Arg One:		String, phrase ID.
--- Arg Two:		Varag, wherever there is a %s in the returned string it will be substituted here.
+-- Arg Two:		Vararg, wherever there is a %s in the returned string it will be substituted here.
 -- Returns:		String. Phrase in the clients languages. If that phrase isn't valid in the clients language then it returns it in english.
 -- 				If that phrase is not valid in english either it simply returns the original phrase.
 function TTT.Languages.GetPhrase(phrase, ...)
