@@ -14,6 +14,7 @@ function TTT.Scoreboard.Initialize()
 		TTT.Scoreboard.Columns = {}
 		TTT.Scoreboard.Groups = {}
 		TTT.Scoreboard.ExtraSortingOptions = {}
+		TTT.Scoreboard.Tags = {}
 
 		hook.Call("TTT.Scoreboard.Initialize", nil)
 

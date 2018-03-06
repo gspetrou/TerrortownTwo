@@ -1,3 +1,5 @@
+TTT.Roles = TTT.Roles or {}
+
 -- Setup network strings.
 util.AddNetworkString("TTT.Roles.SyncTraitors")
 util.AddNetworkString("TTT.Roles.Sync")

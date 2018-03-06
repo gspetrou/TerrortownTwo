@@ -40,7 +40,6 @@ function GM:PlayerInitialSpawn(ply)
 	TTT.Roles.SetupAlwaysSpectate(ply)
 	TTT.Languages.SendDefaultLanguage(ply)
 	TTT.Player.SetSpeeds(ply)
-	TTT.Equipment.InitEquipment(ply)
 
 	if ply:IsSpectator() then
 		ply:SetPos(TTT.Map.GetSpawnEntities()[1]:GetPos() + Vector(0, 0, 64))

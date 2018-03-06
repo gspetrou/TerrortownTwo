@@ -1,8 +1,5 @@
 TTT.Scoreboard = TTT.Scoreboard or {}
-
-hook.Add("TTT.PostLibraryLoaded", "TTT.Scoreboard.Tags", function()
-	TTT.Scoreboard.Tags = {}	-- This is done so that tags refresh on lua autorefresh.
-end)
+TTT.Scoreboard.Tags = TTT.Scoreboard.Tags or {}
 
 ---------------------------
 -- TTT.Scoreboard.DrawTags
@@ -19,7 +16,7 @@ function TTT.Scoreboard.DrawTags(row, infoPanel, ply, w, h, row_h)
 	btnContainner:DockPadding(0, 5, 0, 5)
 	for i, data in ipairs(TTT.Scoreboard.Tags) do
 		local btn = vgui.Create("DButton", btnContainner)
-		btn:SetFont("treb_small")
+		btn:SetFont("TTT_SBBody")
 		btn:SetTextColor(data.color)
 		btn:SetText(TTT.Languages.GetPhrase(data.phrase))
 		btn:DockMargin(5, 0, 5, 0)
