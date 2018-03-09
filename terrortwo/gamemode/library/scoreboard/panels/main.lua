@@ -1,31 +1,35 @@
--- As with the old scoreboard, this scoreboard is divided into three parts.
--- The main scoreboard, groups that go into the scoreboard, and rows that go into the groups.
-local PANEL = {}
-local width_multiplier, height_multiplier = 0.6, 0.95	-- Multipliers for scoreboard width and height.
-local col_bg = Color(35, 35, 40, 220)					-- Background color.
-local col_bar = Color(220, 100, 0, 255)					-- Color for colored bar in header.
-local bar_pos_y, bar_pos_h = 22, 32						-- Y pos and bar height for colored horizontal bar.
-local header_height = 120								-- Height of the header panel header
-local group_gap = 5										-- Gap between groups
-local right_padding = 5									-- Padding on the right side of text that is aligned right on the scoreboard.
-local SB_ROW_HEIGHT = 24								-- Height of each row. If you want to change this you'll have to change it in all the other scoreboard files as well.
-local scrollbar_w = 16									-- This is a constant.
-local sb_min_width = 640								-- Minimum width of the scoreboard.
-local column_label_y = 88								-- The Y position of all the column header labels.
-local col_active_sort = Color(175, 175, 175, 255)		-- Color for the label of the active sorting setting.
+TTT.Scoreboard.PANEL = {
+	BackgroundColor = Color(35, 35, 40, 220),
+	MinWidth = 640,
+	WidthMultiplier = 0.6,
+	HeightMultiplier = 0.95,
 
--- Logo
-local logo = surface.GetTextureID("vgui/ttt/score_logo")
-local logo_size = 256		-- Width/Height of the logo image.
-local logo_offset = 72		-- How much to offset entire scoreboard by. This many pixels of the logo will stick out.
-local logo_whitespace = 4	-- Theres four pixels of nothingness at the bottom of the TTT logo.
+	HeaderHeight = 120,
+	GroupGap = 5,
+	RightPadding = 5,
+	RowHeight = 24,
+	ScrollbarWidth = 16,
+	ColumnLabelYPos = 88,
+	ExtraButtonYOffset = 25,
+
+	BarColor = Color(220, 100, 0, 255),
+	BarYPos = 22,
+	BarHeight = 32,
+
+	Logo = surface.GetTextureID("vgui/ttt/score_logo"),
+	LogoSize = 256,
+	LogoOffset = 72,
+	LogoWhitespace = 4,
+
+	ColorActiveSortingText = Color(175, 175, 175, 255)
+}
 
 local sortType = CreateClientConVar("ttt_scoreboard_sorting", "name", false, false, "Set the sorting setting of the scoreboard. Run 'ttt_scoreboard_list_sorting' to view sorting types.")
 local sortAscending = CreateClientConVar("ttt_scoreboard_sort_ascending", "1", false, false, "Sort with the numbers going up (ascending)?")
 
-function PANEL:Init()
+
+function TTT.Scoreboard.PANEL:Init()
 	self:SetName("TTT.Scoreboard")
-	self:SetMouseInputEnabled(true)
 	self.header = vgui.Create("Panel", self)
 	self.hostname = vgui.Create("DLabel", self.header)
 	self.playingOn = vgui.Create("DLabel", self.header)
@@ -36,23 +40,58 @@ function PANEL:Init()
 		self:SizeToContents()
 	end
 
+	self:InitColumns()
+	self:InitGroups()
+	self:InitExtraSortingOptions()
+
+	self:UpdateScoreboard()
+	self:StartUpdateTimer()
+end
+
+function TTT.Scoreboard.PANEL:InitColumns()
+	self.Columns = {}
+	for i, colData in ipairs(TTT.Scoreboard.Columns) do
+		self:AddColumn(colData)
+	end
+end
+
+function TTT.Scoreboard.PANEL:AddColumn(columnData)
+	local column = {
+		ID = columnData.ID,
+		Order = columnData.Order,
+		Width = columnData.Width,
+		ColumnDataFunction = columnData.ColumnDataFunction,
+		SortFunction = columnData.SortFunction,
+		DLabel = vgui.Create("DLabel", self.header)
+	}
+	column.DLabel:SetText(TTT.Languages.GetPhrase(columnData.Phrase))
+
+	if columnData.SortFunction then
+		column.DLabel:SetCursor("hand")
+		column.DLabel:SetMouseInputEnabled(true)
+
+		column.DLabel.DoClick = function()
+			surface.PlaySound("ui/buttonclick.wav")
+
+			-- If we are already sorted this way, clicking the label should just invert the list.
+			if sortType:GetString() == columnData.ID then
+				sortAscending:SetBool(not sortAscending:GetBool())
+			else
+				sortType:SetString(columnData.ID)
+			end
+			self:UpdateScoreboard()
+			self:ApplySortingLabelSchemeSettings()
+		end
+	end
+
+	table.insert(self.Columns, column)
+end
+
+function TTT.Scoreboard.PANEL:InitGroups()
 	self.GroupScrollPanel = vgui.Create("DScrollPanel", self)
-	self.GroupScrollPanel:SetMouseInputEnabled(true)
-	self.GroupScrollPanel.pnlCanvas.PerformLayout = function() end	-- Ill handle you, pal.
 	self.Groups = {}
 	for i, groupData in ipairs(TTT.Scoreboard.Groups) do
 		self:AddGroup(groupData)
-	end
-
-	self.Columns = {}
-	for i, colData in ipairs(TTT.Scoreboard.Columns) do
-		self:SetupColumn(colData)
-	end
-
-	-- Add the Sort By: Name and Role buttons.
-	self.ExtraSortButtons = {}
-	for i, sortOption in ipairs(TTT.Scoreboard.ExtraSortingOptions) do
-		self:AddExtraSortingOption(sortOption)
 	end
 
 	for _, group in ipairs(self.Groups) do
@@ -60,267 +99,121 @@ function PANEL:Init()
 			group:AddColumn(columnData)
 		end
 	end
-
-	self:UpdateScoreboard()	-- Populate the groups and then sort them.
-	self:StartUpdateTimer()	-- Start a timer to update the scoreboard info while its open.
-	TTT.Scoreboard.InitWidth = math.max(ScrW() * width_multiplier, sb_min_width)	-- Some stuff needs the width of the scoreboard on init. This is kinda hacky but works.
 end
 
-function PANEL:Paint(w, h)
-	-- Scoreboard background
-	surface.SetDrawColor(col_bg.r, col_bg.g, col_bg.b, col_bg.a)
-	surface.DrawRect(0, logo_offset, w, h)
-
-	-- Colored Bar
-	surface.SetDrawColor(col_bar.r, col_bar.g, col_bar.b, col_bar.a)
-	surface.DrawRect(0, logo_offset + bar_pos_y, w, bar_pos_h)
-
-	-- Logo
-	surface.SetTexture(logo)
-	surface.SetDrawColor(255, 255, 255, 255)
-	surface.DrawTexturedRect(0, 0, logo_size, logo_size)
-end
-
--- I made all the PerformLayout functions for the scoreboard not rely on it's two arguement so that we can call this function directly.
--- I know you're not supposed to but Garry sometimes leaves us with no other option.
-function PANEL:PerformLayout()
-	local w = math.max(ScrW() * width_multiplier, sb_min_width)
-	TTT.Scoreboard.InitWidth = w
-	local h = self:GetTall()
-	self:SetWide(w)
-	self:SetPos(ScrW()/2 - w/2, math.min(72, (ScrH() - h)/4))
-
-	self.header:SetSize(w, header_height)
-	self.header:SetPos(0, logo_offset)
-
-	self.hostname:SetText(GetHostName())
-	self.hostname:SizeToContents()
-	self.hostname:SetPos(w - self.hostname:GetWide() - right_padding, bar_pos_y/2 + bar_pos_h/2)
-
-	self.playingOn:SetText(TTT.Languages.GetPhrase("sb_playingon"))
-	self.playingOn:SizeToContents()
-	self.playingOn:SetPos(w - self.playingOn:GetWide() - right_padding, bar_pos_y/2 - self.playingOn:GetTall()/2)
-
-	self.roundInfo:SetText(TTT.Languages.GetPhrase("sb_roundinfo", TTT.Rounds.GetRoundsLeft(), TTT.Rounds.GetFormattedRemainingTime()))
-	self.roundInfo:SizeToContents()
-	self.roundInfo:SetPos(w - self.roundInfo:GetWide() - right_padding, bar_pos_y + bar_pos_h)
-
-	-- Position the column header labels.
-	local cur_x_offset = SB_ROW_HEIGHT
-	for i, v in ipairs(self.Columns) do
-		v.labelPanel:SizeToContents()
-		v.labelPanel:SetPos(w - cur_x_offset - v.width/2 - v.labelPanel:GetWide()/2, column_label_y)
-		cur_x_offset = cur_x_offset + v.width
-	end
-
-	-- Add extra sorting options.
-	self.SortBy:SetText(TTT.Languages.GetPhrase("sb_sort_by")..":")
-	self.SortBy:SizeToContents()
-	self.SortBy:SetPos(logo_size, column_label_y)
-	local space = 10
-	local offset = self.SortBy:GetWide() + space
-	for k, v in pairs(self.ExtraSortButtons) do
-		v:SizeToContents()
-		v:SetPos(logo_size + offset, column_label_y)
-		offset = offset + v:GetWide() + space
-	end
-
-	local scrollpanel_y = logo_size - logo_offset - logo_whitespace
-	self.GroupScrollPanel:SetPos(0, scrollpanel_y)
-	self.GroupScrollPanel:SetSize(w, h - scrollpanel_y)
-
-	-- Position the groups.
-	local last_group_pos = 0	-- Relative pos of the last group height. Minus 5 because some extra image whitespace.
-	for i, v in ipairs(self.Groups) do
-		if v:HasPlayers() then
-			v:SetVisible(true)
-			v:SetPos(0, last_group_pos)
-			v:SetContentAlignment(8)
-
-			last_group_pos = last_group_pos + v:GetTall() + group_gap
-		else
-			v:SetVisible(false)
-		end
-	end
-
-	self:SetHeight(math.min(ScrH() * height_multiplier, scrollpanel_y + last_group_pos - group_gap))
-end
-
-function PANEL:ApplySchemeSettings()
-	self.hostname:SetFont("TTT_SBHeaderLarge")
-	self.playingOn:SetFont("TTT_SBHeaderSmall")
-	self.roundInfo:SetFont("TTT_SBHeaderSmall")
-	self.SortBy:SetFont("TTT_SBHeaderSmall")
-
-	self.hostname:SetTextColor(color_black)
-	self.playingOn:SetTextColor(color_white)
-	self.roundInfo:SetTextColor(color_white)
-	self.SortBy:SetTextColor(color_white)
-
-	self:ApplySortingLabelSchemeSettings()
-end
-
------------------------------------------
--- PANEL:ApplySortingLabelSchemeSettings
------------------------------------------
--- Desc:		Applys the scheme settings to the sorting labels... in case you couldn't read the function's name.
-function PANEL:ApplySortingLabelSchemeSettings()
-	local sortingType = sortType:GetString()
-	for i, v in pairs(self.ExtraSortButtons) do
-		v:SetFont("TTT_SBHeaderSmall")
-
-		if v.id == sortingType then
-			v:SetTextColor(col_active_sort)
-		else
-			v:SetTextColor(color_white)
-		end
-	end
-
-	for i, v in ipairs(self.Columns) do
-		v.labelPanel:SetFont("TTT_SBHeaderSmall")
-
-		if v.id == sortingType then
-			v.labelPanel:SetTextColor(col_active_sort)
-		else
-			v.labelPanel:SetTextColor(color_white)
-		end
-	end
-end
-
-----------------------------
--- PANEL:IsScrollBarVisible
-----------------------------
--- Desc:		Checks if the scrollbar for the scoreboard is visible.
--- Returns:		Boolean, is it visible.
-function PANEL:IsScrollBarVisible()
-	if IsValid(self.GroupScrollPanel) and IsValid(self.GroupScrollPanel:GetVBar()) then
-		return self.GroupScrollPanel:GetVBar().Enabled or false
-	end
-	return false
-end
-
-------------------
--- PANEL:AddGroup
-------------------
--- Desc:		Adds a group to the scoreboard.
--- Arg One:		Table, data for the group.
--- Notice:		Don't call directly.
-function PANEL:AddGroup(data)
+function TTT.Scoreboard.PANEL:AddGroup(groupData)
 	local group = vgui.Create("TTT.Scoreboard.Group", self.GroupScrollPanel)
-	group.ID = data.id
-	group:SetLabel(TTT.Languages.GetPhrase(data.label))
-	group:SetOrder(data.order)
-	group:SetLabelColor(data.color)
-	group:SetSortingFunction(data.func)
-	group:SetRowDoClickFunction(data.rowDoClickFunc)
-	group:SetRowOpenHeight(data.openHeight)
-	group:SetMouseInputEnabled(true)
+	group:SetID(groupData.ID)
+	group:SetTitle(TTT.Languages.GetPhrase(groupData.Phrase))
+	group:SetTitleColor(groupData.Color)
+	group:SetOrder(groupData.Order)
+	group:SetPlayerChooserFunction(groupData.PlayerChooserFunction)
+	group:SetupInfoPanel(groupData.InfoFunction)
+	group:SetRowHeight(groupData.RowOpenHeight)
+
 	table.insert(self.Groups, group)
 	self.GroupScrollPanel:AddItem(group)
 end
 
----------------------
--- PANEL:SetupColumn
----------------------
--- Desc:		Sets up a new column to the scoreboard.
--- Arg One:		Table, column data.
--- Notice:		Don't call directly.
-function PANEL:SetupColumn(data)
-	local col_label = vgui.Create("DLabel", self.header)
-	col_label:SetText(TTT.Languages.GetPhrase(data.label))
-
-	if data.sortFunc then
-		col_label:SetCursor("hand")
-		col_label:SetMouseInputEnabled(true)
-
-		col_label.DoClick = function()
-			surface.PlaySound("ui/buttonclick.wav")
-
-			-- If we are already sorted this way, clicking the label should just invert the list.
-			if sortType:GetString() == data.id then
-				sortAscending:SetBool(not sortAscending:GetBool())
-			else
-				sortType:SetString(data.id)
-			end
-			self:UpdateSorting()
-			self:ApplySortingLabelSchemeSettings()
-		end
+function TTT.Scoreboard.PANEL:InitExtraSortingOptions()
+	self.ExtraSortingOptions = {}
+	for i, sortOption in ipairs(TTT.Scoreboard.ExtraSortingOptions) do
+		self:AddExtraSortingOption(sortOption)
 	end
-
-	data.labelPanel = col_label
-	table.insert(self.Columns, data)
 end
 
--------------------------------
--- PANEL:AddExtraSortingOption
--------------------------------
--- Desc:		Adds an extra sorting option to the top of the menu.
--- Arg One:		Table, data for the option.
--- Notice:		Don't call directly.
-function PANEL:AddExtraSortingOption(data)
-	local label = vgui.Create("DLabel", self.header)
-	label:SetText(TTT.Languages.GetPhrase(data.phrase))
-	label:SizeToContents()
-	label:SetCursor("hand")
-	label:SetMouseInputEnabled(true)
-	label.sorter = data.SortFunc
-	label.id = data.id
-	label.DoClick = function()
-		surface.PlaySound("ui/buttonclick.wav")
+function TTT.Scoreboard.PANEL:AddExtraSortingOption(optionData)
+	local option = {
+		ID = optionData.ID,
+		Order = optionData.Order,
+		SortFunction = optionData.SortFunction,
+		DLabel = vgui.Create("DLabel", self.header)
+	}
+	option.DLabel:SetText(TTT.Languages.GetPhrase(optionData.Phrase))
+	option.DLabel:SizeToContents()
+	option.DLabel:SetCursor("hand")
+	option.DLabel:SetMouseInputEnabled(true)
 
+	option.DLabel.DoClick = function()
+		surface.PlaySound("ui/buttonclick.wav")
+		
 		-- If we are already sorted this way, clicking the label should just invert the list.
-		if sortType:GetString() == data.id then
+		if sortType:GetString() == optionData.ID then
 			sortAscending:SetBool(not sortAscending:GetBool())
 		else
-			sortType:SetString(data.id)
+			sortType:SetString(optionData.ID)
 		end
-		self:UpdateSorting()
+
+		self:UpdateScoreboard()
 		self:ApplySortingLabelSchemeSettings()
 	end
-	table.insert(self.ExtraSortButtons, label)
+
+	table.insert(self.ExtraSortingOptions, option)
 end
 
---------------------------
--- PANEL:UpdateScoreboard
---------------------------
--- Desc:		Updates the scoreboard's information.
-function PANEL:UpdateScoreboard()
-	self:UpdateGroupData()
+function TTT.Scoreboard.PANEL:UpdateScoreboard()
+	self:UpdateGroups()
 	self:UpdateSorting()
-	self:InvalidateChildren()
 end
 
--------------------------
--- PANEL:UpdateGroupData
--------------------------
--- Desc:		Updates the players in the groups of the scoreboard.
--- Notice:		Shouldn't be called directly. Use PANEL.UpdateScoreboard instead.
-function PANEL:UpdateGroupData()
-	for i, group in ipairs(self.Groups) do
-		group:UpdatePlayers()
+function TTT.Scoreboard.PANEL:UpdateGroups()
+	local changed = false
+
+	for _, ply in ipairs(player.GetAll()) do
+		for _, group in ipairs(self.Groups) do
+			if not group:HasPlayer(ply) then
+				if group.PlayerChooserFunction(ply) then
+					group:AddPlayer(ply)
+					changed = true
+				end
+			else
+				if not group.PlayerChooserFunction(ply) then
+					group:RemovePlayer(ply)
+					changed = true
+				end
+			end
+
+			for i = #group.ContainnedRows, 1, -1 do
+				local row = group.ContainnedRows[i]
+				if IsValid(row) then
+					if not IsValid(row:GetPlayer()) then
+						row:Remove()
+						table.remove(group.ContainnedRows, i)
+					else
+						row.Name = row:GetPlayer():Nick()
+					end
+				end
+			end
+		end
+	end
+
+	for _, group in ipairs(self.Groups) do
+		group:SetVisible(group:HasPlayers())
+	end
+
+	if changed then
+		self:PerformLayout()
+	else
+		self:InvalidateLayout()
 	end
 end
 
------------------------
--- PANEL:UpdateSorting
------------------------
--- Desc:		Sorts the scoreboard by the current sorting type.
-function PANEL:UpdateSorting()
+function TTT.Scoreboard.PANEL:UpdateSorting()
 	local sort = sortType:GetString()
 	local sortFunction
 
 	-- First check extra sort buttons.
-	for i, v in ipairs(self.ExtraSortButtons) do
-		if sort == v.id then
-			sortFunction = v.sorter
+	for i, v in ipairs(self.ExtraSortingOptions) do
+		if sort == v.ID then
+			sortFunction = v.SortFunction
 		end
 	end
 
 	-- Next check the column sort buttons.
 	if not isfunction(sortFunction) then
 		for i, v in ipairs(self.Columns) do
-			if v.id == sort then
-				sortFunction = v.sortFunc
+			if v.ID == sort then
+				sortFunction = v.SortFunction
 			end
 		end
 
@@ -335,32 +228,36 @@ function PANEL:UpdateSorting()
 	local ascend = sortAscending:GetBool()
 	for i, group in ipairs(self.Groups) do
 		table.sort(group.ContainnedRows, function(rowA, rowB)
+			if not IsValid(rowA) then return false end
+			if not IsValid(rowB) then return true end
+
 			local plyA, plyB = rowA:GetPlayer(), rowB:GetPlayer()
-			local retVal = sortFunction(plyA, plyB)
-			if retVal == 0 then
-				retVal = string.lower(plyA:Nick()) > string.lower(plyB:Nick())
+			
+			if not IsValid(plyA) then return false end
+			if not IsValid(plyB) then return true end
+
+			local comparison = sortFunction(plyA, plyB)
+			local retVal = true
+
+			if comparison ~= 0 then
+				retVal = comparison > 0
 			else
-				retVal = retVal > 0
+				retVal = string.lower(plyA:Nick()) > string.lower(plyB:Nick())
 			end
 
-			if not isbool(retVal) then
-				error("Non-boolean value returned for TTT Scoreboard sorting option with ID of '".. sort .."'")
-			end
-
-			if ascend then
-				return retVal
-			end
-			return not retVal
+			return retVal
 		end)
+		
+		-- TTT instead just inverts retVal to switch between ascending and descending but that was yielding annoying and confusing results. Theres also no speed difference so don't nag me for doing this.
+		if ascend then
+			group.ContainnedRows = table.Reverse(group.ContainnedRows)
+		end
+
+		group:InvalidateLayout()
 	end
-	self:InvalidateChildren()
 end
 
---------------------------
--- PANEL:StartUpdateTimer
---------------------------
--- Desc:		Starts a timer to update the scoreboard.
-function PANEL:StartUpdateTimer()
+function TTT.Scoreboard.PANEL:StartUpdateTimer()
 	if timer.Exists("TTT.Scoreboard.Updater") then
 		timer.Remove("TTT.Scoreboard.Updater")
 	end
@@ -370,17 +267,139 @@ function PANEL:StartUpdateTimer()
 	end)
 end
 
----------------------------
--- PANEL:RemoveUpdateTimer
----------------------------
--- Desc:		Removes the scoreboard update timer.
-function PANEL:RemoveUpdateTimer()
+function TTT.Scoreboard.PANEL:RemoveUpdateTimer()
 	if timer.Exists("TTT.Scoreboard.Updater") then
 		timer.Remove("TTT.Scoreboard.Updater")
 	end
 end
 
-function PANEL:OnRemove()
+function TTT.Scoreboard.PANEL:OnRemove()
 	self:RemoveUpdateTimer()
 end
-vgui.Register("TTT.Scoreboard", PANEL, "DPanel")
+
+function TTT.Scoreboard.PANEL:IsScrollBarVisible()
+	if IsValid(self.GroupScrollPanel) and IsValid(self.GroupScrollPanel:GetVBar()) then
+		return self.GroupScrollPanel:GetVBar().Enabled or false
+	end
+	return false
+end
+
+function TTT.Scoreboard.PANEL:ApplySchemeSettings()
+	self.hostname:SetFont("TTT_SBHeaderLarge")
+	self.playingOn:SetFont("TTT_SBHeaderSmall")
+	self.roundInfo:SetFont("TTT_SBHeaderSmall")
+	self.SortBy:SetFont("TTT_SBHeaderSmall")
+
+	self.hostname:SetTextColor(color_black)
+	self.playingOn:SetTextColor(color_white)
+	self.roundInfo:SetTextColor(color_white)
+	self.SortBy:SetTextColor(color_white)
+
+	self:ApplySortingLabelSchemeSettings()
+end
+
+function TTT.Scoreboard.PANEL:ApplySortingLabelSchemeSettings()
+	local sortingType = sortType:GetString()
+	for i, v in pairs(self.ExtraSortingOptions) do
+		v.DLabel:SetFont("TTT_SBHeaderSmall")
+
+		if v.ID == sortingType then
+			v.DLabel:SetTextColor(self.ColorActiveSortingText)
+		else
+			v.DLabel:SetTextColor(color_white)
+		end
+	end
+
+	for i, v in ipairs(self.Columns) do
+		v.DLabel:SetFont("TTT_SBHeaderSmall")
+
+		if v.ID == sortingType then
+			v.DLabel:SetTextColor(self.ColorActiveSortingText)
+		else
+			v.DLabel:SetTextColor(color_white)
+		end
+	end
+end
+
+function TTT.Scoreboard.PANEL:Paint(w, h)
+	-- Scoreboard background
+	surface.SetDrawColor(self.BackgroundColor.r, self.BackgroundColor.g, self.BackgroundColor.b, self.BackgroundColor.a)
+	surface.DrawRect(0, self.LogoOffset, w, h)
+
+	-- Colored Bar
+	surface.SetDrawColor(self.BarColor.r, self.BarColor.g, self.BarColor.b, self.BarColor.a)
+	surface.DrawRect(0, self.LogoOffset + self.BarYPos, w, self.BarHeight)
+
+	-- Logo
+	surface.SetTexture(self.Logo)
+	surface.SetDrawColor(255, 255, 255, 255)
+	surface.DrawTexturedRect(0, 0, self.LogoSize, self.LogoSize)
+end
+
+function TTT.Scoreboard.PANEL:GetScoreboardWidth()
+	return math.max(ScrW() * self.WidthMultiplier, self.MinWidth)
+end
+
+function TTT.Scoreboard.PANEL:PerformLayout()
+	local w = self:GetScoreboardWidth()
+	local h = self:GetTall()
+	self:SetWide(w)
+	self:SetPos(ScrW()/2 - w/2, math.min(72, (ScrH() - h)/4))
+
+	self.header:SetSize(w, self.HeaderHeight)
+	self.header:SetPos(0, self.LogoOffset)
+
+	self.hostname:SetText(GetHostName())
+	self.hostname:SizeToContents()
+	self.hostname:SetPos(w - self.hostname:GetWide() - self.RightPadding, self.BarYPos/2 + self.BarHeight/2)
+
+	self.playingOn:SetText(TTT.Languages.GetPhrase("sb_playingon"))
+	self.playingOn:SizeToContents()
+	self.playingOn:SetPos(w - self.playingOn:GetWide() - self.RightPadding, self.BarYPos/2 - self.playingOn:GetTall()/2)
+
+	self.roundInfo:SetText(TTT.Languages.GetPhrase("sb_roundinfo", TTT.Rounds.GetRoundsLeft(), TTT.Rounds.GetFormattedRemainingTime()))
+	self.roundInfo:SizeToContents()
+	self.roundInfo:SetPos(w - self.roundInfo:GetWide() - self.RightPadding, self.BarYPos + self.BarHeight)
+
+	-- Position the column header labels.
+	local cur_x_offset = self.RowHeight
+	for i, v in ipairs(self.Columns) do
+		v.DLabel:SizeToContents()
+		v.DLabel:SetPos(w - cur_x_offset - v.Width/2 - v.DLabel:GetWide()/2, self.ColumnLabelYPos)
+		cur_x_offset = cur_x_offset + v.Width
+	end
+
+	-- Add extra sorting options.
+	self.SortBy:SetText(TTT.Languages.GetPhrase("sb_sort_by")..":")
+	self.SortBy:SizeToContents()
+	self.SortBy:SetPos(self.LogoSize, self.ColumnLabelYPos - self.ExtraButtonYOffset)
+	local space = 10
+	local offset = self.SortBy:GetWide() + space
+	for k, v in pairs(self.ExtraSortingOptions) do
+		v.DLabel:SizeToContents()
+		v.DLabel:SetPos(self.LogoSize + offset, self.ColumnLabelYPos - self.ExtraButtonYOffset)
+		offset = offset + v.DLabel:GetWide() + space
+	end
+
+	local scrollpanel_y = self.LogoSize - self.LogoOffset - self.LogoWhitespace
+	self.GroupScrollPanel:SetPos(0, scrollpanel_y)
+	self.GroupScrollPanel:SetSize(w, ScrH() * self.HeightMultiplier - scrollpanel_y) -- Set to its max height so the scrollbar doesn't briefly appear whenever a player connects.
+
+	-- Position the groups.
+	local last_group_pos = 0	-- Relative pos of the last group height.
+	for i, v in ipairs(self.Groups) do
+		if v:HasPlayers() then
+			v:SetVisible(true)
+			v:SetPos(0, last_group_pos)
+			v:SetWide(self.GroupScrollPanel:InnerWidth())
+			v:SetContentAlignment(8)
+
+			last_group_pos = last_group_pos + v:GetTall() + self.GroupGap
+		else
+			v:SetVisible(false)
+		end
+	end
+
+	self:SetHeight(math.min(ScrH() * self.HeightMultiplier, scrollpanel_y + last_group_pos - self.GroupGap))
+end
+vgui.Register("TTT.Scoreboard", TTT.Scoreboard.PANEL, "DPanel")

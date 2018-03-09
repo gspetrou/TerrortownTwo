@@ -55,13 +55,13 @@ hook.Add("TTT.Scoreboard.Initialize", "TTT", function()
 	--------------
 	-- COLUMNS
 	--------------
-	TTT.Scoreboard.AddColumn("tag", "", 60, 0, function(ply)
+	/*TTT.Scoreboard.AddColumn("tag", "", 60, -0, function(ply)
 		local tagdata = TTT.Scoreboard.GetTag(ply)
 		if ply:Alive() and tagdata then
 			return TTT.Languages.GetPhrase(tagdata.phrase), tagdata.color
 		end
 		return ""
-	end)
+	end)*/
 	TTT.Scoreboard.AddColumn("karma", "sb_karma", 50, 10, function(ply)
 		return 1337
 	end)
@@ -87,7 +87,7 @@ hook.Add("TTT.Scoreboard.Initialize", "TTT", function()
 	------------
 	-- GROUPS
 	------------
-	TTT.Scoreboard.AddGroup("terrorists", "sb_terrorists", 10, Color(40, 200, 40, 100), function(ply)
+	TTT.Scoreboard.AddGroup("terrorists", "sb_terrorists", Color(40, 200, 40, 100), 10, function(ply)
 		return ply:Alive()
 	end, TTT.Scoreboard.DrawTags, 40)
 /*
@@ -97,7 +97,7 @@ hook.Add("TTT.Scoreboard.Initialize", "TTT", function()
 		return ply:IsConfirmedDead()
 	end)
 */
-	TTT.Scoreboard.AddGroup("spectators", "sb_spectators", 40, Color(200, 200, 0, 100), function(ply)
+	TTT.Scoreboard.AddGroup("spectators", "sb_spectators", Color(200, 200, 0, 100), 40, function(ply)
 		return ply:IsSpectator()
 	end)
 
@@ -112,13 +112,18 @@ hook.Add("TTT.Scoreboard.Initialize", "TTT", function()
 	end)
 
 	---------------
-	-- Info Tags
+	-- INFO TAGS
 	---------------
 	TTT.Scoreboard.AddTag("sb_tag_friend", TTT.Colors.Green)
 	TTT.Scoreboard.AddTag("sb_tag_suspect", TTT.Colors.Yellow)
 	TTT.Scoreboard.AddTag("sb_tag_avoid", Color(255, 150, 0, 255))
 	TTT.Scoreboard.AddTag("sb_tag_kill", TTT.Colors.Red)
 	TTT.Scoreboard.AddTag("sb_tag_missing", Color(130, 190, 130, 255))
+end)
+
+hook.Add("TTT.Roles.Changed", "TTT", function(ply)
+	ply:SetScoreboardRowOpen(false)
+	TTT.Scoreboard.ClearTag(ply)
 end)
 
 ---------------
