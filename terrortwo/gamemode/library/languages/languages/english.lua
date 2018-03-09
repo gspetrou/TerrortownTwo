@@ -1,16 +1,19 @@
 L.LanguageName = "English"
 
+-- Roles
 L.innocent = "Innocent"
 L.detective = "Detective"
 L.traitor = "Traitor"
 L.spectator = "Spectator"
 L.terrorist = "Terrorist"
 
+-- Round states
 L.waiting = "Waiting"
 L.preperation = "Preperation"
 L.roundend = "Round End"
 L.active = "Active"
 
+-- Scoreboard
 L.sb_roundinfo = "Map changes in %s rounds or in %s"
 L.sb_karma = "Karma"
 L.sb_score = "Score"
@@ -30,6 +33,7 @@ L.sb_tag_avoid = "Avoid"
 L.sb_tag_kill = "Kill"
 L.sb_tag_missing = "Missing"
 
+-- Health
 L.hp_healthy   = "Healthy"
 L.hp_hurt      = "Hurt"
 L.hp_wounded   = "Wounded"

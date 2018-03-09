@@ -18,8 +18,8 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 	local alpha = TTT.VGUI.ttt_hud_alive_alpha
 	local alpha_text = TTT.VGUI.ttt_hud_alive_alpha * 1.2
 
-	local bar_w = scale_w - 6
-	local bar_h = (scale_h - 12)/3
+	local bar_w = scale_w - 6			-- Width of each bar.
+	local bar_h = (scale_h - 12)/3		-- Height of each bar.
 	local bar_pos_x = 8
 	local bar_pos_y = h - 2 - scale_h
 
@@ -57,9 +57,9 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 	text_w, text_h = surface_GetTextSize(hp)
 
 	bar_pos_y = bar_pos_y + bar_h + 3
-	surface_SetDrawColor(health_colors.bg[1], health_colors.bg[2], health_colors.bg[3], alpha)
+	surface_SetDrawColor(health_colors.bg[1], health_colors.bg[2], health_colors.bg[3], alpha)	-- Health bar background.
 	surface_DrawRect(bar_pos_x, bar_pos_y, bar_w, bar_h)
-	surface_SetDrawColor(health_colors.fg[1], health_colors.fg[2], health_colors.fg[3], alpha)
+	surface_SetDrawColor(health_colors.fg[1], health_colors.fg[2], health_colors.fg[3], alpha)	-- Health bar foreground.
 	surface_DrawRect(bar_pos_x, bar_pos_y, bar_w * math_Clamp(hp/100, 0, 1), bar_h)
 
 	surface_SetTextPos(bar_pos_x + bar_w - text_w - 3, bar_pos_y + bar_h/2 - text_h/2)
@@ -72,9 +72,9 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 		local storedAmmo = wep.Ammo1 and wep:Ammo1() or false
 
 		bar_pos_y = bar_pos_y + bar_h + 3
-		surface_SetDrawColor(ammo_colors.bg[1], ammo_colors.bg[2], ammo_colors.bg[3], alpha)
+		surface_SetDrawColor(ammo_colors.bg[1], ammo_colors.bg[2], ammo_colors.bg[3], alpha)	-- Ammo background.
 		surface_DrawRect(bar_pos_x, bar_pos_y, bar_w, bar_h)
-		surface_SetDrawColor(ammo_colors.fg[1], ammo_colors.fg[2], ammo_colors.fg[3], alpha)
+		surface_SetDrawColor(ammo_colors.fg[1], ammo_colors.fg[2], ammo_colors.fg[3], alpha)	-- Ammo foreground.
 		surface_DrawRect(bar_pos_x, bar_pos_y, bar_w * math_Clamp(clipAmmo/wep.Primary.ClipSize, 0, 1), bar_h)
 
 		local ammoText = clipAmmo

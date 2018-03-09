@@ -45,14 +45,14 @@ GM.Name = "Trouble in Terrorist Town Two"
 GM.Author = "George 'Stalker' Petrou"
 GM.Email = "N/A"
 GM.Website = "N/A"
-TTT.Version = 20171230					-- YearMonthDay
+TTT.Version = 20180308					-- YearMonthDay
 DEFINE_BASECLASS("gamemode_base")
 
 hook.Add("TTT.PreLibraryLoaded", "TTT", function()
 	hook.Remove("PlayerTick", "TickWidgets")	-- Why does this even run on the base gamemode.
 
 	if SERVER then
-		TTT.Library.InitSQL()
+		TTT.Library.InitSQL()	-- Load information from the SQLite database.
 	end
 end)
 
@@ -84,6 +84,7 @@ end
 -- Round Hooks
 ---------------
 hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
+	-- If we switch to ROUND_WAITING then clear everyone's roles.
 	if state == ROUND_WAITING then
 		for i, v in ipairs(player.GetAll()) do
 			if not v:IsSpectator() then
@@ -92,6 +93,7 @@ hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
 		end
 	end
 
+	-- Clear player's scoreboard tags on ROUND_WAITING and ROUND_PREP.
 	if CLIENT and (state == ROUND_WAITING or state == ROUND_PREP) then
 		for i, v in ipairs(player.GetAll()) do
 			TTT.Scoreboard.ClearTag(v)

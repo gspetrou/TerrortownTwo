@@ -107,6 +107,7 @@ function TTT.Languages.AddPhrase(phrase_id, lang, translation)
 	TTT.Languages.Languages[lang][phrase_id] = translation
 end
 
+-- Receive the server's default language.
 net.Receive("TTT.Languages.ServerDefault", function()
 	local langIDNum = net.ReadUInt(6)
 	local lang = "english"

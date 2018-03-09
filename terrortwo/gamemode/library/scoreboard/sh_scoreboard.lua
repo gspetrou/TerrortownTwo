@@ -43,23 +43,35 @@ surface.CreateFont("TTT_SBBody", {
 	weight = 900
 })
 
+-----------------------
+-- TTT.Scoreboard.Open
+-----------------------
+-- Desc:		Opens the scoreboard.
 function TTT.Scoreboard.Open()
 	if IsValid(TTT.Scoreboard.Scoreboard) then
 		TTT.Scoreboard.Scoreboard:SetVisible(true)
 	else
 		TTT.Scoreboard.Scoreboard = vgui.Create("TTT.Scoreboard")
 	end
-	gui.EnableScreenClicker(true)	-- We could use PANEL.MakePopup instead but you can start walking with the scoreboard open this way.
+	gui.EnableScreenClicker(true)
 end
 
+------------------------
+-- TTT.Scoreboard.Close
+------------------------
+-- Desc:		Closes the scoreboard if its open.
 function TTT.Scoreboard.Close()
 	gui.EnableScreenClicker(false)
 	if IsValid(TTT.Scoreboard.Scoreboard) then
-		--TTT.Scoreboard.Scoreboard:Remove()
 		TTT.Scoreboard.Scoreboard:SetVisible(false)
 	end
 end
 
+---------------------------
+-- TTT.Scoreboard.GetPanel
+---------------------------
+-- Desc:		Gets the scoreboard panel if it exists.
+-- Returns:		Panel or Boolean, scoreboard panel or false if it doesn't exist.
 function TTT.Scoreboard.GetPanel()
 	if IsValid(TTT.Scoreboard.Scoreboard) then
 		return TTT.Scoreboard.Scoreboard
@@ -67,6 +79,21 @@ function TTT.Scoreboard.GetPanel()
 	return false
 end
 
+----------------------------
+-- TTT.Scoreboard.AddColumn
+----------------------------
+-- Desc:		Adds a column to the scoreboard.
+-- Arg One:		String, unique id for the column. Used in a ConVar so keep it simple, no spaces or numbers.
+-- Arg Two:		String, phrase for the column header label. If not a valid phrase, will not be translate and just appear as normal text.
+-- Arg Three:	Number, width of the column.
+-- Arg Four:	Number, order for the column. Smaller is more to the left. Larger is more to the right.
+-- Arg Five:	Function, used to get data for the player in that column.
+-- 					Arg One:		Player, of the row.
+-- 					Returns:		String, to display for that player's row's column. Confusing, right?
+-- Arg Six:		(Optional=nil) Function, used to sort the scoreboard by that column. nil disables sorting.
+-- 					Arg One:		Player, A to be compared with B.
+-- 					Arg Two:		Player, B to be compared with A.
+-- 					Returns:		Number, greater than 0 means A before B, less than 0 means B before A. Returning 0 will sort by name.
 function TTT.Scoreboard.AddColumn(id, phrase, width, order, columndatafunction, sortfunction)
 	table.insert(TTT.Scoreboard.Columns, {
 		ID = id,
@@ -78,6 +105,20 @@ function TTT.Scoreboard.AddColumn(id, phrase, width, order, columndatafunction, 
 	})
 end
 
+---------------------------
+-- TTT.Scoreboard.AddGroup
+---------------------------
+-- Desc:		Adds a group to the scoreboard.
+-- Arg One:		String, unique id for the group. Keep it simple, no spaces or numbers.
+-- Arg Two:		String, phrase for the group's title. If not a valid phrase, will not be translate and just appear as normal text.
+-- Arg Three:	Color, for the background of the group's title.
+-- Arg Four:	Number, order for the groups to appear. The larger, the further down.
+-- Arg Five:	Function, to pick what players should be in this group.
+-- 					Note:		Its very easy for players to appear in multiple groups if you don't do this right.
+-- 					Arg One:	Player
+-- 					Returns:	Boolean, should they appear in this group.
+-- Arg Six:		(Optional=nil) Creates the dropdown panel when clicking on a row in the given group. nil to not have a dropdown menu.
+-- Arg Seven:	(Optional=nil) Height of open dropdown panel. Can be nil if arg six is nil.
 function TTT.Scoreboard.AddGroup(id, phrase, color, order, selectorfunction, infofunction, rowopenheight)
 	table.insert(TTT.Scoreboard.Groups, {
 		ID = id,
@@ -90,6 +131,17 @@ function TTT.Scoreboard.AddGroup(id, phrase, color, order, selectorfunction, inf
 	})
 end
 
+----------------------------------------
+-- TTT.Scoreboard.AddExtraSortingOption
+----------------------------------------
+-- Desc:		Adds an extra sorting button alongside "Sort By: Name  Color"
+-- Arg One:		String, unique ID for this sorting option. Keep it simple, no spaces or numbers. Used in a ConVar.
+-- Arg Two:		String, phrase, translated for the sorting option button. If not a valid phrase, will not be translate and just appear as normal text.
+-- Arg Three:	Number, order of the button to appear. Larger is more rightmost.
+-- Arg Four:	Function, to sort the scoreboard by.
+-- 					Arg One:		Player, A to be compared with B.
+-- 					Arg Two:		Player, B to be compared with A.
+-- 					Returns:		Number, greater than 0 means A before B, less than 0 means B before A. Returning 0 will sort by name.
 function TTT.Scoreboard.AddExtraSortingOption(id, phrase, order, sortfunction)
 	table.insert(TTT.Scoreboard.ExtraSortingOptions, {
 		ID = id,

@@ -1,3 +1,4 @@
+-- "shotgun_buckshot" ammo. Buckshot shells for shotguns.
 AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "ammo_ttt2_base"

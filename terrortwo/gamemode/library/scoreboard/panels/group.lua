@@ -1,7 +1,7 @@
 local PANEL = {
 	groupBG = Color(20, 20, 20, 190),		-- Color of the background of a group.
 	lightRowBG = Color(75, 75, 75, 100),	-- Color of the light rows in a group.
-	darkColBG = Color(0, 0, 0, 150)
+	darkColBG = Color(0, 0, 0, 150)			-- Color of dark column background.
 }
 
 function PANEL:Init()
@@ -16,34 +16,80 @@ function PANEL:Init()
 	self.Columns = {}
 end
 
+---------------
+-- PANEL:SetID
+---------------
+-- Decs:		Sets the unique ID of the group.
+-- Arg One:		String, unique ID.
 function PANEL:SetID(id)
 	self.ID = id
 end
 
+------------------
+-- PANEL:SetTitle
+------------------
+-- Desc:		Sets the title of the group.
+-- Arg One:		Strin,g title.
 function PANEL:SetTitle(title)
 	self.Title = title
 end
 
+-----------------------
+-- PANEL:SetTitleColor
+-----------------------
+-- Desc:		Sets the group title color.
+-- Arg One:		Color, of box behind the groups title.
 function PANEL:SetTitleColor(color)
 	self.TitleColor = color
 end
 
+------------------
+-- PANEL:SetOrder
+------------------
+-- Desc:		Sets the order in which this group appears.
+-- Arg One:		Number, order in which this group appears.
 function PANEL:SetOrder(order)
 	self.Order = order
 end
 
+----------------------------------
+-- PANEL:SetPlayerChooserFunction
+----------------------------------
+-- Desc:		Sets the function used to determine what players should appear in this group.
+-- Arg One:		Function
+-- 					Arg One:		Player
+-- 					Returns:		Boolean, should the given player appear in this group. Careful for conditions where the same player can appear in multiple groups..
 function PANEL:SetPlayerChooserFunction(func)
 	self.PlayerChooserFunction = func
 end
 
+------------------------
+-- PANEL:SetupInfoPanel
+------------------------
+-- Desc:		Sets the function used to build the dropdown info panel.
+-- Arg One:		Function
+-- 					Arg One:		Player, this dropdown panel belongs to.
+-- 					Arg Two:		Panel, TTT.Scoreboard.Row this dropdown belongs to.
+-- 					Arg Three:		Panel, the dropdown panel to parent to.
+-- 					Arg Four:		Number, width of the row/dropdown since doing row:GetSize() isn't yet accurate when this function is ran,
 function PANEL:SetupInfoPanel(func)
 	self.InfoPanelFunction = func
 end
 
+
+----------------------
+-- PANEL:SetRowHeight
+----------------------
+-- Desc:		Sets the height of the group's dropdown panel.
+-- Arg One:		Number, dropdown height.
 function PANEL:SetRowHeight(height)
 	self.RowHeight = height
 end
 
+--------------------
+-- PANEL:ClearGroup
+--------------------
+-- Desc:		Clears the group of players.
 function PANEL:ClearGroup()
 	for i, v in ipairs(self.ContainnedRows) do
 		v:Remove()
@@ -51,6 +97,10 @@ function PANEL:ClearGroup()
 	self.ContainnedRows = {}
 end
 
+-----------------------
+-- PANEL:UpdatePlayers
+-----------------------
+-- Desc:		Updates what players should and shouldn't be in this group.
 function PANEL:UpdatePlayers()
 	self:ClearGroup()
 	
@@ -63,6 +113,12 @@ function PANEL:UpdatePlayers()
 	self:SetVisible(self:HasPlayers())
 end
 
+-------------------
+-- PANEL:HasPlayer
+-------------------
+-- Desc:		Sees if the group has the given player.
+-- Arg One:		Player
+-- Returns:		Boolean, does this group contain the given player.
 function PANEL:HasPlayer(ply)
 	for i, v in ipairs(self.ContainnedRows) do
 		if v:GetPlayer() == ply then
@@ -72,10 +128,20 @@ function PANEL:HasPlayer(ply)
 	return false
 end
 
+--------------------
+-- PANEL:HasPlayers
+--------------------
+-- Desc:		Sees if this group has any players.
+-- Returns:		Boolea, does this group have any players.
 function PANEL:HasPlayers()
 	return #self.ContainnedRows > 0
 end
 
+-------------------
+-- PANEL:AddPlayer
+-------------------
+-- Desc:		Adds the given player to the group.
+-- Arg One:		Player, to be added.
 function PANEL:AddPlayer(ply)
 	local row = vgui.Create("TTT.Scoreboard.Row", self)
 	row:SetInfoPanelFunction(self.InfoPanelFunction)
@@ -96,6 +162,11 @@ function PANEL:AddPlayer(ply)
 	self:InvalidateLayout(true)
 end
 
+----------------------
+-- PANEL:RemovePlayer
+----------------------
+-- Desc:		Removes the given player from the group if they're in it.
+-- Arg One:		Player, to remove from the group.
 function PANEL:RemovePlayer(ply)
 	for i, v in ipairs(self.ContainnedRows) do
 		if v:GetPlayer() == ply then
@@ -105,6 +176,11 @@ function PANEL:RemovePlayer(ply)
 	end
 end
 
+-------------------
+-- PANEL:AddColumn
+-------------------
+-- Desc:		Adds a column to the group.
+-- Arg One:		Table, column data.
 function PANEL:AddColumn(columnData)
 	table.insert(self.Columns, columnData)
 end

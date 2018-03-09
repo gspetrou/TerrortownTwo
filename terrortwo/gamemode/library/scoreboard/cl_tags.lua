@@ -1,6 +1,16 @@
 TTT.Scoreboard = TTT.Scoreboard or {}
-TTT.Scoreboard.Tags = TTT.Scoreboard.Tags or {}
-local tagWidth = 60
+TTT.Scoreboard.Tags = TTT.Scoreboard.Tags or {
+	TagWidth = 60
+}
+
+---------------------------
+-- TTT.Scoreboard.DrawTags
+---------------------------
+-- Desc:		Draws the player's tags on their row and adds the dropdown menu for it.
+-- Arg One:		Player, for that row.
+-- Arg Two:		Panel, TTT.Scoreboard.Row panel of that player's row.
+-- Arg Three:	Panel, the dropdown panel you can parent to.
+-- Arg Four:	Number, width of the dropdown panel. Given since row:GetWide() isn't set when this function gets called.
 function TTT.Scoreboard.DrawTags(ply, row, openPanel, width)
 	-- First calculate how much space is taken up by columns and the mute button.
 	local columnWidths = 16
@@ -27,7 +37,7 @@ function TTT.Scoreboard.DrawTags(ply, row, openPanel, width)
 
 		surface.SetFont("TTT_SBBody")
 		local t_w, t_h = surface.GetTextSize(text)
-		self:SetPos(width - columnWidths - tagWidth - t_w/2, TTT.Scoreboard.PANEL.RowHeight/2 - t_h/2)
+		self:SetPos(width - columnWidths - TTT.Scoreboard.Tags.TagWidth - t_w/2, TTT.Scoreboard.PANEL.RowHeight/2 - t_h/2)
 	end
 	tagText:Update()
 

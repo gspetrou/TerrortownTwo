@@ -25,6 +25,15 @@ TTT.Player.HealthColors = {
 	Badwound= Color(255, 140, 0, 255),
 	Death   = Color(255, 0, 0, 255)
 }
+
+------------------------------
+-- TTT.Player.GetHealthStatus
+------------------------------
+-- Desc:		Gets a phrase to describe the corresponding health level and color.
+-- Arg One:		Number, health.
+-- Arg Two:		Number, maximum health.
+-- Returns:		String, phrase for the player's health status.
+-- 				Color, for the player's health status.
 function TTT.Player.GetHealthStatus(hp, maxHP)
 	maxHP = maxHP or 100
 

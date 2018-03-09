@@ -1,3 +1,4 @@
+-- "pistol_heavy" ammo. Used for pistols that need a heavier ammo.
 AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "ammo_ttt2_base"

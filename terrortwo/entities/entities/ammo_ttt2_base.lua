@@ -1,4 +1,4 @@
--- Base TTT2 ammo, don't worry about modifying these. And yes, this heavily copies TTT1.
+-- Base TTT2 ammo, don't worry about modifying this unless you know what youre doing. And yes, this heavily copies TTT1.
 AddCSLuaFile()
 ENT.Base = "base_entity"
 ENT.Type = "anim"

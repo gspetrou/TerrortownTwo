@@ -17,11 +17,13 @@ function GM:PlayerSelectSpawn(ply)
 	return TTT.Map.SelectSpawnPoint(ply)
 end
 
+-- When the map resets make spectators move back to a spawn point.
+-- Make non-spectators spawn again (at a spawn point).
 hook.Add("TTT.Map.OnReset", "TTT", function()
-	local randomSpawnPoint = TTT.Map.GetSpawnEntities()[1]:GetPos() + Vector(0, 0, 64) -- Put spectators at a random spawn point, doesn't matter if its all the same.
+	local randomSpawnPoint = TTT.Map.GetSpawnEntities()[1]:GetPos() + Vector(0, 0, 64)
 	for i, ply in ipairs(player.GetAll()) do
 		if not ply:IsSpectator() then
-			if ply.ttt_inflymode then
+			if ply:IsInFlyMode() then
 				ply:UnSpectate()
 			end
 
@@ -42,7 +44,7 @@ function GM:PlayerInitialSpawn(ply)
 	TTT.Player.SetSpeeds(ply)
 
 	if ply:IsSpectator() then
-		ply:SetPos(TTT.Map.GetSpawnEntities()[1]:GetPos() + Vector(0, 0, 64))
+		ply:SetPos(TTT.Map.GetSpawnEntities()[1]:GetPos() + Vector(0, 0, 64))	-- If theyre a spectator then put them at a random spawn point.
 	end
 end
 
@@ -109,8 +111,8 @@ function GM:PlayerDisconnected(ply)
 	end)
 end
 
+-- Get c_ hands working.
 function GM:PlayerSetHandsModels(ply, ent)
-	-- Get c_ hands working.
 	local simplemodel = player_manager.TranslateToPlayerModelName(ply:GetModel())
 	local info = player_manager.TranslatePlayerHands(simplemodel)
 	if info then
@@ -161,6 +163,7 @@ function GM:AllowPlayerPickup()
    return false
 end
 
+-- PLAYER.Alive now returns false if player are spectator or in fly mode.
 local PLAYER = FindMetaTable("Player")
 TTT.OldAlive = TTT.OldAlive or PLAYER.Alive
 function PLAYER:Alive()
@@ -173,6 +176,7 @@ end
 ---------------
 -- Round Hooks
 ---------------
+-- Initialize the round system.
 hook.Add("TTT.Rounds.Initialize", "TTT", function()
 	if TTT.Rounds.ShouldStart() then
 		TTT.Rounds.EnterPrep()
@@ -181,6 +185,7 @@ hook.Add("TTT.Rounds.Initialize", "TTT", function()
 	end
 end)
 
+-- Check if the round should start.
 hook.Add("TTT.Rounds.ShouldStart", "TTT", function()
 	if GetConVar("ttt_dev_preventstart"):GetBool() or #TTT.Roles.GetActivePlayers() < GetConVar("ttt_minimum_players"):GetInt() then
 		return false
@@ -189,6 +194,7 @@ hook.Add("TTT.Rounds.ShouldStart", "TTT", function()
 	return true
 end)
 
+-- Check if the round should end.
 hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 	if not TTT.Rounds.IsActive() or GetConVar("ttt_dev_preventwin"):GetBool() then
 		return false

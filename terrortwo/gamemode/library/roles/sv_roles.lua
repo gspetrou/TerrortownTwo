@@ -60,6 +60,7 @@ function TTT.Roles.MakeSpectator(ply, is_spec)
 	end
 end
 
+-- When received toggle the player's spectator status.
 net.Receive("TTT.Roles.SpectatorModeChange", function(_, ply)
 	if IsValid(ply) then
 		TTT.Roles.MakeSpectator(ply, not ply:IsSpectator())
@@ -199,7 +200,7 @@ function TTT.Roles.PickRoles()
 	local traitors = {}
 	local detectives = {}
 
-	math.randomseed(os.time())
+	math.randomseed(os.time())	-- Probably not necessary but makes me feel good.
 
 	-- Pick traitors.
 	do

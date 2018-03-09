@@ -1,25 +1,25 @@
 TTT.Scoreboard.PANEL = {
-	BackgroundColor = Color(35, 35, 40, 220),
-	MinWidth = 640,
-	WidthMultiplier = 0.6,
-	HeightMultiplier = 0.95,
+	BackgroundColor = Color(35, 35, 40, 220),	-- Background color of scoreboard.
+	MinWidth = 640,								-- Minimum scoreboard width.
+	WidthMultiplier = 0.6,						-- Percent of screen width used by sb.
+	HeightMultiplier = 0.95,					-- Percent of screen height used by sb.
 
-	HeaderHeight = 120,
-	GroupGap = 5,
-	RightPadding = 5,
-	RowHeight = 24,
-	ScrollbarWidth = 16,
-	ColumnLabelYPos = 88,
-	ExtraButtonYOffset = 25,
+	HeaderHeight = 120,							-- Height of the header.
+	GroupGap = 5,								-- Gap between each group.
+	RightPadding = 5,							-- Amount of padding for text that is justified to the right.
+	RowHeight = 24,								-- Height of each row in a group.
+	ScrollbarWidth = 16,						-- Width of the scroll bar.
+	ColumnLabelYPos = 88,						-- Y Position for where column header labels should be.
+	ExtraButtonYOffset = 25,					-- Y offset from ColumnLabelYPos where the extra sorting options appear
 
-	BarColor = Color(220, 100, 0, 255),
-	BarYPos = 22,
-	BarHeight = 32,
+	BarColor = Color(220, 100, 0, 255),			-- Color of bar at the top in the header.
+	BarYPos = 22,								-- Y Position of that top bar.
+	BarHeight = 32,								-- Height of that top bar.
 
-	Logo = surface.GetTextureID("vgui/ttt/score_logo"),
-	LogoSize = 256,
-	LogoOffset = 72,
-	LogoWhitespace = 4,
+	Logo = surface.GetTextureID("vgui/ttt/score_logo"),	-- Logo image.
+	LogoSize = 256,										-- Logo image width/height.
+	LogoOffset = 72,									-- How much of the logo is/isn't sticking out from the scoreboard.
+	LogoWhitespace = 4,									-- The small amount of whitespace to account for in the logo image.
 
 	ColorActiveSortingText = Color(175, 175, 175, 255)
 }
@@ -48,6 +48,10 @@ function TTT.Scoreboard.PANEL:Init()
 	self:StartUpdateTimer()
 end
 
+------------------------------------
+-- TTT.Scoreboard.PANEL:InitColumns
+------------------------------------
+-- Desc:		Begins adding columns to the scoreboard.
 function TTT.Scoreboard.PANEL:InitColumns()
 	self.Columns = {}
 	for i, colData in ipairs(TTT.Scoreboard.Columns) do
@@ -55,6 +59,11 @@ function TTT.Scoreboard.PANEL:InitColumns()
 	end
 end
 
+----------------------------------
+-- TTT.Scoreboard.PANEL:AddColumn
+----------------------------------
+-- Desc:		Adds a column to the scoreboard. Don't call directly, instead use TTT.Scoreboard.AddColumn.
+-- Arg One:		Table, column data.
 function TTT.Scoreboard.PANEL:AddColumn(columnData)
 	local column = {
 		ID = columnData.ID,
@@ -87,6 +96,10 @@ function TTT.Scoreboard.PANEL:AddColumn(columnData)
 	table.insert(self.Columns, column)
 end
 
+-----------------------------------
+-- TTT.Scoreboard.PANEL:InitGroups
+-----------------------------------
+-- Desc:		Adds groups and fills them with columms.
 function TTT.Scoreboard.PANEL:InitGroups()
 	self.GroupScrollPanel = vgui.Create("DScrollPanel", self)
 	self.Groups = {}
@@ -101,6 +114,11 @@ function TTT.Scoreboard.PANEL:InitGroups()
 	end
 end
 
+---------------------------------
+-- TTT.Scoreboard.PANEL:AddGroup
+---------------------------------
+-- Desc:		Adds a group to the scoreboard. Don't call directly, instead use TTT.Scoreboard.AddGroup.
+-- Arg One:		Table, group data.
 function TTT.Scoreboard.PANEL:AddGroup(groupData)
 	local group = vgui.Create("TTT.Scoreboard.Group", self.GroupScrollPanel)
 	group:SetID(groupData.ID)
@@ -115,6 +133,10 @@ function TTT.Scoreboard.PANEL:AddGroup(groupData)
 	self.GroupScrollPanel:AddItem(group)
 end
 
+------------------------------------------------
+-- TTT.Scoreboard.PANEL:InitExtraSortingOptions
+------------------------------------------------
+-- Desc:		Begins adding the extra sorting options.
 function TTT.Scoreboard.PANEL:InitExtraSortingOptions()
 	self.ExtraSortingOptions = {}
 	for i, sortOption in ipairs(TTT.Scoreboard.ExtraSortingOptions) do
@@ -122,6 +144,11 @@ function TTT.Scoreboard.PANEL:InitExtraSortingOptions()
 	end
 end
 
+----------------------------------------------
+-- TTT.Scoreboard.PANEL:AddExtraSortingOption
+----------------------------------------------
+-- Desc:		Adds an extra sorting option. Don't call directly, instead use TTT.Scoreboard.AddExtraSortingOption.
+-- Arg One:		Table, sorting option data.
 function TTT.Scoreboard.PANEL:AddExtraSortingOption(optionData)
 	local option = {
 		ID = optionData.ID,
@@ -151,11 +178,19 @@ function TTT.Scoreboard.PANEL:AddExtraSortingOption(optionData)
 	table.insert(self.ExtraSortingOptions, option)
 end
 
+-----------------------------------------
+-- TTT.Scoreboard.PANEL:UpdateScoreboard
+-----------------------------------------
+-- Desc:		Updates the scoreboard to the most current information.
 function TTT.Scoreboard.PANEL:UpdateScoreboard()
 	self:UpdateGroups()
 	self:UpdateSorting()
 end
 
+-------------------------------------
+-- TTT.Scoreboard.PANEL:UpdateGroups
+-------------------------------------
+-- Desc:		Updates just the groups and what players are in ecah.
 function TTT.Scoreboard.PANEL:UpdateGroups()
 	local changed = false
 
@@ -198,6 +233,10 @@ function TTT.Scoreboard.PANEL:UpdateGroups()
 	end
 end
 
+--------------------------------------
+-- TTT.Scoreboard.PANEL:UpdateSorting
+--------------------------------------
+-- Desc:		Updates just the sorting of the scoreboard.
 function TTT.Scoreboard.PANEL:UpdateSorting()
 	local sort = sortType:GetString()
 	local sortFunction
@@ -257,6 +296,10 @@ function TTT.Scoreboard.PANEL:UpdateSorting()
 	end
 end
 
+-----------------------------------------
+-- TTT.Scoreboard.PANEL:StartUpdateTimer
+-----------------------------------------
+-- Desc:		Starts a timer that updates the scoreboard.
 function TTT.Scoreboard.PANEL:StartUpdateTimer()
 	if timer.Exists("TTT.Scoreboard.Updater") then
 		timer.Remove("TTT.Scoreboard.Updater")
@@ -267,6 +310,10 @@ function TTT.Scoreboard.PANEL:StartUpdateTimer()
 	end)
 end
 
+------------------------------------------
+-- TTT.Scoreboard.PANEL:RemoveUpdateTimer
+------------------------------------------
+-- Desc:		Removes the scoreboard update timer.
 function TTT.Scoreboard.PANEL:RemoveUpdateTimer()
 	if timer.Exists("TTT.Scoreboard.Updater") then
 		timer.Remove("TTT.Scoreboard.Updater")
@@ -277,6 +324,11 @@ function TTT.Scoreboard.PANEL:OnRemove()
 	self:RemoveUpdateTimer()
 end
 
+-------------------------------------------
+-- TTT.Scoreboard.PANEL:IsScrollBarVisible
+-------------------------------------------
+-- Desc:		Sees if the scroll bar is visible in the scoreboard.
+-- Returns:		Boolean, is the scrollbar visible.
 function TTT.Scoreboard.PANEL:IsScrollBarVisible()
 	if IsValid(self.GroupScrollPanel) and IsValid(self.GroupScrollPanel:GetVBar()) then
 		return self.GroupScrollPanel:GetVBar().Enabled or false
@@ -298,6 +350,10 @@ function TTT.Scoreboard.PANEL:ApplySchemeSettings()
 	self:ApplySortingLabelSchemeSettings()
 end
 
+--------------------------------------------------------
+-- TTT.Scoreboard.PANEL:ApplySortingLabelSchemeSettings
+--------------------------------------------------------
+-- Desc:		Applies scheme settings to the sorting labels, aka the column headers and extra sort options.
 function TTT.Scoreboard.PANEL:ApplySortingLabelSchemeSettings()
 	local sortingType = sortType:GetString()
 	for i, v in pairs(self.ExtraSortingOptions) do
@@ -336,6 +392,11 @@ function TTT.Scoreboard.PANEL:Paint(w, h)
 	surface.DrawTexturedRect(0, 0, self.LogoSize, self.LogoSize)
 end
 
+-------------------------------------------
+-- TTT.Scoreboard.PANEL:GetScoreboardWidth
+-------------------------------------------
+-- Desc:		Gets the width of the scoreboard.
+-- Returns:		Number, scoreboard width.
 function TTT.Scoreboard.PANEL:GetScoreboardWidth()
 	return math.max(ScrW() * self.WidthMultiplier, self.MinWidth)
 end

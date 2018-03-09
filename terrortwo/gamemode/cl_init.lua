@@ -55,13 +55,6 @@ hook.Add("TTT.Scoreboard.Initialize", "TTT", function()
 	--------------
 	-- COLUMNS
 	--------------
-	/*TTT.Scoreboard.AddColumn("tag", "", 60, -0, function(ply)
-		local tagdata = TTT.Scoreboard.GetTag(ply)
-		if ply:Alive() and tagdata then
-			return TTT.Languages.GetPhrase(tagdata.phrase), tagdata.color
-		end
-		return ""
-	end)*/
 	TTT.Scoreboard.AddColumn("karma", "sb_karma", 50, 10, function(ply)
 		return 1337
 	end)
@@ -122,8 +115,8 @@ hook.Add("TTT.Scoreboard.Initialize", "TTT", function()
 end)
 
 hook.Add("TTT.Roles.Changed", "TTT", function(ply)
-	ply:SetScoreboardRowOpen(false)
-	TTT.Scoreboard.ClearTag(ply)
+	ply:SetScoreboardRowOpen(false)		-- Close that player's scoreboard row if its open.
+	TTT.Scoreboard.ClearTag(ply)		-- Clear player's tags.
 end)
 
 ---------------

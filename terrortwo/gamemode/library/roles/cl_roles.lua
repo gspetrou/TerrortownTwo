@@ -6,6 +6,7 @@ concommand.Add("ttt_always_spectator", function(ply)
 	net.SendToServer()
 end)
 
+-- Clientside, make sure PLAYER.Alive excludes spectators.
 local PLAYER = FindMetaTable("Player")
 TTT.OldAlive = TTT.OldAlive or PLAYER.Alive
 function PLAYER:Alive()
@@ -23,6 +24,7 @@ function TTT.Roles.GetUnknown()
 	end)
 end
 
+-- Received when clearing roles.
 net.Receive("TTT.Roles.Clear", function()
 	local numplys = net.ReadUInt(7)
 	local activeplayers = {}
@@ -39,6 +41,7 @@ net.Receive("TTT.Roles.Clear", function()
 	end
 end)
 
+-- Received when updating roles for Traitors. Only received by traitors.
 net.Receive("TTT.Roles.SyncTraitors", function()
 	local numtraitors = net.ReadUInt(7)
 	for i = 1, numtraitors do
@@ -46,6 +49,7 @@ net.Receive("TTT.Roles.SyncTraitors", function()
 	end
 end)
 
+-- Receives all non-traitor roles.
 net.Receive("TTT.Roles.Sync", function()
 	local localply = LocalPlayer()
 
@@ -74,6 +78,7 @@ net.Receive("TTT.Roles.Sync", function()
 	end
 end)
 
+-- Received when a player switches role mid-game to a non-traitor role.
 net.Receive("TTT.Roles.PlayerSwitchedRole", function()
 	local role = net.ReadUInt(3)
 	local ply = net.ReadPlayer()

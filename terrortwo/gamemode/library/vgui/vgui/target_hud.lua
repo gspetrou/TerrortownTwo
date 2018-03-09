@@ -8,10 +8,13 @@ surface.CreateFont("TargetIDSmall2", {
 })
 
 TTT.VGUI.AddElement("ttt_hud_target", function(ply, w, h)
+
+	-- Fire a bullet trace.
 	local trData = util.GetPlayerTrace(ply)
 	trData.mask = MASK_SHOT
 	local tr = util.TraceLine(trData)
 
+	-- If we don't hit anything, end it.
 	if not IsValid(tr.Entity) then
 		return
 	end
@@ -27,6 +30,8 @@ TTT.VGUI.AddElement("ttt_hud_target", function(ply, w, h)
 		local x = w/2
 		local y = h/2 + yOffset
 
+		-- With a minimal HUD only draw their name and color it to their health.
+		-- Otherwise draw their full target HUD.
 		if minimalHud:GetBool() then
 			draw.SimpleText(name, "TargetIDSmall2", x - nameWidth/2 + 1, y - nameHeight/2 + 1, color_black)
 			draw.SimpleText(name, "TargetIDSmall2", x - nameWidth/2, y - nameHeight/2, hpColor)

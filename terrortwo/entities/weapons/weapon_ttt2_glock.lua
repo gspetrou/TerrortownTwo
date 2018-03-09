@@ -1,4 +1,3 @@
-
 SWEP.Base		= "weapon_ttt2_base"
 DEFINE_BASECLASS(SWEP.Base)
 

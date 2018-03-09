@@ -17,7 +17,7 @@ function PANEL:Init()
 	self.Name = ""
 	self.Player = nil
 	self.isopen = false
-	self.InfoPanelFunction = nil
+	self.InfoPanelFunction = nil	-- Function for building the dropdown panel.
 	self.OpenHeight = nil
 	self.Player = nil
 
@@ -44,6 +44,7 @@ function PANEL:Init()
 	end
 end
 
+-- For the dropdown menu.
 function PANEL:DoClick()
 	local ply = self:GetPlayer()
 	if isfunction(self.InfoPanelFunction) and IsValid(TTT.Scoreboard.Scoreboard) and IsValid(ply) and ply ~= LocalPlayer() then
@@ -64,6 +65,7 @@ function PANEL:DoClick()
 	end
 end
 
+-- For the right-click DMenu menu.
 function PANEL:DoRightClick()
 	local dmenu = DermaMenu()
 	local shouldCloseMenu = hook.Call("TTT.Scoreboard.PlayerRightClicked", nil, dmenu, self:GetPlayer())
@@ -74,10 +76,20 @@ function PANEL:DoRightClick()
 	end
 end
 
+----------------
+-- PANEL:IsOpen
+----------------
+-- Desc:		Sees if the dropdown panel is open/visible.
+-- Returns:		Boolean, is that dropdown visible.
 function PANEL:IsOpen()
 	return self.isopen
 end
 
+-----------------
+-- PANEL:SetOpen
+-----------------
+-- Desc:		Sets the dropdown panebl to be open/closed.
+-- Arg One:		Boolean, should open or close.
 function PANEL:SetOpen(b)
 	self.isopen = b
 	if IsValid(self:GetPlayer()) then
@@ -86,14 +98,28 @@ function PANEL:SetOpen(b)
 	self:InvalidateLayout(true)
 end
 
+-----------------------
+-- PANEL:SetOpenHeight
+-----------------------
+-- Desc:		Sets the height of the dropdown panel when its open.
+-- Arg One:		Number, of dropdown panel's height.
 function PANEL:SetOpenHeight(h)
 	self.OpenHeight = h
 end
 
+------------------------------
+-- PANEL:SetInfoPanelFunction
+------------------------------
+-- Desc:		Function called when creating the dropdown panel. Don't call directly, instead use with TTT.Scoreboard.AddGroup.
+-- Arg One:		Function, to build dropdown panel.
 function PANEL:SetInfoPanelFunction(func)
 	self.InfoPanelFunction = func
 end
 
+----------------------------
+-- PANEL:SetupDropDownPanel
+----------------------------
+-- Desc:		Builds the dropdown panel for the row.
 function PANEL:SetupDropDownPanel()
 	local ply = self:GetPlayer()
 	if not IsValid(ply) then
@@ -119,20 +145,39 @@ function PANEL:SetupDropDownPanel()
 	end
 end
 
+-------------------
+-- PANEL:SetPlayer
+-------------------
+-- Desc:		Sets the player that this row will be used for.
+-- Arg One:		Player, to set the row for.
 function PANEL:SetPlayer(ply)
 	self.Player = ply
 	self.Avatar:SetPlayer(ply, 32)
 	self.Name = ply:Nick()
 end
 
+-------------------
+-- PAMEL:GetPlayer
+-------------------
+-- Desc:		Gets the player that this row is for.
 function PANEL:GetPlayer()
 	return self.Player
 end
 
+-------------------
+-- PANEL:AddColumn
+-------------------
+-- Desc:		Adds a column to the row
+-- Arg One:		Table, column data.
 function PANEL:AddColumn(colData)
 	table.insert(self.Columns, colData)
 end
 
+----------------------
+-- PANEL:GetNameColor
+----------------------
+-- Desc:		Gets what should be the player's name color for that row.
+-- Returns:		Color, for their name.
 function PANEL:GetNameColor()
 	local ply = self:GetPlayer()
 	if not IsValid(ply) then	-- Probably have bigger problems if this is the case but whatever.
@@ -144,7 +189,7 @@ function PANEL:GetNameColor()
 		return col
 	end
 
-	if ply:SteamID() == "STEAM_0:0:1963640" or ply:SteamID() == "STEAM_0:1:18093014" then
+	if ply:SteamID() == "STEAM_0:0:1963640" or ply:SteamID() == "STEAM_0:1:18093014" then 		-- Badking or Stalker.
 		return self.NameColors.dev
 	elseif ply:IsAdmin() and GetConVar("ttt_scoreboard_highlight_admins"):GetBool() then
 		return self.NameColors.admin
@@ -239,9 +284,21 @@ function PANEL:PerformLayout()
 end
 
 local PLAYER = FindMetaTable("Player")
+
+-------------------------------
+-- PLAYER:SetScoreboardRowOpen
+-------------------------------
+-- Desc: 		Sets if the player's dropdown menu should be open for their row.
+-- Arg One:		Boolean, should the given player's dropdown (info) menu be open.
 function PLAYER:SetScoreboardRowOpen(isopen)
 	self.ttt_sb_rowOpen = isopen
 end
+
+-------------------------------
+-- PLAYER:GetScoreboardRowOpen
+-------------------------------
+-- Desc: 		Gets if the player's dropdown (info) menu should be open for their row in the scoreboard.
+-- Returns:		Boolean, should their row be open.
 function PLAYER:GetScoreboardRowOpen()
 	return self.ttt_sb_rowOpen or false
 end
