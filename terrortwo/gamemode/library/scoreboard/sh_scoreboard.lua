@@ -10,6 +10,10 @@ function TTT.Scoreboard.Initialize()
 	TTT.Library.LoadOverridableFolder("library/scoreboard/panels/", "ttt/scoreboardpanels/", "client")
 
 	if CLIENT then
+		if IsValid(TTT.Scoreboard.Scoreboard) then
+			TTT.Scoreboard.Scoreboard:Remove()
+		end
+		TTT.Scoreboard.Scoreboard = nil
 		TTT.Scoreboard.Columns = {}
 		TTT.Scoreboard.Groups = {}
 		TTT.Scoreboard.ExtraSortingOptions = {}
@@ -27,6 +31,7 @@ if SERVER then
 	return
 end
 
+-- Scoreboard fonts.
 surface.CreateFont("TTT_SBHeaderLarge", {
 	font = "Coolvetica",
 	size = 24,
@@ -60,10 +65,16 @@ end
 -- TTT.Scoreboard.Close
 ------------------------
 -- Desc:		Closes the scoreboard if its open.
-function TTT.Scoreboard.Close()
+-- Arg One:		(Optional=nil) Boolean, if true will completely remove the scoreboard panel so it can be rebuilt later. Nil or false simply hide the scoreboard.
+function TTT.Scoreboard.Close(forced)
 	gui.EnableScreenClicker(false)
 	if IsValid(TTT.Scoreboard.Scoreboard) then
-		TTT.Scoreboard.Scoreboard:SetVisible(false)
+		if forced then
+			TTT.Scoreboard.Scoreboard:Remove()
+			TTT.Scoreboard.Scoreboard = nil
+		else
+			TTT.Scoreboard.Scoreboard:SetVisible(false)
+		end
 	end
 end
 

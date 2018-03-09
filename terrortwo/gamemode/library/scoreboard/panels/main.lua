@@ -196,6 +196,9 @@ function TTT.Scoreboard.PANEL:UpdateGroups()
 
 	for _, ply in ipairs(player.GetAll()) do
 		for _, group in ipairs(self.Groups) do
+
+			-- If the player is in this group and shouldn't, remove them.
+			-- If the player isn't in this group and should be, add them.
 			if not group:HasPlayer(ply) then
 				if group.PlayerChooserFunction(ply) then
 					group:AddPlayer(ply)
@@ -208,6 +211,7 @@ function TTT.Scoreboard.PANEL:UpdateGroups()
 				end
 			end
 
+			-- If the player got removed then delete their row, otherwise update their name for the row.
 			for i = #group.ContainnedRows, 1, -1 do
 				local row = group.ContainnedRows[i]
 				if IsValid(row) then
@@ -222,10 +226,12 @@ function TTT.Scoreboard.PANEL:UpdateGroups()
 		end
 	end
 
+	-- Hide empty groups.
 	for _, group in ipairs(self.Groups) do
 		group:SetVisible(group:HasPlayers())
 	end
 
+	-- The reason we do this is because if PerformLayout is called, for a brief second clicking the scoreboard will be unresponsive. So only call it when necessary.
 	if changed then
 		self:PerformLayout()
 	else
@@ -281,13 +287,13 @@ function TTT.Scoreboard.PANEL:UpdateSorting()
 			if comparison ~= 0 then
 				retVal = comparison > 0
 			else
-				retVal = string.lower(plyA:Nick()) > string.lower(plyB:Nick())
+				retVal = string.lower(plyA:Nick()) > string.lower(plyB:Nick())	-- Fallback to sorting by names.
 			end
 
 			return retVal
 		end)
 		
-		-- TTT instead just inverts retVal to switch between ascending and descending but that was yielding annoying and confusing results. Theres also no speed difference so don't nag me for doing this.
+		-- This is not slower than inverting retVal. Get over it.
 		if ascend then
 			group.ContainnedRows = table.Reverse(group.ContainnedRows)
 		end

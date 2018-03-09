@@ -1,7 +1,7 @@
 TTT.Scoreboard = TTT.Scoreboard or {}
-TTT.Scoreboard.Tags = TTT.Scoreboard.Tags or {
-	TagWidth = 60
-}
+TTT.Scoreboard.Tags = TTT.Scoreboard.Tags or {}
+local tagWidth = 60
+local containerWidth = 400
 
 ---------------------------
 -- TTT.Scoreboard.DrawTags
@@ -33,11 +33,12 @@ function TTT.Scoreboard.DrawTags(ply, row, openPanel, width)
 	function tagText:Update()
 		local text, col = getTagText()
 		self:SetText(text)
+		self:SetAutoStretchVertical(true)
 		self:SetColor(col)
 
 		surface.SetFont("TTT_SBBody")
-		local t_w, t_h = surface.GetTextSize(text)
-		self:SetPos(width - columnWidths - TTT.Scoreboard.Tags.TagWidth - t_w/2, TTT.Scoreboard.PANEL.RowHeight/2 - t_h/2)
+		local text_w, text_h = surface.GetTextSize(text)
+		self:SetPos(width - columnWidths - tagWidth - text_w/2, TTT.Scoreboard.PANEL.RowHeight/2 - text_h/2)
 	end
 	tagText:Update()
 
@@ -68,11 +69,11 @@ function TTT.Scoreboard.DrawTags(ply, row, openPanel, width)
 			local curdata = TTT.Scoreboard.GetTag(ply)
 			if istable(curdata) and curdata.index == i then
 				TTT.Scoreboard.ClearTag(ply)
-				tagText:Update()
 			else
 				TTT.Scoreboard.SetPlayerTag(ply, i)
-				tagText:Update()
 			end
+
+			tagText:Update()
 		end
 		function btn:Paint()
 			local tagdata = TTT.Scoreboard.GetTag(ply)
@@ -82,8 +83,10 @@ function TTT.Scoreboard.DrawTags(ply, row, openPanel, width)
 			end
 		end
 	end
-	btnContainner:SetSize(400, openPanel:GetTall())
-	btnContainner:SetPos(width/2 - btnContainner:GetWide()/2, openPanel:GetTall()/2 - btnContainner:GetTall()/2)
+
+	local openPanelHeight = openPanel:GetTall()
+	btnContainner:SetSize(containerWidth, openPanelHeight)
+	btnContainner:SetPos(width/2 - btnContainner:GetWide()/2, openPanelHeight/2 - btnContainner:GetTall()/2)
 end
 
 --------------------------
