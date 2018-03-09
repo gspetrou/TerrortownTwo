@@ -1,18 +1,50 @@
 TTT.Scoreboard = TTT.Scoreboard or {}
 TTT.Scoreboard.Tags = TTT.Scoreboard.Tags or {}
+local tagWidth = 60
+function TTT.Scoreboard.DrawTags(ply, row, openPanel, width)
+	-- First calculate how much space is taken up by columns and the mute button.
+	local columnWidths = 16
+	for i, v in ipairs(row.Columns) do
+		columnWidths = columnWidths + v.Width
+	end
 
----------------------------
--- TTT.Scoreboard.DrawTags
----------------------------
--- Desc:		Used to draw the tag buttons on the row drop down panels.
--- Arg One:		TTT.Scoreboard.Row panel, for the row the player pressed to open.
--- Arg Two:		DPanel panel, the dropdown created by the scoreboard when clicking the row.
--- Arg Three:	Player, that the row belongs to.
--- Arg Four:	Number, width of the row and dpanel.
--- Arg Five:	Number, height of the dpanel.
--- Arg Six:		Number, height of the row.
-function TTT.Scoreboard.DrawTags(row, infoPanel, ply, w, h, row_h)
-	local btnContainner = vgui.Create("Panel", infoPanel)
+	-- Add a helper function to get the tag text for the player.
+	local function getTagText()
+		local tagdata = TTT.Scoreboard.GetTag(ply)
+		if ply:Alive() and tagdata then
+			return TTT.Languages.GetPhrase(tagdata.phrase), tagdata.color
+		end
+		return "", color_white
+	end
+	
+	-- Create our label tag.
+	local tagText = vgui.Create("DLabel", row)
+	tagText:SetFont("TTT_SBBody")
+	function tagText:Update()
+		local text, col = getTagText()
+		self:SetText(text)
+		self:SetColor(col)
+
+		surface.SetFont("TTT_SBBody")
+		local t_w, t_h = surface.GetTextSize(text)
+		self:SetPos(width - columnWidths - tagWidth - t_w/2, TTT.Scoreboard.PANEL.RowHeight/2 - t_h/2)
+	end
+	tagText:Update()
+
+
+	timer.Create("TTT.Scoreboard.UpdateTag", 0.3, 0, function()
+		if IsValid(ply) then
+			tagText:Update()
+		else
+			timer.Remove("TTT.Scoreboard.UpdateTag")
+		end
+	end)
+
+	function tagText:OnRemove()
+		timer.Remove("TTT.Scoreboard.UpdateTag")
+	end
+
+	local btnContainner = vgui.Create("Panel", openPanel)
 	btnContainner:DockPadding(0, 5, 0, 5)
 	for i, data in ipairs(TTT.Scoreboard.Tags) do
 		local btn = vgui.Create("DButton", btnContainner)
@@ -26,8 +58,10 @@ function TTT.Scoreboard.DrawTags(row, infoPanel, ply, w, h, row_h)
 			local curdata = TTT.Scoreboard.GetTag(ply)
 			if istable(curdata) and curdata.index == i then
 				TTT.Scoreboard.ClearTag(ply)
+				tagText:Update()
 			else
 				TTT.Scoreboard.SetPlayerTag(ply, i)
+				tagText:Update()
 			end
 		end
 		function btn:Paint()
@@ -38,8 +72,8 @@ function TTT.Scoreboard.DrawTags(row, infoPanel, ply, w, h, row_h)
 			end
 		end
 	end
-	btnContainner:SetSize(400, h)
-	btnContainner:SetPos(w/2 - btnContainner:GetWide()/2, h/2 - btnContainner:GetTall()/2)
+	btnContainner:SetSize(400, openPanel:GetTall())
+	btnContainner:SetPos(width/2 - btnContainner:GetWide()/2, openPanel:GetTall()/2 - btnContainner:GetTall()/2)
 end
 
 --------------------------
