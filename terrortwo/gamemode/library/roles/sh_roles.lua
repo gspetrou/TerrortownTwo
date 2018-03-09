@@ -26,6 +26,7 @@ TTT.Roles.Colors = {
 -- Arg One:		ROLE_ enum, to set the player to.
 function PLAYER:SetRole(role)
 	self.ttt_role = role
+	hook.Call("TTT.Roles.Changed", nil, self, role)
 end
 
 ------------------
