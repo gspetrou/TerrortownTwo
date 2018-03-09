@@ -30,4 +30,10 @@ L.sb_tag_avoid = "Avoid"
 L.sb_tag_kill = "Kill"
 L.sb_tag_missing = "Missing"
 
+L.hp_healthy   = "Healthy"
+L.hp_hurt      = "Hurt"
+L.hp_wounded   = "Wounded"
+L.hp_badwound    = "Badly Wounded"
+L.hp_death     = "Near Death"
+
 L.invalid = "bork" -- This is used for any invalid text.

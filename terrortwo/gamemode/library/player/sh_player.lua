@@ -17,6 +17,30 @@ function TTT.Player.SetupMovement(ply, mv)
 	end
 end
 
+-- Thanks TTT.
+TTT.Player.HealthColors = {
+	Healthy = Color(0, 255, 0, 255),
+	Hurt    = Color(170, 230, 10, 255),
+	Wounded = Color(230, 215, 10, 255),
+	Badwound= Color(255, 140, 0, 255),
+	Death   = Color(255, 0, 0, 255)
+}
+function TTT.Player.GetHealthStatus(hp, maxHP)
+	maxHP = maxHP or 100
+
+	if hp > maxHP * 0.9 then
+		return "hp_healthy", TTT.Player.HealthColors.Healthy
+	elseif hp > maxHP * 0.7 then
+		return "hp_hurt", TTT.Player.HealthColors.Hurt
+	elseif hp > maxHP * 0.45 then
+		return "hp_wounded", TTT.Player.HealthColors.Wounded
+	elseif hp > maxHP * 0.2 then
+		return "hp_badwound", TTT.Player.HealthColors.Badwound
+	else
+		return "hp_death", TTT.Player.HealthColors.Death
+	end
+end
+
 if SERVER then
 	------------------------
 	-- TTT.Player.SetSpeeds
