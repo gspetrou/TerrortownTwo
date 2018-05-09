@@ -237,6 +237,13 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 end)
 
 hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
+	-- Delete any entities marked for deletion at round start.
+	for i, v in ipairs(ents.GetAll()) do
+		if v:GetRemoveOnRoundStart() then
+			v:Remove()
+		end
+	end
+
 	for i, v in ipairs(TTT.Player.GetDeadPlayers()) do
 		TTT.Player.ForceSpawnPlayer(v, true, false) -- Technically the round already started. Force spawn all players that managed to die in prep.
 		TTT.Weapons.GiveStarterWeapons(v)

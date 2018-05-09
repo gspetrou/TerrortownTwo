@@ -1,4 +1,12 @@
 TTT.Map = TTT.Map or {}
+local ENTITY = FindMetaTable("Entity")
+
+function ENTITY:SetRemoveOnRoundStart(b)
+	self.ttt_removeOnRoundStart = b
+end
+function ENTITY:GetRemoveOnRoundStart()
+	return self.ttt_removeOnRoundStart or false
+end
 
 --------------------
 -- TTT.Map.ResetMap
