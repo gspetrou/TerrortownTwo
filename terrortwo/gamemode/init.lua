@@ -88,15 +88,21 @@ function GM:PlayerSpawnAsSpectator(ply)	-- For backwards compatability.
 end
 
 function GM:DoPlayerDeath(ply, attacker, dmginfo)
-	--ply.ttt_deathrag = TTT.Corpse.Create(ply, dmginfo)
-	--TTT.Corpse.SetRagdollData(ply.ttt_deathrag, ply, attacker, dmginfo)
+	TTT.Corpse.CreateBody(ply, attacker, dmginfo)
 end
 
-function GM:PlayerDeath(ply)
-	TTT.Player.RecordDeathPos(ply)
+function GM:PlayerDeath(ply, inflictor, attacker)
+	TTT.Player.RecordDeathPos(ply)	-- Record  their death position so that their spectator camera spawns here.
 	ply:Flashlight(false)
 	ply:Extinguish()
 end
+
+hook.Add("TTT.Corpse.ShouldCreateBody", "TTT", function(ply)
+	if ply:IsInFlyMode() or ply:IsSpectator() then
+		return false
+	end
+	return true
+end)
 
 function GM:PostPlayerDeath(ply)
 	TTT.Rounds.CheckForRoundEnd()
@@ -123,11 +129,12 @@ function GM:PlayerSetHandsModels(ply, ent)
 end
 
 hook.Add("TTT.Player.ForceSpawnedPlayer", "TTT", function(ply, resetSpawn, shouldarm)
+	TTT.Weapons.StripCompletely(ply)
+
 	if resetSpawn then
 		TTT.Map.PutPlayerAtRandomSpawnPoint(ply)
 	end
 	if shouldarm then
-		TTT.Weapons.StripCompletely(ply)
 		TTT.Weapons.GiveStarterWeapons(ply)
 		TTT.Weapons.GiveRoleWeapons(ply)
 	end

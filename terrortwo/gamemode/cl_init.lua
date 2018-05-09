@@ -17,6 +17,8 @@ hook.Add("OnEntityCreated", "TTT", function(ent)
 	end
 end)
 
+--function GM:CalcView()
+
 ------------
 -- UI Hooks
 ------------
