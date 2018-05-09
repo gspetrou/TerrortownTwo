@@ -1,5 +1,6 @@
 TTT.Corpse = TTT.Corpse or {}
 local PLAYER = FindMetaTable("Player")
+local ENTITY = FindMetaTable("Entity")
 
 -------------------------
 -- TTT.Corpse.CreateBody
@@ -31,6 +32,15 @@ function PLAYER:GetCorpse()
 	return IsValid(self.ttt_deathragdoll) and self.ttt_deathragdoll or false
 end
 
+-------------------
+-- ENTITY.IsCorpse
+-------------------
+-- Desc:		Sees if the entity is a corpse or not.
+-- Returns:		Boolean, true if they're a corpse.
+function ENTITY:IsCorpse()
+	return isbool(self.isbody) and true or false
+end
+
 ----------------------------
 -- TTT.Corpse.CreateRagdoll
 ----------------------------
@@ -53,7 +63,7 @@ function TTT.Corpse.CreateRagdoll(ply)
 
 	ragdoll:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)	-- TTT had an option for this but it can cause crashes too easily.
 
-	ragdoll.IsBody = true
+	ragdoll.isbody = true
 	ragdoll.OwnerID = ply:SteamID()
 
 	return ragdoll
