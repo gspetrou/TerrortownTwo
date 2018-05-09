@@ -89,6 +89,10 @@ end
 
 function GM:InitPostEntity()
 	TTT.Weapons.CreateCaches()		-- Cache some weapons for quick retrieval later.
+
+	if SERVER then
+		TTT.Player.CreateDrownDamageInfo()	-- Create the drown damage info once now so we don't have to later.
+	end
 end
 
 ---------------
