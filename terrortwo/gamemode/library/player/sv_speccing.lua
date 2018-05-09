@@ -34,26 +34,40 @@ function TTT.Player.RecordDeathPos(ply)
 	ply.ttt_deathpos_set = true
 end
 
+------------------------------------
+-- TTT.Player.SpawnSkipGamemodeHook
+------------------------------------
+-- Desc:		Simple function to spwan a player and skip the gamemode's default PlayerSpawn hook code.
+-- Arg One:		Player, to spawn.
+function TTT.Player.SpawnSkipGamemodeHook(ply)
+	ply.ttt_OverrideSpawn = true
+	ply:Spawn()
+	ply.ttt_OverrideSpawn = false
+end
+
 -------------------------------
 -- TTT.Player.ForceSpawnPlayer
 -------------------------------
 -- Desc:		Forces a player to spawn.
 -- Arg One:		Player, to be spawned.
--- Arg Two:		Boolean, should we reset their spawn position to a map spawn spot.
--- Arg Three:	Boolean, should we arm the player with the default weapons when they spawn. Optional, true by default.
+-- Arg Two:		(Optional=false) Boolean, should we reset their spawn position to a map spawn spot.
+-- Arg Three:	(Optional=true) Boolean, should we arm the player with the default weapons when they spawn.
 function TTT.Player.ForceSpawnPlayer(ply, resetspawn, shouldarm)
-	if not TTT.OldAlive(ply) then
-		local pos = ply:GetPos()
-		local ang = ply:GetAngles()
-		ply:Spawn()
-		if not resetspawn then
-			ply:SetPos(pos)
-			ply:SetEyeAngles(ang)
-		end
+	resetspawn = isbool(resetspawn) and resetspawn or false
+	
+	TTT.Player.SpawnSkipGamemodeHook(ply)
+
+	if not resetspawn then
+		ply:SetPos(ply:GetPos())
+		ply:SetEyeAngles(ply:GetAngles())
 	end
+
 	ply:UnSpectate()
 	ply.ttt_InFlyMode = false
 	ply:SetNoDraw(false)
+
+	GAMEMODE:PlayerSetModel(ply)
+	GAMEMODE:PlayerLoadout(ply)
 	hook.Call("TTT.Player.ForceSpawnedPlayer", nil, ply, resetspawn, isbool(shouldarm) and shouldarm or true)
 end
 
@@ -65,9 +79,7 @@ end
 function TTT.Player.SpawnInFlyMode(ply)
 	-- If the player is actually dead, spawn them first.
 	if not TTT.OldAlive(ply) then
-		ply.ttt_OverrideSpawn = true
-		ply:Spawn()
-		ply.ttt_OverrideSpawn = false
+		TTT.Player.SpawnSkipGamemodeHook(ply)
 	end
 
 	if not ply:IsInFlyMode() then
@@ -76,9 +88,9 @@ function TTT.Player.SpawnInFlyMode(ply)
 
 	-- Spectate their death ragdoll, if thats invalid for some reason then just free fly starting at their death position.
 	-- If all else fails, they just spawn at a spawn point so no big deal.
-	if IsValid(ply.ttt_deathrag) then
+	if IsValid(ply.ttt_deathragdoll) then
 		ply:Spectate(OBS_MODE_IN_EYE)
-		ply:SpectateEntity(ply.ttt_deathrag)
+		ply:SpectateEntity(ply.ttt_deathragdoll)
 	else
 		ply:Spectate(OBS_MODE_ROAMING)
 
@@ -88,6 +100,7 @@ function TTT.Player.SpawnInFlyMode(ply)
 			ply.ttt_deathpos_set = false
 		end
 	end
+	ply:SetMoveType(MOVETYPE_NOCLIP)
 end
 
 ----------------------
