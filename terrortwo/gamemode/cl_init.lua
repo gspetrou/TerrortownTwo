@@ -17,8 +17,6 @@ hook.Add("OnEntityCreated", "TTT", function(ent)
 	end
 end)
 
---function GM:CalcView()
-
 ------------
 -- UI Hooks
 ------------
@@ -134,4 +132,14 @@ end)
 function GM:OnSpawnMenuOpen()
 	TTT.Weapons.RequestDropCurrentWeapon()
 	return false
+end
+
+-------------------
+-- Key Input Hooks
+-------------------
+function GM:PlayerBindPress(ply, bind, pressed)
+	if bind == "+use" and pressed and not ply:Alive() then
+		TTT.Player.AttemptSpectateObject()	-- Will see if theres anything in front of the player to spectate.
+		return true
+	end
 end

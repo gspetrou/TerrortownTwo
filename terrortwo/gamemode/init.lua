@@ -34,6 +34,19 @@ hook.Add("TTT.Map.OnReset", "TTT", function()
 	end
 end)
 
+function GM:Tick()
+	local players = player.GetAll()
+	for i = 1, #players do
+		ply = players[i]
+		
+		if ply:Alive() then
+			TTT.Player.HandleDrowning(ply)
+		else
+			TTT.Player.HandleDeathSpectating(ply)
+		end
+	end
+end
+
 ----------------
 -- Player Hooks
 ----------------
@@ -62,6 +75,10 @@ function GM:PlayerSpawn(ply)
 			ply.ttt_InFlyMode = false
 			ply:SetupHands()
 			isspec = false
+
+			net.Start("TTT.Player.SwitchedFlyMode")
+				net.WriteBool(false)
+			net.Send(ply)
 		end
 
 		self:PlayerSetModel(ply)
@@ -89,6 +106,9 @@ end
 
 function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	TTT.Corpse.CreateBody(ply, attacker, dmginfo)
+	if TTT.Rounds.IsPrep() then
+		ply:GetCorpse():SetRemoveOnRoundStart(true)
+	end
 end
 
 function GM:PlayerDeath(ply, inflictor, attacker)
@@ -106,6 +126,14 @@ end)
 
 function GM:PostPlayerDeath(ply)
 	TTT.Rounds.CheckForRoundEnd()
+
+	-- If the player dies immediately respawn them so they can spectate.
+	-- If they die during prep then make them wait till round start to prevent people from spamming respawn.
+	if TTT.Rounds.IsPrep() then
+		TTT.Player.SpawnInFlyMode(ply)
+	else
+		ply:Spawn()
+	end
 end
 
 function GM:PlayerDisconnected(ply)
@@ -168,16 +196,6 @@ end
 -- Disable pressing USE to pick stuff up.
 function GM:AllowPlayerPickup()
    return false
-end
-
--- PLAYER.Alive now returns false if player are spectator or in fly mode.
-local PLAYER = FindMetaTable("Player")
-TTT.OldAlive = TTT.OldAlive or PLAYER.Alive
-function PLAYER:Alive()
-	if self:IsSpectator() or self:IsInFlyMode() then
-		return false
-	end
-	return TTT.OldAlive(self)
 end
 
 ---------------
