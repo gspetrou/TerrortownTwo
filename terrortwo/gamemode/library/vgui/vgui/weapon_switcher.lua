@@ -359,14 +359,14 @@ TTT.VGUI.AddElement("ttt_weapon_switcher", function(ply, w, h)
 		surface_SetTextPos(bar_pos_x + bar_w/2 - weptext_w/2, bar_pos_y + i_minusone*(bar_h+spacing_bottom) + bar_h/2 - weptext_h/2)
 		surface_DrawText(weaponName)
 	end
-end, function(ply, isspecmode)
+end, function(ply, isalive)
 	if (iCurSlot == 0 or not cl_drawhud:GetBool()) then
 		return false
 	end
 
 	-- Don't draw in vehicles unless weapons are allowed to be used
 	-- Also, don't draw while dead!
-	if (ply:IsValid() and ply:Alive() and not isspecmode and (not ply:InVehicle() or ply:GetAllowWeaponsInVehicle())) then
+	if (ply:IsValid() and isalive and (not ply:InVehicle() or ply:GetAllowWeaponsInVehicle())) then
 		if (flNextPrecache <= RealTime()) then
 			PrecacheWeps()
 		end

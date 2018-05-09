@@ -6,13 +6,6 @@ concommand.Add("ttt_always_spectator", function(ply)
 	net.SendToServer()
 end)
 
--- Clientside, make sure PLAYER.Alive excludes spectators.
-local PLAYER = FindMetaTable("Player")
-TTT.OldAlive = TTT.OldAlive or PLAYER.Alive
-function PLAYER:Alive()
-	return not self:IsSpectator() and TTT.OldAlive(self)
-end
-
 ------------------------
 -- TTT.Roles.GetUnknown
 ------------------------

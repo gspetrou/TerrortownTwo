@@ -58,6 +58,17 @@ end)
 
 GM:LoadLibraries()	-- Load the gamemode's library. Also gets called on auto-refresh to reload library.
 
+-- PLAYER.Alive now returns true if the player is not spectating, is alive, and not in fly mode.
+-- Clientside the only person they'll know if they're in fly mode or not is themselves so this will be false for everyone else.
+local PLAYER = FindMetaTable("Player")
+TTT.OldAlive = TTT.OldAlive or PLAYER.Alive
+function PLAYER:Alive()
+	if self:IsSpectator() or self:IsInFlyMode() then
+		return false
+	end
+	return TTT.OldAlive(self)
+end
+
 --------------------------
 -- General Gamemode Hooks
 --------------------------

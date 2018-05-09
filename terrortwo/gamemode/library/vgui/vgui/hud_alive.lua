@@ -86,6 +86,6 @@ TTT.VGUI.AddElement("ttt_hud_alive", function(ply, w, h)
 		surface_DrawText(ammoText)
 	end
 
-end, function(ply, isspecmode)
-	return ply:Alive() and not isspecmode
+end, function(ply, isalive)
+	return isalive
 end)

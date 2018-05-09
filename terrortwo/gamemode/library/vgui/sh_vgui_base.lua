@@ -21,8 +21,14 @@ if CLIENT then
 	-----------------------
 	-- Desc:		Adds a hud element.
 	-- Arg One:		String. A unique and simple name for the panel.
-	-- Arg Two:		Function, what should we draw. Called with the localplayer, screen width, and screen height as arguements.
-	-- Arg Three:	Function, called to see if this panel should be drawn. First arguement of this function is the localplayer.
+	-- Arg Two:		Function, what should we draw.
+	--		Arg One:		Player, the local player.
+	--		Arg Two:		Number, screen width.
+	--		Arg Three:		Number, screen height.
+	-- Arg Three:	Function, decides if the panel should be drawn.
+	--		Arg One:		Player, who this vgui is being drawn for.
+	--		Arg Two:		Boolean, is that player alive.
+	--		Returns:		Boolean, should we draw the hud.
 	function TTT.VGUI.AddElement(name, func, condition)
 		TTT.VGUI.Elements[name] = {func, condition}
 	end
@@ -36,11 +42,11 @@ if CLIENT then
 	-- Desc:		Called to paint all the huds.
 	function TTT.VGUI.HUDPaint()
 		local ply, w, h = LocalPlayer(), ScrW(), ScrH()
-		local isspecmode = ply:GetObserverMode() ~= OBS_MODE_NONE
+		local isalive = ply:Alive()
 
 		for k, v in pairs(TTT.VGUI.Elements) do
-			if v[2](ply, isspecmode) then
-				v[1](ply, w, h, isspecmode)
+			if v[2](ply, isalive) then
+				v[1](ply, w, h, isalive)
 			end
 		end
 	end

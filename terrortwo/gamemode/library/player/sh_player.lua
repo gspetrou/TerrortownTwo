@@ -66,4 +66,11 @@ if SERVER then
 		ply:SetWalkSpeed(speed)
 		ply:SetMaxSpeed(speed)
 	end
+----------------------
+-- PLAYER:IsInFlyMode
+----------------------
+-- Desc:		Is the player in fly mode.
+-- Returns:		Boolean, are they in fly mode.
+function PLAYER:IsInFlyMode()
+	return self.ttt_InFlyMode or false
 end

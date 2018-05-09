@@ -46,6 +46,6 @@ TTT.VGUI.AddElement("ttt_hud_target", function(ply, w, h)
 		end
 	end
 
-end, function(ply, isspecmode)
-	return ply:Alive() and not isspecmode
+end, function(ply, isalive)
+	return isalive
 end)

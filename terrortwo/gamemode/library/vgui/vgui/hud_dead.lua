@@ -24,6 +24,6 @@ TTT.VGUI.AddElement("ttt_hud_dead", function(ply, w, h)
 	local text_w, text_h = surface_GetTextSize(time)
 	surface_SetTextPos(pnl_x + inset*2, pnl_y + pnl_h/2 - text_h/2)
 	surface_DrawText(time)
-end, function(ply, isspecmode)
-	return not ply:Alive() or isspecmode
+end, function(ply, isalive)
+	return not isalive
 end)
