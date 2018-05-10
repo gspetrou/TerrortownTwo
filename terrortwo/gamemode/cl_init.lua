@@ -17,6 +17,20 @@ hook.Add("OnEntityCreated", "TTT", function(ent)
 	end
 end)
 
+function GM:CalcView(ply, o, a, f)
+	local view = {
+		origin = o,
+		angles = a,
+		fov = f
+	}
+
+	-- If we are "in eye" spectating a ragdoll (i.e. corpse) then actually look from their eye.
+	-- Tables are passed by reference in Lua so the view table is being modified in this function.
+	TTT.Player.ModifyRagdollInEyeView(ply, view)	
+
+	return view
+end
+
 ------------
 -- UI Hooks
 ------------

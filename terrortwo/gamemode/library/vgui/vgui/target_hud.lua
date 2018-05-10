@@ -47,5 +47,5 @@ TTT.VGUI.AddElement("ttt_hud_target", function(ply, w, h)
 	end
 
 end, function(ply, isalive)
-	return isalive
+	return true
 end)
