@@ -47,6 +47,13 @@ function GM:Tick()
 	end
 end
 
+function GM:KeyPress(ply, key)
+	if not ply:Alive() and not ply:IsSpectatingCorpse() then
+		ply:ResetViewRoll()
+		TTT.Player.HandleSpectatorKeypresses(ply, key)
+	end
+end
+
 ----------------
 -- Player Hooks
 ----------------

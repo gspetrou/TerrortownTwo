@@ -164,7 +164,7 @@ end
 -- Arg One:		Player, to handle the spectating for.
 function TTT.Player.HandleDeathSpectating(ply)
 	if ply:IsSpectatingCorpse() then
-		local timeToSwitch, timeToChase, timeToRoam = 1, 4, 8
+		local timeToSwitch, timeToChase, timeToRoam = 1, 4, 9
 		local timeElapsed = CurTime() - ply:GetTimeStartedSpectatingBody()
 		local clicked = ply:KeyPressed(IN_ATTACK) or ply:KeyPressed(IN_JUMP)
 
@@ -265,9 +265,81 @@ net.Receive("TTT.Player.AttemptSpectateObject", function(_, ply)
 					ply:SpectateEntity(tr.Entity)
 				--end
 			elseif tr.Entity:IsPlayer() and tr.Entity:Alive() then
-				ply:Spectate(OBS_MODE_CHASE)
+				ply:Spectate(ply.ttt_specMode or OBS_MODE_CHASE)
 				ply:SpectateEntity(tr.Entity)
 			end
 		end
 	end
 end)
+
+function TTT.Player.HandleSpectatorKeypresses(ply, key)
+	if key == IN_ATTACK then		-- Spectate random people.
+		ply:Spectate(OBS_MODE_ROAMING)
+		ply:SetEyeAngles(angle_zero)
+		ply:SpectateEntity(nil)
+
+		local alivePlayers = TTT.Player.GetAlivePlayers()
+		
+		if alivePlayers == 0 then
+			return
+		end
+		
+		local target = table.RandomSequential(alivePlayers)
+		if IsValid(target) then
+			ply:SetPos(target:EyePos())
+			ply:SetEyeAngles(target:EyeAngles())
+		end
+	elseif key == IN_ATTACK2 then		-- Cycle to inspect next guy.
+		local alivePlayers = TTT.Player.GetAlivePlayers()
+		local curTarget = ply:GetObserverTarget()
+		local nextPlayerIndex
+
+		for i, v in ipairs(alivePlayers) do
+			if v == curTarget then
+				nextPlayerIndex = i + 1
+			end
+		end
+
+		if not nextPlayerIndex then
+			nextPlayerIndex = math.random(1, #alivePlayers)
+		elseif nextPlayerIndex > #alivePlayers then
+			nextPlayerIndex = 1
+		end
+
+		local target = alivePlayers[nextPlayerIndex]
+		if IsValid(target) then
+			ply:Spectate(ply.ttt_specMode or OBS_MODE_CHASE)
+			ply:SpectateEntity(target)
+		end
+	elseif key == IN_DUCK then		-- Go back to roaming.
+		local pos = ply:GetPos()
+		local ang = ply:EyeAngles()
+
+		local target = ply:GetObserverTarget()
+		if IsValid(target) and target:IsPlayer() then
+			pos = target:EyePos()
+			ang = target:EyeAngles()
+		end
+
+		ply:Spectate(OBS_MODE_ROAMING)
+		ply:SpectateEntity(nil)
+
+		ply:SetPos(pos)
+		ply:SetEyeAngles(ang)
+		return true
+	elseif key == IN_RELOAD then
+		local target = ply:GetObserverTarget()
+		if not IsValid(target) or not target:IsPlayer() then
+			return
+		end
+
+		if not ply.ttt_specMode or ply.ttt_specMode == OBS_MODE_CHASE then
+			ply.ttt_specMode = OBS_MODE_IN_EYE
+		elseif ply.ttt_specMode == OBS_MODE_IN_EYE then
+			ply.ttt_specMode = OBS_MODE_CHASE
+		end
+		-- roam stays roam
+
+		ply:Spectate(ply.ttt_specMode)
+	end
+end
