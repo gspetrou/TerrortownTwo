@@ -1,6 +1,6 @@
 EQUIPMENT:SetName("equipment_armor_name")
 EQUIPMENT:SetDescription("equipment_armor_desc")
---EQUIPMENT:SetMaterial("vgui/ttt/icon_armor")
+--EQUIPMENT:SetIcon("vgui/ttt/icon_armor")
 EQUIPMENT:SetInLoadoutFor({ROLE_DETECTIVE})
 EQUIPMENT:SetInStoreFor({ROLE_DETECTIVE, ROLE_TRAITOR})
 
