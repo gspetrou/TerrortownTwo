@@ -99,6 +99,7 @@ hook.Add("TTT.Player.PostPlayerSpawn", "TTT", function(ply, isSpec)
 
 	if not isSpec then
 		TTT.Weapons.GiveStarterWeapons(ply)
+		ply:SelectWeapon(GetConVar("ttt_weapons_default"):GetString())
 	end
 end)
 
@@ -163,14 +164,23 @@ function GM:PlayerSetHandsModels(ply, ent)
 	end
 end
 
-hook.Add("TTT.Player.ForceSpawnedPlayer", "TTT", function(ply, resetSpawn, shouldarm)
+hook.Add("TTT.Player.ForcedSpawnedPlayer", "TTT", function(ply, resetSpawn, shouldarm, giveRoleWeapons)
 	TTT.Weapons.StripCompletely(ply)
 
 	if resetSpawn then
 		TTT.Map.PutPlayerAtRandomSpawnPoint(ply)
+	else
+		ply:SetPos(ply.ttt_noResetSpawnPos)
+		ply:SetEyeAngles(ply.ttt_noResetSpawnAng)
 	end
+			
 	if shouldarm then
 		TTT.Weapons.GiveStarterWeapons(ply)
+	else
+		ply:Give("weapon_ttt2_unarmed")	-- If the player isn't carrying anything the console will be spammed with annoying red text.
+	end
+
+	if giveRoleWeapons then
 		TTT.Weapons.GiveRoleWeapons(ply)
 	end
 end)
@@ -270,8 +280,7 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	end
 
 	for i, v in ipairs(TTT.Player.GetDeadPlayers()) do
-		TTT.Player.ForceSpawnPlayer(v, true, false) -- Technically the round already started. Force spawn all players that managed to die in prep.
-		TTT.Weapons.GiveStarterWeapons(v)
+		TTT.Player.ForceSpawnPlayer(v, true, true, false) -- Technically the round already started. Force spawn all players that managed to die in prep.
 	end
 
 	TTT.Roles.PickRoles()
@@ -296,12 +305,8 @@ hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
 	end
 	TTT.Player.SetDefaultModelColor(col)	-- Set a new color for players each round.
 
-	local defaultWeapon = GetConVar("ttt_weapons_default"):GetString()
-	for i, ply in ipairs(TTT.Player.GetAlivePlayers()) do
-		TTT.Weapons.StripCompletely(ply)
-		TTT.Weapons.GiveStarterWeapons(ply)
-
-		ply:SelectWeapon(defaultWeapon)
+	for i, ply in ipairs(player.GetAll()) do
+		ply:ClearEquipment()
 	end
 end)
 
