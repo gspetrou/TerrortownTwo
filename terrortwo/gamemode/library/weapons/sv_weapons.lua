@@ -21,7 +21,7 @@ end
 function TTT.Weapons.GiveRoleWeapons(ply)
 	local role = ply:GetRole()
 	local weps = TTT.Weapons.RoleWeapons[role]
-	if istable(role) then
+	if istable(weps) then
 		for i, wepClass in ipairs(weps) do
 			ply:Give(wepClass)
 		end
