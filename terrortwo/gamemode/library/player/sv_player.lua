@@ -62,18 +62,21 @@ end
 -------------------------------
 -- Desc:		Forces a player to spawn.
 -- Arg One:		Player, to be spawned.
--- Arg Two:		(Optional=false) Boolean, should we reset their spawn position to a map spawn spot.
--- Arg Three:	(Optional=true) Boolean, should we arm the player with the default weapons when they spawn.
+-- Arg Two:		(Optional=true) Boolean, should we reset their spawn position to a map spawn spot.
+-- Arg Three:	(Optional=true) Boolean, should we arm the player with the default weapons when they spawn. Still gives unholstered either way.
+-- Arg Four:	(Optional=true) Boolean, should we arm the player with the weapons for their role.
 util.AddNetworkString("TTT.Player.SwitchedFlyMode")
-function TTT.Player.ForceSpawnPlayer(ply, resetspawn, shouldarm)
-	resetspawn = isbool(resetspawn) and resetspawn or false
-	
-	TTT.Player.SpawnSkipGamemodeHook(ply)
+function TTT.Player.ForceSpawnPlayer(ply, resetspawn, shouldarm, roleWeapons)
+	if not isbool(resetspawn) then resetspawn = true end
+	if not isbool(shouldarm) then shouldarm = true end
+	if not isbool(roleWeapons) then roleWeapons = true end
 
 	if not resetspawn then
-		ply:SetPos(ply:GetPos())
-		ply:SetEyeAngles(ply:GetAngles())
+		ply.ttt_noResetSpawnPos = ply:GetPos()
+		ply.ttt_noResetSpawnAng = ply:GetAngles()
 	end
+
+	TTT.Player.SpawnSkipGamemodeHook(ply)
 
 	ply:SetIsSpectatingCorpse(false)
 	ply:UnSpectate()
@@ -86,7 +89,8 @@ function TTT.Player.ForceSpawnPlayer(ply, resetspawn, shouldarm)
 
 	GAMEMODE:PlayerSetModel(ply)
 	GAMEMODE:PlayerLoadout(ply)
-	hook.Call("TTT.Player.ForceSpawnedPlayer", nil, ply, resetspawn, isbool(shouldarm) and shouldarm or true)
+	hook.Call("TTT.Player.ForcedSpawnedPlayer", nil, ply, resetspawn, shouldarm, roleWeapons)
+	ply.ttt_noResetSpawnPos, ply.ttt_noResetSpawnAng = nil, nil
 end
 
 -----------------------------
