@@ -78,6 +78,7 @@ function GM:Initialize()
 	TTT.Languages.Initialize()			-- Load the languages.
 	TTT.VGUI.Initialize()				-- Get their HUDs working.
 	TTT.Scoreboard.Initialize()			-- Load up the scoreboard.
+	TTT.Equipment.Initialize()
 
 	if SERVER then
 		RunConsoleCommand("mp_friendlyfire", "1")	-- Enables lag compensation.
