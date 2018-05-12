@@ -2,6 +2,7 @@
 AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "ammo_ttt2_base"
+DEFINE_BASECLASS(ENT.Base)
 
 ENT.AmmoType	= "pistol_heavy"
 ENT.AmmoGive	= 12
@@ -10,5 +11,5 @@ ENT.Model		= Model("models/items/357ammo.mdl")
 
 function ENT:Initialize()
 	self:SetColor(Color(255, 100, 100, 255))
-	return self.BaseClass.Initialize(self)
+	return BaseClass.Initialize(self)
 end

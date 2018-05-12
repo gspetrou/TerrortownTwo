@@ -30,7 +30,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 0, "Reloading")
 	self:NetworkVar("Float", 0, "ReloadTimer")
 
-	return self.BaseClass.SetupDataTables(self)
+	return BaseClass.SetupDataTables(self)
 end
 
 function SWEP:Reload()
@@ -75,7 +75,7 @@ function SWEP:PerformReload()
 end
 
 function SWEP:Think()
-	self.BaseClass.Think(self)
+	BaseClass.Think(self)
 	if self:GetReloading() then
 		if self:GetOwner():KeyDown(IN_ATTACK) then
 			self:FinishReload()
@@ -101,5 +101,5 @@ end
 function SWEP:Deploy()
 	self:SetReloading(false)
 	self:SetReloadTimer(0)
-	return self.BaseClass.Deploy(self)
+	return BaseClass.Deploy(self)
 end
