@@ -164,7 +164,7 @@ function GM:PlayerSetHandsModels(ply, ent)
 	end
 end
 
-hook.Add("TTT.Player.ForcedSpawnedPlayer", "TTT", function(ply, resetSpawn, shouldarm, giveRoleWeapons)
+hook.Add("TTT.Player.ForcedSpawnedPlayer", "TTT", function(ply, resetSpawn, shouldarm, giveRoleGear)
 	TTT.Weapons.StripCompletely(ply)
 
 	if resetSpawn then
@@ -180,8 +180,9 @@ hook.Add("TTT.Player.ForcedSpawnedPlayer", "TTT", function(ply, resetSpawn, shou
 		ply:Give("weapon_ttt2_unarmed")	-- If the player isn't carrying anything the console will be spammed with annoying red text.
 	end
 
-	if giveRoleWeapons then
+	if giveRoleGear then
 		TTT.Weapons.GiveRoleWeapons(ply)
+		TTT.Equipment.GiveRoleEquipment(ply)
 	end
 end)
 
@@ -287,7 +288,8 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	TTT.Roles.Sync()
 
 	for i, ply in ipairs(player.GetAll()) do
-		TTT.Weapons.GiveRoleWeapons(ply)	-- Give all player's the weapons for their newly given roles.
+		TTT.Weapons.GiveRoleWeapons(ply)		-- Give all players the weapons for their newly given roles.
+		TTT.Equipment.GiveRoleEquipment(ply)	-- Give all players the equipment their role starts with.
 	end
 
 	timer.Simple(1, function()

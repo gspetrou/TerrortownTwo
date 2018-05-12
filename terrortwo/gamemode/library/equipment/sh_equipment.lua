@@ -1,6 +1,7 @@
 TTT.Equipment = TTT.Equipment or {}
 TTT.Equipment.Equipment = TTT.Equipment.Equipment or {}
 TTT.Equipment.EquipmentHooks = TTT.Equipment.EquipmentHooks or {}
+TTT.Equipment.InLoadoutCache = TTT.Equipment.InLoadoutCache or {}
 
 -- TTT.Equipment.EquipmentItem Class.
 do
@@ -137,6 +138,21 @@ do
 	function TTT.Equipment.EquipmentItem:RemoveHook(hookName)
 		self.Hooks[hookName] = nil
 	end
+
+	------------
+	-- Register
+	------------
+	-- NOTE:		ONLY USE IF you are making an equipment somewhere that is not [addons]/ttt/equipment/ or [gamemode]/library/equipment/equipment/.
+	-- Desc:		Registers a new equipment with the game, if the ID already exists then this will override it. Use this at the very end of making your equipment.
+	function TTT.Equipment.EquipmentItem:Register()
+		for i, role in ipairs(self.InLoadoutFor) do
+			if not istable(TTT.Equipment.InLoadoutCache[role]) then
+				TTT.Equipment.InLoadoutCache[role] = {}
+			end
+			table.insert(TTT.Equipment.InLoadoutCache[role], self.ID)
+		end
+		TTT.Equipment.Equipment[self.ID] = self
+	end
 end
 
 -- Equipment Initialization.
@@ -158,38 +174,36 @@ do
 		local equipAddonRootPath = "ttt/equipment/"
 		local equipGamemodeRootPath = GAMEMODE_NAME.."/gamemode/library/equipment/equipment/"
 
-		local files = file.Find(equipAddonRootPath.."*.lua", "LUA")
-		local loadedFiles = {}
-
 		local oldEQUIPMENT = EQUIPMENT
+		local filesToLoad = {}
 
-		-- Load addon files first in case they want to override the gamemode's.
-		for i, filename in ipairs(files) do
-			local filenameNoExt = filename:sub(1, #filename - 4)
-			loadedFiles[filenameNoExt] = true
-
-			if SERVER then
-				AddCSLuaFile(equipAddonRootPath..filename)
-			end
-
-			EQUIPMENT = TTT.Equipment.EquipmentItem:Create(filenameNoExt)
-			include(equipAddonRootPath..filename)
-			TTT.Equipment.Equipment[filenameNoExt] = EQUIPMENT
+		-- Get all of the files we want to load. If an equipment in the addon area has the same name as a gamemode one then override that gamemode equipment.
+		local files = file.Find(equipAddonRootPath.."*.lua", "LUA")
+		for i, addonFileName in ipairs(files) do
+			filesToLoad[addonFileName] = equipAddonRootPath..addonFileName
+		end
+		files = file.Find(equipGamemodeRootPath.."*.lua", "LUA")
+		for i, gmFileName in ipairs(files) do
+			filesToLoad[gmFileName] = equipGamemodeRootPath..gmFileName
 		end
 
-		files = file.Find(equipGamemodeRootPath.."*.lua", "LUA")
-		for i, filename in ipairs(files) do
-			local filenameNoExt = filename:sub(1, #filename - 4)
-			if not loadedFiles[filenameNoExt] then
-				loadedFiles[filename] = true
+		for fileName, fullPath in pairs(filesToLoad) do
+			if SERVER then
+				AddCSLuaFile(fullPath)
+			end
 
-				if SERVER then
-					AddCSLuaFile(equipGamemodeRootPath..filename)
+			local fileNameNoExt = fileName:sub(1, #fileName - 4)
+
+			EQUIPMENT = TTT.Equipment.EquipmentItem:Create(fileNameNoExt)	-- Create a new equipment object, it's ID is the filename of the equipment we're about to load.
+			include(fullPath)												-- Load the equipment file.
+			TTT.Equipment.Equipment[fileNameNoExt] = EQUIPMENT				-- Store the object for later.
+
+			-- Create a cache sorted by ROLE_ enums to easily decide what roles should have what equipment at round start.
+			for i, role in ipairs(EQUIPMENT.InLoadoutFor) do
+				if not istable(TTT.Equipment.InLoadoutCache[role]) then
+					TTT.Equipment.InLoadoutCache[role] = {}
 				end
-
-				EQUIPMENT = TTT.Equipment.EquipmentItem:Create(filenameNoExt)
-				include(equipGamemodeRootPath..filename)
-				TTT.Equipment.Equipment[filenameNoExt] = EQUIPMENT
+				table.insert(TTT.Equipment.InLoadoutCache[role], fileNameNoExt)
 			end
 		end
 
@@ -233,9 +247,29 @@ do
 			end)
 		end
 	end
+
+	------------------------------------
+	-- TTT.Equipment.CreateNewEquipment
+	------------------------------------
+	-- Note:		ONLY USE IF youre not creating your equipment in one of the two normal places, [addons]/ttt/equipment/ and [gamemode]/library/equipment/equipment/.
+	-- Desc:		Creates a new equipment object that you can build your equipment with. Use :Register() to register the equipment with the gamemode.
+	-- Returns:		TTT.Equipment.EquipmentItem Object.
+	function TTT.Equipment.CreateNewEquipment(ID)
+		return TTT.Equipment.EquipmentItem:Create(ID)
+	end
 end
 
 if SERVER then	
+	function TTT.Equipment.GiveRoleEquipment(ply)
+		local role = ply:GetRole()
+		if istable(TTT.Equipment.InLoadoutCache[role]) then
+			for i, equip in ipairs(TTT.Equipment.InLoadoutCache[role]) do
+				ply:GiveEquipment(equip)
+			end
+		end
+	end
+
+
 	local PLAYER = FindMetaTable("Player")
 
 	------------------------

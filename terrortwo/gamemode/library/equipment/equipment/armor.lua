@@ -6,7 +6,7 @@ EQUIPMENT:SetInStoreFor({ROLE_DETECTIVE, ROLE_TRAITOR})
 
 if SERVER then
 	EQUIPMENT:AddHook("ScalePlayerDamage", function(ply, _, dmginfo)
-		if dmginfo:IsBulletDamage() and ply:HasEquipmentItem(EQUIPMENT.ID) then
+		if ply:HasEquipmentItem(EQUIPMENT.ID) and dmginfo:IsBulletDamage() then
 			dmginfo:ScaleDamage(0.7)
 		end
 	end)

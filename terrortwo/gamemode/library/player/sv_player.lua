@@ -64,12 +64,12 @@ end
 -- Arg One:		Player, to be spawned.
 -- Arg Two:		(Optional=true) Boolean, should we reset their spawn position to a map spawn spot.
 -- Arg Three:	(Optional=true) Boolean, should we arm the player with the default weapons when they spawn. Still gives unholstered either way.
--- Arg Four:	(Optional=true) Boolean, should we arm the player with the weapons for their role.
+-- Arg Four:	(Optional=true) Boolean, should we give the player the gear (weapons/equipment) their role should start the round with. E.g. DNA Scanner and Armor for detectives.
 util.AddNetworkString("TTT.Player.SwitchedFlyMode")
-function TTT.Player.ForceSpawnPlayer(ply, resetspawn, shouldarm, roleWeapons)
+function TTT.Player.ForceSpawnPlayer(ply, resetspawn, shouldarm, roleGear)
 	if not isbool(resetspawn) then resetspawn = true end
 	if not isbool(shouldarm) then shouldarm = true end
-	if not isbool(roleWeapons) then roleWeapons = true end
+	if not isbool(roleGear) then roleGear = true end
 
 	if not resetspawn then
 		ply.ttt_noResetSpawnPos = ply:GetPos()
@@ -89,7 +89,7 @@ function TTT.Player.ForceSpawnPlayer(ply, resetspawn, shouldarm, roleWeapons)
 
 	GAMEMODE:PlayerSetModel(ply)
 	GAMEMODE:PlayerLoadout(ply)
-	hook.Call("TTT.Player.ForcedSpawnedPlayer", nil, ply, resetspawn, shouldarm, roleWeapons)
+	hook.Call("TTT.Player.ForcedSpawnedPlayer", nil, ply, resetspawn, shouldarm, roleGear)
 	ply.ttt_noResetSpawnPos, ply.ttt_noResetSpawnAng = nil, nil
 end
 
