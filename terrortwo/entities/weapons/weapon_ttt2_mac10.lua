@@ -19,7 +19,7 @@ SWEP.Primary.Recoil		= 1.15
 SWEP.Primary.DefaultClip	= 30
 SWEP.Primary.ClipSize		= 30
 SWEP.Primary.CarrySize		= 60
-SWEP.Primary.Ammo			= "ar_light"
+SWEP.Primary.Ammo			= "ar"
 
 SWEP.Sound_Primary	= Sound("Weapon_mac10.Single")
 SWEP.DeploySpeed	= 3

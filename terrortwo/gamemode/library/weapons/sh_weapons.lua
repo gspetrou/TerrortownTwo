@@ -19,21 +19,10 @@ WEAPON_EQUIP2		= 8
 WEAPON_SPECIALEQUIP	= 9
 
 -- Ammo Types. Values copied from Source Engine.
--- AR2
-game.AddAmmoType({
-	name = "ar_heavy",
-	dmgtype = DMG_BULLET,
-	tracer = TRACER_LINE_AND_WHIZ,
-	plydmg = 0,
-	npcdmg = 0,
-	maxcarry = 9999,	-- This is the Garry's Mod default for all default ammo types.
-	minsplash = 4,
-	maxsplash = 8
-})
 
 -- SMG1
 game.AddAmmoType({
-	name = "ar_light",
+	name = "ar",
 	dmgtype = DMG_BULLET,
 	tracer = TRACER_LINE_AND_WHIZ,
 	plydmg = 0,

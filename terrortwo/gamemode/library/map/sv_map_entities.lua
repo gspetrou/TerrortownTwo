@@ -1,0 +1,1 @@
+TTT.Map = TTT.Map or {}
