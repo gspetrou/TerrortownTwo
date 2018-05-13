@@ -1,0 +1,1 @@
+SWEP.Base = "weapon_ttt2_mac10"
