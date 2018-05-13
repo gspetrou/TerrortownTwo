@@ -1,7 +1,7 @@
 -- "ar" ammo. Used for assault rifles that need a bigger ammo type (Mac10). Don't think about it too much.
 AddCSLuaFile()
 ENT.Type = "anim"
-ENT.Base = "ammo_ttt2_base"
+ENT.Base = "ammo_ttt_base"
 
 ENT.AmmoType	= "ar"
 ENT.AmmoGive	= 30

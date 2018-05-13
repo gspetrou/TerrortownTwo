@@ -1,1 +1,1 @@
-SWEP.Base = "weapon_ttt2_huge"
+SWEP.Base = "weapon_ttt_huge"

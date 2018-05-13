@@ -1,4 +1,4 @@
-SWEP.Base		= "weapon_ttt2_base"
+SWEP.Base		= "weapon_ttt_base"
 DEFINE_BASECLASS(SWEP.Base)
 
 SWEP.PrintName	= "Pistol"
