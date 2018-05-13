@@ -2,7 +2,7 @@
 -- Copyright (c) 2017 Collin (code_gs)
 
 -- Config
-TTT.VGUI.ttt_weapon_switcher_scale = 5.5				-- Hud scale size.
+TTT.VGUI.ttt_weapon_switcher_scale = 5.0				-- Hud scale size.
 TTT.VGUI.ttt_weapon_switcher_alpha = 200				-- Hud alpha.
 TTT.VGUI.ttt_weapon_switcher_alpha_selected = 1.2		-- Alpha multiplier for the highlighted weapon bar..
 local MAX_SLOTS		= 6									-- Maximum number of weapon slots.
