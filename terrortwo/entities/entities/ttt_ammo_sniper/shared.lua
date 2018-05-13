@@ -1,7 +1,7 @@
 -- "sniper" ammo. Used for sniper rifles. We keep it simple here.
 AddCSLuaFile()
 ENT.Type = "anim"
-ENT.Base = "ammo_ttt_base"
+ENT.Base = "ttt_ammo_base"
 
 ENT.AmmoType	= "sniper"
 ENT.AmmoGive	= 10
