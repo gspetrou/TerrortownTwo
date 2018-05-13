@@ -1,6 +1,5 @@
 TTT.Weapons = TTT.Weapons or {}
 util.AddNetworkString("TTT.Weapons.RequestDropCurrentWeapon")
-CreateConVar("ttt_weapons_default", "weapon_ttt2_unarmed", FCVAR_ARCHIVE, "The weapon to equip when every player spawns. Should be a weapon with SWEP.SpawnsWith set.")
 local PLAYER = FindMetaTable("Player")
 
 -------------------------------

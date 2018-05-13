@@ -99,7 +99,7 @@ hook.Add("TTT.Player.PostPlayerSpawn", "TTT", function(ply, isSpec)
 
 	if not isSpec then
 		TTT.Weapons.GiveStarterWeapons(ply)
-		ply:SelectWeapon(GetConVar("ttt_weapons_default"):GetString())
+		ply:SelectWeapon("weapon_ttt_unarmed")
 	end
 end)
 
@@ -177,7 +177,7 @@ hook.Add("TTT.Player.ForcedSpawnedPlayer", "TTT", function(ply, resetSpawn, shou
 	if shouldarm then
 		TTT.Weapons.GiveStarterWeapons(ply)
 	else
-		ply:Give("weapon_ttt2_unarmed")	-- If the player isn't carrying anything the console will be spammed with annoying red text.
+		ply:Give("weapon_ttt_unarmed")	-- If the player isn't carrying anything the console will be spammed with annoying red text.
 	end
 
 	if giveRoleGear then

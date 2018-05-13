@@ -255,7 +255,7 @@ else
 			wep:PhysWake()
 		end
 		
-		ply:SelectWeapon("weapon_ttt2_unarmed")
+		ply:SelectWeapon("weapon_ttt_unarmed")
 		hook.Call("TTT.Weapons.DroppedWeapon", nil, ply, wep)
 	end
 
