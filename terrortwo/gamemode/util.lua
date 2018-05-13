@@ -23,6 +23,33 @@ TTT.Colors = {
 	Olive		= Color(100, 100, 0)
 }
 
+-- The two following redirect functions are very simple implementation-wise but will make changing redirected weapons/entities real easy in the future if need be.
+
+----------------------
+-- TTT.RedirectEntity
+----------------------
+-- Desc:		Helper function used in entity files to make the current entity identical to it's base/parent.
+-- 				Used when making old TTT entities "redirect" to our new ones.
+-- Arg One:		Table, ENT table.
+-- Arg Two:		String, parent class.
+-- Arg Three:	(Optional="anim") String, type for the entity.
+function TTT.RedirectEntity(entTable, parentClass, entType)
+	AddCSLuaFile()
+	entTable.Type = entType or "anim"
+	entTable.Base = parentClass
+end
+
+----------------------
+-- TTT.RedirectWeapon
+----------------------
+-- Desc:		Helper function used in weapon files to make the current weapon identical to it's base/parent.
+-- 				Used when making old TTT weapons "redirect" to our new ones.
+-- Arg One:		Table, SWEP table for the entity.
+-- Arg Two:		String, class of the base/parent to "redirect" to.
+function TTT.RedirectWeapon(wepTable, parentClass)
+	wepTable.Base = parentClass
+end
+
 -------------------
 -- net.WritePlayer
 -------------------
