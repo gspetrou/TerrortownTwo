@@ -3,6 +3,7 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Base = "ttt_ammo_base"
 
+ENT.AutoSpawnable = true
 ENT.AmmoType	= "ar"
 ENT.AmmoGive	= 30
 ENT.AmmoMax		= 60

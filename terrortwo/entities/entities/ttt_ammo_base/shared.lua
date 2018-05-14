@@ -17,6 +17,7 @@ ENT.DisableDuplicator	= false
 
 ENT.IsTTTAmmo = true
 ENT.Precached = false
+ENT.AutoSpawnable = true
 ENT.WeaponsUsingThisAmmo = {}
 
 -- Customize these values for each ammo type.
