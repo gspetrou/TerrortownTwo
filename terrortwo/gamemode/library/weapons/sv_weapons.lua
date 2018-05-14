@@ -63,5 +63,15 @@ function TTT.Weapons.CanPickupWeapon(ply, wep)
 		return false
 	end
 
+	-- This snippet taken from Badking's code looks weird but actually makes wepons get picked up without having to wake them up first. Not sure why.
+	local tr = util.TraceEntity({
+		start = wep:GetPos(),
+		endpos = ply:GetShootPos(),
+		mask = MASK_SOLID
+	}, wep)
+	if tr.Fraction == 1.0 or tr.Entity == ply then
+		wep:SetPos(ply:GetShootPos())
+	end
+
 	return true
 end
