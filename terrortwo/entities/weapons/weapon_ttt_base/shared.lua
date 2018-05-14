@@ -63,6 +63,7 @@ SWEP.Secondary.Automatic	= false
 
 -- TTT2 Specific Settings
 --------------------------
+SWEP.IsTTTWeapon	= true
 SWEP.HoldType		= "normal"
 SWEP.DeploySpeed	= 1.4					-- Number, how long it takes to deploy.
 SWEP.Icon			= "vgui/ttt/icon_nades"	-- String, icon path to be displayed for the weapon. Can be PNG.
