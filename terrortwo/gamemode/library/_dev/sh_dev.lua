@@ -39,3 +39,8 @@ function GetBot(num)
 		end
 	end
 end
+
+-- Gets the Entity that Stalker is looking at.
+function EyeEnt()
+	return Stalker():GetEyeTrace().Entity
+end

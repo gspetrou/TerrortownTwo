@@ -187,6 +187,66 @@ function TTT.Weapons.GetWeaponInSlot(ply, kind)
 	return false
 end
 
+--------------------------------------
+-- TTT.Weapons.GetMapSpawnableWeapons
+--------------------------------------
+-- Desc:		Gets all weapons that the map is allowed to spawn. Caches into TTT.Weapons.SpawnableWeaponsCache.
+-- Returns:		Table, list of strings, classes of map spawnable weapons.
+function TTT.Weapons.GetMapSpawnableWeapons()
+	if not TTT.Weapons.SpawnableWeaponsCache then
+		TTT.Weapons.SpawnableWeaponsCache = {}
+		for i, wep in ipairs(weapons.GetList()) do
+			if wep.AutoSpawnable then
+				table.insert(TTT.Weapons.SpawnableWeaponsCache, wep.ClassName)
+			end
+		end
+	end
+	
+	return TTT.Weapons.SpawnableWeaponsCache
+end
+
+-----------------------------------
+-- TTT.Weapons.GetMapSpawnableAmmo
+-----------------------------------
+-- Desc:		Gets all ammo entities that are allowed to be spawned around a map. Cached into TTT.Weapons.SpawnableAmmoCache after first run.
+-- Returns:		Table, of ammo entity class names that can spawn around the map.
+function TTT.Weapons.GetMapSpawnableAmmo()
+	if not TTT.Weapons.SpawnableAmmoCache then
+		TTT.Weapons.SpawnableAmmoCache = {}
+		for ammoClass, ammoInfo in pairs(scripted_ents.GetList()) do
+			if ammoInfo.t.AutoSpawnable then 	-- Sick API Garry.
+				table.insert(TTT.Weapons.SpawnableAmmoCache, ammoClass)
+			end
+		end
+	end
+
+	return TTT.Weapons.SpawnableAmmoCache
+end
+
+--------------------------------------
+-- TTT.Weapons.GetAmmoEntityForWeapon
+--------------------------------------
+-- Desc:		Gets the ammo entity that would give you more ammo for the given weapon.
+-- Arg One:		String, class of the weapon.
+-- Returns:		String or nil. Ammo type for the given weapon, nil if the ammo type of the weapon is "none".
+function TTT.Weapons.GetAmmoEntityForWeapon(wepClass)
+	local wepAmmoType = weapons.Get(wepClass).Primary.Ammo
+	if not wepAmmoType then
+		error("Tried to get ammo type for '".. wepClass .."' where none is set!")
+	elseif wepAmmoType == "none" then
+		return nil
+	end
+
+	for ammoClass, ammoInfo in pairs(scripted_ents.GetList()) do
+		if ammoInfo.IsTTTAmmo and ammoInfo.t.AmmoType == wepAmmoType then
+			return ammoClass
+		end
+	end
+
+	return nil
+end
+
+
 if CLIENT then
 	----------------------------------------
 	-- TTT.Weapons.RequestDropCurrentWeapon
