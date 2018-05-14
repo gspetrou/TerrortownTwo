@@ -303,6 +303,7 @@ end)
 
 hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
 	TTT.Map.ResetMap()
+	TTT.Weapons.PlaceExtraWeapons()		-- Only does anything on maps that need them.
 	TTT.Roles.Clear()
 	
 	local col = hook.Call("TTT.Player.SetDefaultSpawnColor")
