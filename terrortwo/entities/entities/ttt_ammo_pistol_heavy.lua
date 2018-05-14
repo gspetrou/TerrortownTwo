@@ -4,6 +4,7 @@ ENT.Type = "anim"
 ENT.Base = "ttt_ammo_base"
 DEFINE_BASECLASS(ENT.Base)
 
+ENT.IsTTTAmmo	= true
 ENT.AutoSpawnable = true
 ENT.AmmoType	= "pistol_heavy"
 ENT.AmmoGive	= 12
