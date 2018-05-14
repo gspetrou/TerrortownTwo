@@ -76,6 +76,7 @@ function GM:Initialize()
 	math.randomseed(os.time())
 	
 	TTT.Languages.Initialize()			-- Load the languages.
+	TTT.Weapons.RedirectMapEntities()	-- Swap non-TTT entities with TTT entities.
 	TTT.VGUI.Initialize()				-- Get their HUDs working.
 	TTT.Scoreboard.Initialize()			-- Load up the scoreboard.
 	TTT.Equipment.Initialize()			-- Load up equipment.
@@ -95,6 +96,13 @@ function GM:InitPostEntity()
 		TTT.Player.CreateDrownDamageInfo()	-- Create the drown damage info once now so we don't have to later.
 	end
 end
+
+----------------
+-- Entity Hooks
+----------------
+hook.Add("TTT.Weapons.ShouldRedirectWeapons", "TTT", function()
+	return true
+end)
 
 ---------------
 -- Round Hooks

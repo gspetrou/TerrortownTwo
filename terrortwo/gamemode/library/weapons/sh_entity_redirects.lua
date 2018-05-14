@@ -131,3 +131,46 @@ TTT.Weapons.RedirectedWeapons = {
 	}
 }
 
+--------------------------------
+-- TTT.Weapons.RedirectEntities
+--------------------------------
+-- Desc:		Redirects the entities in TTT.Weapons.RedirectedEntities.
+-- 				By setting the Base variable the entities will just inherit everything from their base.
+function TTT.Weapons.RedirectEntities()
+	for className, classInfo in pairs(TTT.Weapons.RedirectedEntities) do
+		classInfo.IsConvertedEntity = true
+		scripted_ents.Register(classInfo, className)
+	end
+end
+
+-------------------------------
+-- TTT.Weapons.RedirectWeapons
+-------------------------------
+-- Desc:		Redirects the weapons listed in TTT.Weapons.RedirectedWeapons.
+-- 				Sadly weapons won't properly inherit from their base so we have to do weapons.Get on them.
+function TTT.Weapons.RedirectWeapons()
+	local pairs, weapons_Get, weapons_Register = pairs, weapons.Get, weapons.Register
+
+	for className, wepInfo in pairs(TTT.Weapons.RedirectedWeapons) do
+		local newWepInfo = weapons_Get(wepInfo.Base)
+		for k, v in pairs(wepInfo) do
+			newWepInfo[k] = v
+		end
+
+		newWepInfo.IsConvertedEntity = true
+		weapons_Register(newWepInfo, className)
+	end
+end
+
+-----------------------------------
+-- TTT.Weapons.RedirectMapEntities
+-----------------------------------
+-- Desc:		Redirects non-TTT weapons and entities to their TTT counterparts.
+function TTT.Weapons.RedirectMapEntities()
+	local hookResult = hook.Call("TTT.Weapons.ShouldRedirectWeapons")
+	if hookResult ~= false then
+		TTT.Weapons.RedirectWeapons()
+		TTT.Weapons.RedirectEntities()
+		hook.Call("TTT.Weapons.ReplacedMapEntities")
+	end
+end
