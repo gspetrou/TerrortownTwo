@@ -17,7 +17,7 @@ ENT.DisableDuplicator	= false
 
 ENT.IsTTTAmmo = true
 ENT.Precached = false
-ENT.AutoSpawnable = true
+ENT.AutoSpawnable = false
 ENT.WeaponsUsingThisAmmo = {}
 
 -- Customize these values for each ammo type.
@@ -57,9 +57,9 @@ if SERVER then
 	-- Arg One:		Entity, to check ammo of.
 	-- Returns:		Boolean, if they have a weapon that takes this ammo.
 	function ENT:HasWeaponForAmmo(ent)
-		if not self.Precached then
+		--if not self.Precached then
 			self:PrecacheAmmo()
-		end
+		--end
 
 		for i, v in ipairs(self.WeaponsUsingThisAmmo) do
 			if ent:HasWeapon(v) then

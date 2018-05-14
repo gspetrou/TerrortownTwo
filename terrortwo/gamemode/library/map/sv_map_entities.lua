@@ -18,7 +18,7 @@ function TTT.Map.ResetMap()
 	-- Assuming the mapper correctly placed ttt1 and tt2 entities, go through converted entities (hl2, css, etc) and settle them.
 	-- Simply raise them 2 units and drop them in-case they spawn clipping in/through the floor and walls.
 	for i, wep in ipairs(ents_GetAll()) do
-		if wep.IsConvertedEnt and not wep.IsOriginalTTTEntity then
+		if wep.IsConvertedEntity and not wep.IsOriginalTTTEntity then
 			local pos = wep:GetPos()
 			pos.z = pos.z + 2
 			wep:SetPos(pos)

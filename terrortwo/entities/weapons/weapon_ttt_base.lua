@@ -327,3 +327,7 @@ end
 function SWEP:GetHeadshotMultiplier()
 	return self.HeadshotMultiplier or 1
 end
+
+function SWEP:Touch()
+	print"a"
+end

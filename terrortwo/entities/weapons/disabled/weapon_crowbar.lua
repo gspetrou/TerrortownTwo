@@ -1,1 +1,0 @@
-SWEP.Base = "weapon_ttt_pistol"
