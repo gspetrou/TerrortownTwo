@@ -2,7 +2,7 @@ TTT.Weapons = TTT.Weapons or {}
 local wepCount = CreateConVar("ttt_weapon_spawn_count", "0", FCVAR_ARCHIVE, "How many extra weapons to spawn on unarmed CSS/TF2 maps. 0 for max player count + 3 amount.")
 
 -- If it were up to me I'd use vON or pON to store the import scripts no problem.
--- But alas, we are stuck with what Badking left us.
+-- But alas, we are stuck with what Badking left us. That being said, expect like 90% of this code to be from Badking.
 
 -------------------------------------
 -- TTT.Weapons.PlaceWeaponsAtClasses

@@ -3,8 +3,8 @@
 
 -- Config
 TTT.VGUI.ttt_weapon_switcher_scale = 5.0				-- Hud scale size.
-TTT.VGUI.ttt_weapon_switcher_alpha = 200				-- Hud alpha.
-TTT.VGUI.ttt_weapon_switcher_alpha_selected = 1.2		-- Alpha multiplier for the highlighted weapon bar..
+TTT.VGUI.ttt_weapon_switcher_alpha = 170				-- Hud alpha.
+TTT.VGUI.ttt_weapon_switcher_alpha_selected = 1.6		-- Alpha multiplier for the highlighted weapon bar..
 local MAX_SLOTS		= 6									-- Maximum number of weapon slots.
 local CACHE_TIME	= 1									-- How often to precache weapons in seconds.
 local OPEN_TIME		= 3									-- How many seconds to stay open after no activity.
@@ -334,7 +334,7 @@ TTT.VGUI.AddElement("ttt_weapon_switcher", function(ply, w, h)
 		else
 			alpha = TTT.VGUI.ttt_weapon_switcher_alpha
 		end
-		surface_SetTextColor(255, 255, 255, alpha*1.4) -- Make the text a little more readable.
+		surface_SetTextColor(255, 255, 255, (alpha-50)*1.3) -- Make the text a little more readable.
 		surface_SetDrawColor(35, 35, 40, alpha)
 
 		-- Draw background.
