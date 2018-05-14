@@ -238,7 +238,7 @@ function TTT.Weapons.GetAmmoEntityForWeapon(wepClass)
 	end
 
 	for ammoClass, ammoInfo in pairs(scripted_ents.GetList()) do
-		if ammoInfo.IsTTTAmmo and ammoInfo.t.AmmoType == wepAmmoType then
+		if ammoInfo.t.IsTTTAmmo and ammoInfo.t.AmmoType == wepAmmoType then
 			return ammoClass
 		end
 	end
