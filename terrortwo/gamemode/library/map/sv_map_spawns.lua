@@ -8,14 +8,6 @@ function ENTITY:GetRemoveOnRoundStart()
 	return self.ttt_removeOnRoundStart or false
 end
 
---------------------
--- TTT.Map.ResetMap
---------------------
--- Desc:		Resets the map to its original state and respawns players.
-function TTT.Map.ResetMap()
-	game.CleanUpMap()
-	hook.Call("TTT.Map.OnReset")
-end
 
 -- NOTICE:	A decent amount of the spawning and placement code below was adapted
 --			from the original TTT. Credits to Bad King Urgrain and whoever else helped.
@@ -56,7 +48,7 @@ function TTT.Map.GetSpawnEntities()
 		end
 	end
 
-	return table.Shuffle(spawns)
+	return spawns
 end
 
 -------------------------------

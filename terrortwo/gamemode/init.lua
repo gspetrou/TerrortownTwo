@@ -20,7 +20,7 @@ end
 -- When the map resets make spectators move back to a spawn point.
 -- Make non-spectators spawn again (at a spawn point).
 hook.Add("TTT.Map.OnReset", "TTT", function()
-	local randomSpawnPoint = TTT.Map.GetSpawnEntities()[1]:GetPos() + Vector(0, 0, 64)
+	local randomSpawnPoint = table.RandomSequential(TTT.Map.GetSpawnEntities()):GetPos() + Vector(0, 0, 64)
 	for i, ply in ipairs(player.GetAll()) do
 		if not ply:IsSpectator() then
 			if ply:IsInFlyMode() then
@@ -214,6 +214,10 @@ end
 -- Disable pressing USE to pick stuff up.
 function GM:AllowPlayerPickup()
    return false
+end
+
+function GM:PlayerSwitchFlashlight(ply)
+	return ply:Alive()
 end
 
 ---------------
