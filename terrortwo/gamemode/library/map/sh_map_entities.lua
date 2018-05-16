@@ -21,7 +21,23 @@ local dummyEntities = {
 	"item_ammo_revolver"
 }
 for i, class in ipairs(dummyEntities) do
-   scripted_ents.Register({Type="point", IsWeaponDummy=true}, class, false)
+	scripted_ents.Register({
+		Type = "point",
+		IsWeaponDummy = true
+	}, class, false)
+end
+
+--------------------------------------
+-- TTT.Map.RunImportScriptMapSettings
+--------------------------------------
+-- Desc:		Import scripts have a feature where you can pass settings to it in the format: "setting: mysetting myvar".
+-- 				This function runs the TTT.Map.HandleImportScriptSetting hook for those settings to be handled.
+function TTT.Map.RunImportScriptMapSettings()
+	if istable(TTT.Weapons.ImportScriptMapSettings) then
+		for k, v in pairs(TTT.Weapons.ImportScriptMapSettings) do
+			hook.Call("TTT.Map.HandleImportScriptSetting", nil, k, v)
+		end
+	end
 end
 
 

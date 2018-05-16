@@ -20,6 +20,10 @@ end
 -- When the map resets make spectators move back to a spawn point.
 -- Make non-spectators spawn again (at a spawn point).
 hook.Add("TTT.Map.OnReset", "TTT", function()
+	TTT.Map.RunImportScriptMapSettings()	-- If the map passes any import script settings load them up here.
+	TTT.Weapons.PlaceEntities()				-- Place weapons, entities, and spawns as necessary.
+
+	-- Spawn players around the map.
 	local randomSpawnPoint = table.RandomSequential(TTT.Map.GetSpawnEntities()):GetPos() + Vector(0, 0, 64)
 	for i, ply in ipairs(player.GetAll()) do
 		if not ply:IsSpectator() then
@@ -30,6 +34,16 @@ hook.Add("TTT.Map.OnReset", "TTT", function()
 			ply:Spawn()
 		else
 			ply:SetPos(randomSpawnPoint)
+		end
+	end
+end)
+
+-- Called immediately after TTT.Map.OnReset to handle any map settings that may have been set by the import script.
+hook.Add("TTT.Map.HandleImportScriptSetting", "TTT", function(key, value)
+	if key == "replacespawns" and value == "1" then
+		for i, ent in ipairs(TTT.Map.GetSpawnEntities()) do
+			ent.BeingRemoved = true -- Remove entity next tick.
+			ent:Remove()
 		end
 	end
 end)
@@ -303,7 +317,6 @@ end)
 
 hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
 	TTT.Map.ResetMap()
-	TTT.Weapons.PlaceExtraWeapons()		-- Only does anything on maps that need them.
 	TTT.Roles.Clear()
 	
 	local col = hook.Call("TTT.Player.SetDefaultSpawnColor")
