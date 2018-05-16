@@ -95,6 +95,10 @@ function GM:InitPostEntity()
 	if SERVER then
 		TTT.Player.CreateDrownDamageInfo()	-- Create the drown damage info once now so we don't have to later.
 	end
+
+	if CLIENT and TTT.Rounds.IsWaiting() and not LocalPlayer():IsSpectator() then
+		LocalPlayer().ttt_InFlyMode = true
+	end
 end
 
 ----------------
