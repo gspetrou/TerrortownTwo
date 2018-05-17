@@ -120,6 +120,10 @@ hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
 				v:SetRole(ROLE_WAITING)
 			end
 		end
+
+		if SERVER then
+			TTT.Rounds.SetState(ROUND_WAITING)
+		end
 	end
 
 	-- Clear player's scoreboard tags on ROUND_WAITING and ROUND_PREP.

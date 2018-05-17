@@ -119,4 +119,18 @@ if SERVER then
 			end
 		end
 	end
+
+	-------------------------------------
+	-- TTT.Map.TriggerRoundStateOutsputs
+	-------------------------------------
+	-- Desc:		Triggers an output on ttt_map_settings entities to let the map know that a round has ended.
+	function TTT.Map.TriggerRoundStateOutsputs(result, data)
+		result = result or TTT.Rounds.GetState()
+
+		for i, ent in ipairs(ents.FindByClass("ttt_map_settings")) do
+			if IsValid(ent) then
+				ent:RoundStateTrigger(result, data)
+			end
+		end
+	end
 end

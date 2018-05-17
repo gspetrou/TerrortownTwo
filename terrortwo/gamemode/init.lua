@@ -290,7 +290,13 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 	return false
 end)
 
+hook.Add("TTT.Rounds.RoundEnded", "TTT", function(type)
+	TTT.Map.TriggerRoundStateOutsputs(ROUND_POST, type)
+end)
+
 hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
+	TTT.Map.TriggerRoundStateOutsputs(ROUND_ACTIVE)
+
 	-- Delete any entities marked for deletion at round start.
 	for i, v in ipairs(ents.GetAll()) do
 		if v:GetRemoveOnRoundStart() then
@@ -317,6 +323,7 @@ end)
 
 hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
 	TTT.Map.ResetMap()
+	TTT.Map.TriggerRoundStateOutsputs(ROUND_PREP)
 	TTT.Roles.Clear()
 	
 	local col = hook.Call("TTT.Player.SetDefaultSpawnColor")
