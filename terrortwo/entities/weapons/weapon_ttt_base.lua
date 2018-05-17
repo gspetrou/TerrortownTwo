@@ -39,7 +39,7 @@ SWEP.UseHands		= false
 SWEP.AutoSwitchFrom	= false
 SWEP.AutoSwitchTo	= false
 
-SWEP.Weight		= 1
+SWEP.Weight		= 5
 SWEP.BobScale	= 1
 SWEP.SwayScale	= 1
 
@@ -67,7 +67,7 @@ SWEP.IsTTTWeapon	= true
 SWEP.HoldType		= "normal"
 SWEP.DeploySpeed	= 1.4					-- Number, how long it takes to deploy.
 SWEP.Icon			= "vgui/ttt/icon_nades"	-- String, icon path to be displayed for the weapon. Can be PNG.
-SWEP.AutoSpawnable	= false					-- Can the map spawn in ttt_random_weapon spawn entities.
+SWEP.AutoSpawnable	= false					-- Can the ttt_random_weapon entity spawn this.
 SWEP.SilentKiller	= false					-- When someone is killed by this weapon they won't scream.
 SWEP.CanDrop		= true
 

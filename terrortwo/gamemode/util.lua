@@ -134,3 +134,17 @@ function table.Shuffle(tbl)
 
 	return tbl
 end
+
+------------------
+-- TTT.IsInMinMax
+------------------
+-- Desc:		Sees if a vector is inside of the given min and max.
+-- Arg One:		Vector, vector to see if its in an area.
+-- Arg Two:		Vector, Min.
+-- Arg Three:	Vector, Max.
+-- Returns:		Boolean, is the first vector between the min and max vectors.
+function TTT.IsInMinMax(vec, min, max)
+	return (vec.x > mins.x and vec.x < maxs.x
+		and vec.y > mins.y and vec.y < maxs.y
+		and vec.z > mins.z and vec.z < maxs.z)
+end
