@@ -113,23 +113,20 @@ end)
 -- Round Hooks
 ---------------
 hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
-	-- If we switch to ROUND_WAITING then clear everyone's roles.
 	if state == ROUND_WAITING then
 		for i, v in ipairs(player.GetAll()) do
 			if not v:IsSpectator() then
 				v:SetRole(ROLE_WAITING)
 			end
+			if CLIENT then
+				TTT.Scoreboard.ClearTag(v)
+			end
 		end
-
-		if SERVER then
-			TTT.Rounds.SetState(ROUND_WAITING)
-		end
-	end
-
-	-- Clear player's scoreboard tags on ROUND_WAITING and ROUND_PREP.
-	if CLIENT and (state == ROUND_WAITING or state == ROUND_PREP) then
-		for i, v in ipairs(player.GetAll()) do
-			TTT.Scoreboard.ClearTag(v)
+	elseif state == ROUND_PREP then
+		if CLIENT then
+			for i, v in ipairs(player.GetAll()) do
+				TTT.Scoreboard.ClearTag(v)
+			end
 		end
 	end
 end)

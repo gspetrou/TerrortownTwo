@@ -10,10 +10,18 @@ SWEP.SpawnWith		= true
 SWEP.HoldType	= "normal"
 SWEP.ViewModel	= "models/weapons/v_crowbar.mdl"
 SWEP.WorldModel	= "models/weapons/w_crowbar.mdl"
-SWEP.ViewModelFOV	= 10
 
 SWEP.Primary.Enabled		= false
 SWEP.Secondary.Enabled		= false
+SWEP.UseHands = false
+
+function SWEP:PreDrawViewModel()
+	return true
+end
+
+function SWEP:PreDrawWorldModel()
+	return true
+end
 
 function SWEP:OnDrop()
 	self:Remove()

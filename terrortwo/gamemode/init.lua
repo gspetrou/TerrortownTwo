@@ -24,7 +24,7 @@ hook.Add("TTT.Map.OnReset", "TTT", function()
 	TTT.Weapons.PlaceEntities()				-- Place weapons, entities, and spawns as necessary.
 
 	-- Spawn players around the map.
-	local randomSpawnPoint = table.RandomSequential(TTT.Map.GetSpawnEntities()):GetPos() + Vector(0, 0, 64)
+	local randomSpectatorSpawnPoint = table.RandomSequential(TTT.Map.GetSpawnEntities()):GetPos() + Vector(0, 0, 64)
 	for i, ply in ipairs(player.GetAll()) do
 		if not ply:IsSpectator() then
 			if ply:IsInFlyMode() then
@@ -33,7 +33,7 @@ hook.Add("TTT.Map.OnReset", "TTT", function()
 
 			ply:Spawn()
 		else
-			ply:SetPos(randomSpawnPoint)
+			ply:SetPos(randomSpectatorSpawnPoint)
 		end
 	end
 end)
@@ -78,7 +78,8 @@ function GM:PlayerInitialSpawn(ply)
 	TTT.Player.SetSpeeds(ply)
 
 	if ply:IsSpectator() then
-		ply:SetPos(TTT.Map.GetSpawnEntities()[1]:GetPos() + Vector(0, 0, 64))	-- If theyre a spectator then put them at a random spawn point.
+		local randomSpawn = table.RandomSequential(TTT.Map.GetSpawnEntities())[1]
+		ply:SetPos(randomSpawn:GetPos() + Vector(0, 0, 64))	-- If theyre a spectator then put them at a random spawn point.
 	end
 end
 

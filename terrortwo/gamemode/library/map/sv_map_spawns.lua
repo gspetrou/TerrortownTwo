@@ -77,6 +77,7 @@ end
 -- Arg One:		Player, to to be placed at a random spawn point.
 function TTT.Map.PutPlayerAtRandomSpawnPoint(ply)
 	local spawnpt = TTT.Map.GetRandomSpawnPoint()
+	print(spawnpt)
 	ply:SetPos(spawnpt:GetPos())
 end
 
@@ -182,7 +183,7 @@ end
 -- Arg One:		Player, to find a spawn for.
 -- Returns:		Entity, spawn point entity.
 function TTT.Map.SelectSpawnPoint(ply)
-	local spawnEntities = TTT.Map.GetSpawnEntities()
+	local spawnEntities = table.Shuffle(TTT.Map.GetSpawnEntities())
 	if #spawnEntities == 0 then
 		error("No spawn entities found!")
 		return
