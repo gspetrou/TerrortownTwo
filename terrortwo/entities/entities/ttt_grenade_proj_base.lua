@@ -35,7 +35,7 @@ function ENT:SetDetonateExact(time)
 	self:SetExplodeTime(time or CurTime())
 end
 
--- Should be overriden.
+-- Should be overriden. Called when its time for the grenade to explode.
 function ENT:Explode(tr)
 	ErrorNoHalt("ERROR: ttt_grenade_base explosion code not overridden!\n")
 end
@@ -65,6 +65,6 @@ function ENT:Think()
 	local success, err = pcall(self.Explode, self, tr)
 	if not success then
 		self:Remove()
-		ErrorNoHalt("ERROR CAUGHT: ttt_basegrenade_proj: " .. err .. "\n")
+		ErrorNoHalt("ERROR CAUGHT: ttt_grenade_base: "..err.."\n")
 	end
 end

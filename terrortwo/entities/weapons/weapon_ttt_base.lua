@@ -82,6 +82,8 @@ SWEP.Sound_Secondary= Sound("Weapon_Pistol.Empty")
 SWEP.Sound_Empty	= Sound("Weapon_Pistol.Empty")
 SWEP.Sound_Reload	= Sound("Weapon_Pistol.Reload")
 
+SWEP.ShouldDisplayAmmo = true	-- Boolean, should the weapon display ammo on the HUD.
+
 SWEP.Primary.Enabled		= true	-- Boolean, if false then primary attacking won't do anything,
 SWEP.Primary.NumShots		= 1 	-- Number, how many shots/pellets to come out of each attack.
 SWEP.Primary.TakenAmmo		= 1		-- Number, how much ammo to take each shot.

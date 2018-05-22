@@ -70,6 +70,7 @@ SWEP.DeploySpeed	= 1.5					-- Number, how long it takes to deploy.
 SWEP.Kind			= WEAPON_GRENADE		-- WEAPON_ enum for what slot this gun takes.
 SWEP.WasThrown		= false 				-- Boolean, was the grenade thrown.
 SWEP.GrenadeName 	= "UNSET"				-- String, make sure you set this to your grenade entity!
+SWEP.ShouldDisplayAmmo = false 				-- Boolean, disable showing ammo on the HUD since we only have one grenade at a time.
 
 SWEP.Primary.Delay			= 1		-- Number, time delay between each shot.
 SWEP.Primary.Ammo			= "none"-- String, type of ammo the weapon takes.
@@ -80,13 +81,14 @@ SWEP.Animations_Primary		= ACT_VM_PULLPIN			-- Enum. animation to play when prim
 
 local canThrowDuringPrep = CreateConVar("ttt_no_nade_throw_during_prep", "0", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Can players throw grenades during round prep.")
 
+-- Sets the detonation time, don't use this directly. Use SWEP.TimeFromThrowToExplode.
 function SWEP:SetDetonationTime(t)
 	self.DetonationTime = t
 end
+
 function SWEP:GetDetonationTime()
 	return self.DetonationTime
 end
-
 
 function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 0, "PinPulled")
@@ -153,7 +155,7 @@ function SWEP:BlowInFace()
 	local source = ply:GetPos() + (ply:Crouching() and ply:GetViewOffsetDucked() or ply:GetViewOffset())
 	source = source + (ang:Right() * 10)
 
-	self:CreateGrenade(source, Angle(0,0,0), Vector(0,0,1), Vector(0,0,1), ply)
+	self:CreateGrenade(source, angle_zero, Vector(0,0,1), Vector(0,0,1), ply)
 	self:SetThrowTime(0)
 	self:Remove()
 end
@@ -197,14 +199,13 @@ end
 
 function SWEP:GetGrenadeName()
 	if self.GrenadeName == "UNSET" then
-		ErrorNoHalt("SWEP BASEGRENADE ERROR: GetGrenadeName not overridden! This is probably wrong!\n")
-		return "ttt_firegrenade_proj"
+		ErrorNoHalt("SWEP BASEGRENADE ERROR: SWEP.GrenadeName not overridden! This is probably wrong!\n")
+		return "ttt_grenade_incendiary"
 	end
 	return self.GrenadeName
 end
 
 function SWEP:CreateGrenade(source, ang, velocity, additionalVelocity, ply)
-	print"ars"
 	local grenade = ents.Create(self:GetGrenadeName())
 	if not IsValid(grenade) then
 		return
@@ -228,7 +229,7 @@ function SWEP:CreateGrenade(source, ang, velocity, additionalVelocity, ply)
 		phys:AddAngleVelocity(additionalVelocity)
 	end
 
-	-- This has to happen AFTER Spawn() calls gren's Initialize()
+	-- This has to happen AFTER Spawn() calls grenade's Initialize()
 	grenade:SetDetonateExact(self:GetDetonationTime())
 	return grenade
 end

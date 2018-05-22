@@ -1,8 +1,10 @@
 AddCSLuaFile()
-ENT.Base = "ttt_grenade_base"
+ENT.Base = "ttt_grenade_proj_base"
 DEFINE_BASECLASS(ENT.Base)
 ENT.Type = "anim"
 ENT.Model = Model("models/weapons/w_eq_flashbang_thrown.mdl")
+ENT.BurnLength = 20
+ENT.NumFlames = 10
 
 function ENT:SetRadius(r) self.Radius = r end
 function ENT:GetRadius() return self.Radius end
@@ -45,7 +47,7 @@ function ENT:Explode(tr)
 		util.Effect("Explosion", effect, true, true)
 		util.BlastDamage(self, self:GetThrower(), pos, self:GetRadius(), self:GetDamage())
 
-		StartFires(pos, tr, 10, 20, false, self:GetThrower())
+		TTT.Weapons.CreateFire(pos, self.NumFlames, self.BurnLength, false, self:GetThrower())
 
 		self:SetDetonateExact(0)
 		self:Remove()
