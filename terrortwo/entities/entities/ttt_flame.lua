@@ -1,4 +1,5 @@
 -- Creates fire with a damage owner.
+-- If you wanna make a fire you're better off doing this through TTT.Weapons.CreateFire.
 AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Model = Model("models/weapons/w_eq_flashbang_thrown.mdl")
@@ -26,7 +27,6 @@ function ENT:Initialize()
 	self:DrawShadow(false)
 	self:SetNoDraw(true)
 
-
 	if CLIENT and useFallbackDraw:GetBool() then
 		self.Draw = self.BackupDraw
 		self:SetNoDraw(false)
@@ -46,35 +46,7 @@ function ENT:Initialize()
 	end
 end
 
-function StartFires(pos, tr, numFlames, lifetime, shouldExplode, dmgowner)
-	for i = 1, numFlames do
-		local ang = Angle(-math.Rand(0, 180), math.Rand(0, 360), math.Rand(0, 360))
-		local vstart = pos + tr.HitNormal * 64
-		local flame = ents.Create("ttt_flame")
-		flame:SetPos(pos)
-
-		if IsValid(dmgowner) and dmgowner:IsPlayer() then
-			flame:SetDamageParent(dmgowner)
-			flame:SetOwner(dmgowner)
-		end
-
-		flame:SetDieTime(CurTime() + lifetime + math.Rand(-2, 2))
-		flame:SetExplodeOnDeath(shouldExplode)
-
-		flame:Spawn()
-		flame:PhysWake()
-
-		local phys = flame:GetPhysicsObject()
-		if IsValid(phys) then
-			-- The balance between mass and force is subtle, be careful adjusting.
-			phys:SetMass(2)
-			phys:ApplyForceCenter(ang:Forward() * 500)
-			phys:AddAngleVelocity(Vector(ang.p, ang.r, ang.y))
-		end
-	end
-end
-
-function SpawnFire(pos, size, attack, fuel, owner, parent)
+function ENT:SpawnFire(pos, size, attack, fuel, owner, parent)
 	local fire = ents.Create("env_fire")
 	if not IsValid(fire) then return end
 
@@ -82,7 +54,7 @@ function SpawnFire(pos, size, attack, fuel, owner, parent)
 	fire:SetOwner(owner)
 	fire:SetPos(pos)
 	
-	fire:SetKeyValue("spawnflags", tostring(128 + 32 + 4 + 2 + 1)) --no glow + delete when out + start on + last forever
+	fire:SetKeyValue("spawnflags", tostring(128 + 32 + 4 + 2 + 1)) -- 128: Delete when out, 32: No glow, 4: Start On, 2: Smokeless, 1: Infinite duration
 	fire:SetKeyValue("firesize", (size * math.Rand(0.7, 1.1)))
 	fire:SetKeyValue("fireattack", attack)
 	fire:SetKeyValue("health", fuel)
@@ -94,9 +66,9 @@ function SpawnFire(pos, size, attack, fuel, owner, parent)
 	return fire
 end
 
--- greatly simplified version of SDK's game_shard/gamerules.cpp:RadiusDamage
--- does no block checking, radius should be very small
-function RadiusDamage(dmginfo, pos, radius, inflictor)
+-- Greatly simplified version of SDK's game_shard/gamerules.cpp:RadiusDamage
+-- does no block checking, radius should be very small,
+function ENT:RadiusDamage(dmginfo, pos, radius, inflictor)
 	local victims = ents.FindInSphere(pos, radius)
 
 	local tr = nil
@@ -130,11 +102,11 @@ function ENT:Explode()
 
 	util.Effect("Explosion", effect, true, true)
 
-	local dmgowner = self:GetDamageParent()
-	if not IsValid(dmgowner) then
-	  dmgowner = self
+	local dmgOwner = self:GetDamageParent()
+	if not IsValid(dmgOwner) then
+		dmgOwner = self
 	end
-	util.BlastDamage(self, dmgowner, pos, 300, 40)
+	util.BlastDamage(self, dmgOwner, pos, 300, 40)
 end
 
 function ENT:Think()
@@ -176,17 +148,17 @@ function ENT:Think()
 			end
 
 			dmg:SetInflictor(self.FireChild)
-			RadiusDamage(dmg, self:GetPos(), 132, self)
+			self:RadiusDamage(dmg, self:GetPos(), 132, self)
 			self.NextHurt = CurTime() + self.HurtInterval
 		end
 		return
-	elseif self:GetVelocity() == Vector(0,0,0) then
-	if self:WaterLevel() > 0 then
-		self.DieTime = 0
-		return
+	elseif self:GetVelocity() == Vector(0, 0, 0) then
+		if self:WaterLevel() > 0 then
+			self.DieTime = 0
+			return
 		end
 
-		self.FireChild = SpawnFire(self:GetPos(), self.FireSize, self.FireGrowth, 999, self:GetDamageParent(), self)
+		self.FireChild = self:SpawnFire(self:GetPos(), self.FireSize, self.FireGrowth, 999, self:GetDamageParent(), self)
 		self:SetBurning(true)
 	end
 end

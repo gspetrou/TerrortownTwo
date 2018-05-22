@@ -75,3 +75,39 @@ function TTT.Weapons.CanPickupWeapon(ply, wep)
 
 	return true
 end
+
+--------------------------
+-- TTT.Weapons.CreateFire
+--------------------------
+-- Desc:		Creates a fire!
+-- Arg One:		Vector, center of the fire.
+-- Arg Two:		Number, of flames (ttt_flame entities).
+-- Arg Three:	Number, how long the fire should burn for.
+-- Arg Four:	Boolean, should the fire explode when it dies out.
+-- Arg Five:	Player, who should be responsible for the damage dealth by this fire.
+function TTT.Weapons.CreateFire(position, numberFlames, burnTime, shouldExplode, dmgOwner)
+	for i = 1, numberFlames do
+		local ang = Angle(-math.Rand(0, 180), math.Rand(0, 360), math.Rand(0, 360))
+		local flame = ents.Create("ttt_flame")
+		flame:SetPos(position)
+
+		if IsValid(dmgOwner) and dmgOwner:IsPlayer() then
+			flame:SetDamageParent(dmgOwner)
+			flame:SetOwner(dmgOwner)
+		end
+
+		flame:SetDieTime(CurTime() + burnTime + math.Rand(-2, 2))
+		flame:SetExplodeOnDeath(shouldExplode)
+
+		flame:Spawn()
+		flame:PhysWake()
+
+		-- The balance between mass and force is subtle, be careful adjusting.
+		local phys = flame:GetPhysicsObject()
+		if IsValid(phys) then
+			phys:SetMass(2)
+			phys:ApplyForceCenter(ang:Forward() * 500)
+			phys:AddAngleVelocity(Vector(ang.p, ang.r, ang.y))
+		end
+	end
+end

@@ -148,3 +148,4 @@ function TTT.IsInMinMax(vec, min, max)
 		and vec.y > mins.y and vec.y < maxs.y
 		and vec.z > mins.z and vec.z < maxs.z)
 end
+
