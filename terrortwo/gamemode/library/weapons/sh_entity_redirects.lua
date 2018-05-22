@@ -64,6 +64,18 @@ TTT.Weapons.RedirectedEntities = {
 	},
 	weapon_slam = {
 		Base = "ttt_ammo_pistol_light"
+	},
+	ttt_confgrenade_proj = {
+		Base = "ttt_grenade_proj_discombobulator",
+		IsOriginalTTTEntity = true
+	},
+	ttt_firegrenade_proj = {
+		Base = "ttt_grenade_proj_incendiary",
+		IsOriginalTTTEntity = true
+	},
+	ttt_smokegrenade_proj = {
+		Base = "ttt_grenade_proj_smoke",
+		IsOriginalTTTEntity = true
 	}
 }
 
@@ -127,6 +139,18 @@ TTT.Weapons.RedirectedWeapons = {
 	},
 	weapon_zm_sledge = {
 		Base = "weapon_ttt_huge",
+		IsOriginalTTTEntity = true
+	},
+	weapon_zm_molotov = {
+		Base = "greande_ttt_incendiary",
+		IsOriginalTTTEntity = true
+	},
+	weapon_ttt_confgrenade = {
+		Base = "grenade_ttt_discombobulator",
+		IsOriginalTTTEntity = true
+	},
+	weapon_ttt_smokegrenade = {
+		Base = "grenade_ttt_smoke",
 		IsOriginalTTTEntity = true
 	}
 }
