@@ -34,10 +34,16 @@ L.sb_tag_kill = "Kill"
 L.sb_tag_missing = "Missing"
 
 -- Health
-L.hp_healthy   = "Healthy"
-L.hp_hurt      = "Hurt"
-L.hp_wounded   = "Wounded"
-L.hp_badwound    = "Badly Wounded"
-L.hp_death     = "Near Death"
+L.hp_healthy = "Healthy"
+L.hp_hurt = "Hurt"
+L.hp_wounded = "Wounded"
+L.hp_badwound = "Badly Wounded"
+L.hp_death = "Near Death"
+
+-- T Buttons
+L.tbutton_singleuse = "Single use"
+L.tbutton_reusable = "Reusable"
+L.tbutton_reuse_time = "Reusable after %s sec"
+L.tbutton_help = "Press %s to activate"
 
 L.invalid = "bork" -- This is used for any invalid text.
