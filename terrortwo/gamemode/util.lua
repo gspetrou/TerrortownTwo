@@ -149,3 +149,15 @@ function TTT.IsInMinMax(vec, min, max)
 		and vec.z > mins.z and vec.z < maxs.z)
 end
 
+if CLIENT then
+	-----------------------
+	-- TTT.IsCoordOnScreen
+	-----------------------
+	-- Desc:		Sees if the given coordinates are on the players screen.
+	-- Arg One:		Number, x coordinate.
+	-- Arg Two:		Number, y coordinate.
+	-- Returns:		Boolean, would the given coordinate pair appear on the player's screen.
+	function TTT.IsCoordOnScreen(x, y)
+		return x >= 0 and x <= ScrW() and y >= 0 and y <= ScrH()
+	end
+end
