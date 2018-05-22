@@ -69,7 +69,8 @@ SWEP.DeploySpeed	= 1.4					-- Number, how long it takes to deploy.
 SWEP.Icon			= "vgui/ttt/icon_nades"	-- String, icon path to be displayed for the weapon. Can be PNG.
 SWEP.AutoSpawnable	= false					-- Can the ttt_random_weapon entity spawn this.
 SWEP.SilentKiller	= false					-- When someone is killed by this weapon they won't scream.
-SWEP.CanDrop		= true
+SWEP.CanDrop		= true					-- Boolean, can they drop this weapon.
+SWEP.DrawTTTCrosshair	= true				-- Boolean, should we draw the default TTT crosshair.
 
 SWEP.Fingerprints	= {}
 SWEP.SpawnWith		= nil					-- Boolean. If true, everyone will spawn with this weapon.
@@ -287,6 +288,44 @@ function SWEP:ShootEffects()
 	self:GetOwner():MuzzleFlash()
 end
 
+-- Crosshair
+if CLIENT then
+	local crosshairOpacity = CreateClientConVar("ttt_crosshair_opacity", "0.8", true, false, "How transparent is your crosshair. (From 0 to 1)")
+	local crosshairBrightness = CreateClientConVar("ttt_crosshair_brightness", "1.0", true, false, "Changes the brightness/colorfulness of your crosshair. (From 0 to 1)")
+	local crosshairSize = CreateClientConVar("ttt_crosshair_size", "1.0", true, false, "Size of the crosshair. (From 0 to 1)")
+	local crosshairDisabled = CreateClientConVar("ttt_crosshair_disabled", "0", true, false, "Switch to 1 to disable the crosshair, 0 to enable.")
+
+	function SWEP:DrawHUD()
+		-- TODO: Hud Help and sights support
+
+		local ply = LocalPlayer()
+		local alpha = math.Clamp(crosshairOpacity:GetFloat(), 0.0, 1.0)
+		if not self.DrawTTTCrosshair or crosshairDisabled:GetBool() or alpha == 0 then
+			return
+		end
+
+		local x = ScrW()/2
+		local y = ScrH()/2
+		local scale = math.max(0.2, 10 * self:GetPrimaryCone()) * (2 - math.Clamp((CurTime() - self:LastShootTime()) * 5, 0.0, 1.0))
+
+		local brightness = math.Clamp(crosshairBrightness:GetFloat(), 0.0, 1.0)
+		if ply.IsTraitor and ply:IsTraitor() then
+			surface.SetDrawColor(255 * brightness, 50 * brightness, 50 * brightness, 255 * alpha)
+		elseif ply.IsDetective and ply:IsDetective() then
+			surface.SetDrawColor(50 * brightness, 50 * brightness, 255 * brightness, 255 * alpha)
+		else
+			surface.SetDrawColor(50 * brightness, 255 * brightness, 50 * brightness, 255 * alpha)
+		end
+
+		local gap = math.floor(20 * scale)
+		local length = math.floor(gap + (25 * crosshairSize:GetFloat()) * scale)
+		surface.DrawLine(x - length, y, x - gap, y)
+		surface.DrawLine(x + length, y, x + gap, y)
+		surface.DrawLine(x, y - length, x, y - gap)
+		surface.DrawLine(x, y + length, x, y + gap)
+	end
+end
+
 -------------------------
 -- TTT Related Functions
 -------------------------
@@ -328,8 +367,4 @@ end
 
 function SWEP:GetHeadshotMultiplier()
 	return self.HeadshotMultiplier or 1
-end
-
-function SWEP:Touch()
-	print"a"
 end
