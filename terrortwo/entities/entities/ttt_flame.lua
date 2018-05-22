@@ -16,7 +16,7 @@ ENT.BurnTime = 20		-- Number, how long the fire stays.
 ENT.FireSize = 120
 ENT.FireGrowth = 1
 
-local useFallbackDraw = CreateClientConVar("ttt_fire_fallback", "0", FCVAR_ARCHIVE, "Use fallback fire in case it doesn't show up for you.")
+local useFallbackDraw = CreateClientConVar("ttt_fire_fallback", "0", true, false, "Use fallback fire in case it doesn't show up for you.")
 
 function ENT:SetupDataTables()
 	self:NetworkVar("Bool", 0, "Burning")
