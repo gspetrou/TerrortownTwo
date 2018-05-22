@@ -40,6 +40,32 @@ function TTT.Map.RunImportScriptMapSettings()
 	end
 end
 
+local ENTITY = FindMetaTable("Entity")
+
+-------------------------
+-- ENTITY:SetDamageOwner
+-------------------------
+-- Desc:		Sets the owner of the damage caused by this entity.
+-- Arg One:		Player, who owns the damage.
+function ENTITY:SetDamageOwner(ply)
+	self.ttt_DamageOwner = {
+		Player = ply,
+		Time = CurTime()
+	}
+end
+
+-------------------------
+-- ENTITY:GetDamageOwner
+-------------------------
+-- Desc:		Gets the damage owner of the given entity along with the time this owner was set.
+-- Returns:		Player or nil. Nil if no damage owner is set, player otherwise.
+-- Returns:		Number or nil. Nil if no damage owner is set, time damage owner was set otherwise.
+function ENTITY:GetDamageOwner()
+	if self.ttt_DamageOwner then
+		return self.ttt_DamageOwner.Player, self.ttt_DamageOwner.Time
+	end
+	return nil, nil
+end
 
 if SERVER then
 	local VectorRand, ipairs, ents_GetAll = VectorRand, ipairs, ents.GetAll
