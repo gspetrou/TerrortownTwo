@@ -82,7 +82,7 @@ function GM:PlayerInitialSpawn(ply)
 	TTT.Player.SetSpeeds(ply)
 
 	if ply:IsSpectator() then
-		local randomSpawn = table.RandomSequential(TTT.Map.GetSpawnEntities())[1]
+		local randomSpawn = table.RandomSequential(TTT.Map.GetSpawnEntities())
 		ply:SetPos(randomSpawn:GetPos() + Vector(0, 0, 64))	-- If theyre a spectator then put them at a random spawn point.
 	end
 end
