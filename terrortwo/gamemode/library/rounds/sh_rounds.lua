@@ -1,10 +1,12 @@
 TTT.Rounds = TTT.Rounds or {}
 
+-- Round enums.
 ROUND_WAITING = 0
 ROUND_PREP = 1
 ROUND_ACTIVE = 2
 ROUND_POST = 3
 
+-- Round win enums.
 WIN_NONE = 0
 WIN_TIME = 1
 WIN_INNOCENT = 2

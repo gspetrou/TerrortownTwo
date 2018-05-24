@@ -119,15 +119,3 @@ function TTT.Player.SetModelColor(ply)
 	end
 	ply:SetPlayerColor(Vector(col.r/255, col.g/255, col.b/255))
 end
-
-
-if CLIENT then
-	---------------------------------------
-	-- TTT.Player.CheckPlayerModelTextures
-	---------------------------------------
-	-- Desc:		So there are addons going around that override the CS:S models to ignorez.
-	--				While this isn't the best fix it at least helps stop skiddies till sv_pure is fixed.
-	function TTT.Player.CheckPlayerModelTextures()
-
-	end
-end

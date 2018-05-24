@@ -45,7 +45,7 @@ GM.Name = "Trouble in Terrorist Town Two"
 GM.Author = "George 'Stalker' Petrou"
 GM.Email = "N/A"
 GM.Website = "N/A"
-TTT.Version = 20180308					-- YearMonthDay
+TTT.Version = 20180523					-- YearMonthDay
 DEFINE_BASECLASS("gamemode_base")
 
 hook.Add("TTT.PreLibraryLoaded", "TTT", function()

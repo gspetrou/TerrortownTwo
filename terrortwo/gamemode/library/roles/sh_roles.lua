@@ -2,10 +2,13 @@ TTT.Roles = TTT.Roles or {}
 local PLAYER = FindMetaTable("Player")
 
 -- TTT2 treats spectators differently than TTT. Here spectators are only people with
--- ttt_always_spectator enabled. Dead players are just dead traitors/detectives/innocents.
-ROLE_WAITING	= 1
-ROLE_SPECTATOR	= 2
-ROLE_UNKNOWN	= 3
+-- ttt_always_spectator enabled. Dead players are still considered their role when they were alive but with "fly mode" enabled.
+-- You can check if a player is in fly mode with ply:IsInFlyMode().
+
+-- Role enums.
+ROLE_WAITING	= 1		-- Waiting is set on all players when the conditions to start a round are not met.
+ROLE_SPECTATOR	= 2		-- Only set on players with ttt_always_spectate enabled. Dead players do not have this, they are just dead in fly mode.
+ROLE_UNKNOWN	= 3		-- Used clientside, set on players who the client doesn't know the role of.
 ROLE_INNOCENT	= 4
 ROLE_DETECTIVE	= 5
 ROLE_TRAITOR	= 6

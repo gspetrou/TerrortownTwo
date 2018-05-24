@@ -55,7 +55,7 @@ end
 -- TTT.Map.GetRandomSpawnPoint
 -------------------------------
 -- Desc:		Gets a random spawn point entity for the player that is safe to spawn at (E.g. nothing blocking it).
--- Returns:		Entity, the spawn point.
+-- Returns:		Entity or Boolean, the spawn point or false if nothing could be found.
 function TTT.Map.GetRandomSpawnPoint()
 	local spawnpoints = TTT.Map.GetSpawnEntities()
 	local spawn, index = table.RandomSequential(spawnpoints)

@@ -17,7 +17,7 @@ do
 	-- Returns:		TTT.Equipment.EquipmentItem object.
 	function TTT.Equipment.EquipmentItem:Create(id)
 		local item = {}
-		setmetatable(item, TTT.Equipment.EquipmentItem)
+		setmetatable(item, self)
 		item.ID = id
 		item.Name = "UNSET"
 		item.Description = "UNSET"

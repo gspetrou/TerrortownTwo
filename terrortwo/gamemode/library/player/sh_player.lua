@@ -18,23 +18,6 @@ function TTT.Player.SetupMovement(ply, mv)
 	end
 end
 
-if SERVER then
-	------------------------
-	-- TTT.Player.SetSpeeds
-	------------------------
-	-- Desc:		Sets the player's movement settings.
-	-- Arg One:		Player, to set movement settings up.
-	function TTT.Player.SetSpeeds(ply)
-		ply:SetCanZoom(false)	
-		ply:SetJumpPower(160)
-		ply:SetCrouchedWalkSpeed(0.3)
-
-		local speed = baseSpeed:GetInt() or 220
-		ply:SetRunSpeed(speed)
-		ply:SetWalkSpeed(speed)
-		ply:SetMaxSpeed(speed)
-	end
-end
 
 -- Colors used to indicated how injured someone is. Thanks TTT.
 TTT.Player.HealthColors = {

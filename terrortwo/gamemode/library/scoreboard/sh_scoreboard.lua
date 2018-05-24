@@ -27,9 +27,12 @@ function TTT.Scoreboard.Initialize()
 	end
 end
 
-if SERVER then
-	return
-end
+if SERVER then	------------------------------------------
+	return		-- Everything below here is clientside! --
+end 			------------------------------------------
+
+
+
 
 -- Scoreboard fonts.
 surface.CreateFont("TTT_SBHeaderLarge", {

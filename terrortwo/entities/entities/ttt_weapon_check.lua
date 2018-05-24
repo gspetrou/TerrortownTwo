@@ -8,7 +8,7 @@ function ENT:KeyValue(key, value)
 end
 
 local function hasWeaponOfType(ply, wepType)
-	for i, wep in ipairs(ply:GetWeapons()) do
+	for k, wep in pairs(ply:GetWeapons()) do
 		if wep.Kind and wep.Kind == wepType then
 			return true
 		end
@@ -63,7 +63,7 @@ function ENT:TestWeapons(weapon)
 		if IsValid(ply) and ply:Alive() then
 			local pos = ply:GetPos()
 			local center = ply:LocalToWorld(ply:OBBCenter())
-			if VectorInside(pos, mins, maxs) or VectorInside(center, mins, maxs) then
+			if TTT.IsInMinMax(pos, mins, maxs) or TTT.IsInMinMax(center, mins, maxs) then
 				if checkFunc(ply, weapon) then
 					return 1
 				end

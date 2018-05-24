@@ -6,9 +6,9 @@ include("util.lua")
 include("lib_loader.lua")
 include("shared.lua")
 
------------------
--- General Hooks
------------------
+---------------------
+-- Map Related Hooks
+---------------------
 function GM:IsSpawnpointSuitable(ply, spawn, force)
 	return TTT.Map.CanSpawnHere(ply, spawn, force)
 end
@@ -48,6 +48,10 @@ hook.Add("TTT.Map.HandleImportScriptSetting", "TTT", function(key, value)
 	end
 end)
 
+-----------------
+-- General Hooks
+-----------------
+local ipairs, player_GetAll = ipairs, player.GetAll
 function GM:Tick()
 	local players = player.GetAll()
 	for i = 1, #players do

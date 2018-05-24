@@ -274,9 +274,9 @@ end
 /////////////////
 // Misc. Stuff.
 /////////////////
---------------------------
--- TTT.Rounds.TypeToPrint
---------------------------
+---------------------------
+-- TTT.Rounds.TypeToString
+---------------------------
 -- Desc:		Given a ROUND_ enum will print a string of the round type.
 -- Arg One:		ROUND_ enum, which round to get a string of.
 -- Returns:		String, current round type.

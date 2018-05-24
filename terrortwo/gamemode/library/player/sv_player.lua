@@ -222,6 +222,10 @@ end
 
 local timeTillDrown = CreateConVar("ttt_player_timetilldrowning", "8", FCVAR_ARCHIVE, "Time in seconds for a player to be underwater till they start drowning.")
 
+------------------------------------
+-- TTT.Player.CreateDrownDamageInfo
+------------------------------------
+-- Desc:		Creates the DamageInfo object responsible for handling player drowning.
 function TTT.Player.CreateDrownDamageInfo()
 	-- Damage info for drowning. Available to be editted. Not created till InitPostEntity.
 	TTT.Player.DrownDamageInfo = DamageInfo()
@@ -256,6 +260,7 @@ function TTT.Player.HandleDrowning(ply)
 	end
 end
 
+-- Called when the player presses USE on an entity while spectating.
 util.AddNetworkString("TTT.Player.AttemptSpectateObject")
 net.Receive("TTT.Player.AttemptSpectateObject", function(_, ply)
 	if not ply:Alive() then
@@ -276,6 +281,12 @@ net.Receive("TTT.Player.AttemptSpectateObject", function(_, ply)
 	end
 end)
 
+----------------------------------------
+-- TTT.Player.HandleSpectatorKeypresses
+----------------------------------------
+-- Desc:		Handles a spectator's key presses to do different things.
+-- Arg One:		Player who is a spectator.
+-- Arg Two:		IN_ enum of the key they pressed.
 function TTT.Player.HandleSpectatorKeypresses(ply, key)
 	if key == IN_ATTACK then		-- Spectate random people.
 		ply:Spectate(OBS_MODE_ROAMING)

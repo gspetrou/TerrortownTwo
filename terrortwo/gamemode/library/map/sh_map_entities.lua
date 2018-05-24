@@ -84,7 +84,7 @@ if SERVER then
 			ent:Remove()
 		end
 
-		-- Assuming the mapper correctly placed ttt1 and tt2 entities, go through converted entities (hl2, css, etc) and settle them.
+		-- Assuming the mapper correctly placed ttt1 and ttt2 entities, go through converted entities (hl2, css, etc) and settle them.
 		-- Simply raise them 2 units and drop them in-case they spawn clipping in/through the floor and walls.
 		for i, wep in ipairs(ents_GetAll()) do
 			if wep.IsConvertedEntity and not wep.IsOriginalTTTEntity then
@@ -141,6 +141,7 @@ if SERVER then
 					if #parent == 1 then
 						ent:SetParent(parent[1])
 					end
+					ent.ttt_ParentName = nil
 				end
 			end
 		end
