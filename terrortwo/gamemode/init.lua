@@ -53,10 +53,7 @@ end)
 -----------------
 local ipairs, player_GetAll = ipairs, player.GetAll
 function GM:Tick()
-	local players = player.GetAll()
-	for i = 1, #players do
-		ply = players[i]
-		
+	for i, ply in ipairs(player_GetAll()) do
 		if ply:Alive() then
 			TTT.Player.HandleDrowning(ply)
 		else
@@ -133,13 +130,13 @@ end
 
 function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	TTT.Corpse.CreateBody(ply, attacker, dmginfo)
+	TTT.Player.RecordDeathPos(ply)	-- Record  their death position so that their spectator camera spawns here.
 	if TTT.Rounds.IsPrep() then
 		ply:GetCorpse():SetRemoveOnRoundStart(true)
 	end
 end
 
 function GM:PlayerDeath(ply, inflictor, attacker)
-	TTT.Player.RecordDeathPos(ply)	-- Record  their death position so that their spectator camera spawns here.
 	ply:Flashlight(false)
 	ply:Extinguish()
 end
@@ -270,7 +267,7 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 		return WIN_TIME
 	end
 
-	local numaliveTraitors, numaliveInnocents, numaliveDetectives = 0, 0, 0
+	local numAlive, numaliveTraitors, numaliveInnocents, numaliveDetectives = 0, 0, 0, 0
 	for i, v in ipairs(TTT.Player.GetAlivePlayers()) do
 		if v:IsInnocent() then
 			numaliveInnocents = numaliveInnocents + 1
@@ -279,16 +276,16 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 		elseif v:IsDetective() then
 			numaliveDetectives = numaliveDetectives + 1
 		end
+		numAlive = numAlive + 1
 	end
 
 	if (numaliveTraitors + numaliveInnocents + numaliveDetectives) == 0 then
 		return WIN_TRAITOR
 	end
 
-	local numplys = #TTT.Player.GetAlivePlayers()
-	if numplys == numaliveTraitors then
+	if numAlive == numaliveTraitors then
 		return WIN_TRAITOR
-	elseif numplys == (numaliveInnocents + numaliveDetectives) then
+	elseif numAlive == (numaliveInnocents + numaliveDetectives) then
 		return WIN_INNOCENT
 	end
 

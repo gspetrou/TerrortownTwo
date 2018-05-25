@@ -84,7 +84,6 @@ function GM:Initialize()
 	if SERVER then
 		RunConsoleCommand("mp_friendlyfire", "1")	-- Enables lag compensation.
 		TTT.Player.Initialize()	-- Select the player models for the map.
-		TTT.Weapons.LoadImportWeaponsScript()	-- If one exists, load up the weapon import script for the map.
 	end
 	
 	TTT.Rounds.Initialize()				-- Begin the round managing system.	
@@ -95,6 +94,7 @@ function GM:InitPostEntity()
 
 	if SERVER then
 		TTT.Player.CreateDrownDamageInfo()	-- Create the drown damage info once now so we don't have to later.
+		TTT.Weapons.LoadImportWeaponsScript()	-- If one exists, load up the weapon import script for the map.
 	end
 
 	if CLIENT and TTT.Rounds.IsWaiting() and not LocalPlayer():IsSpectator() then
