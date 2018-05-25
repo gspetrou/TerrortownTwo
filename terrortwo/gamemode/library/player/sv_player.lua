@@ -186,7 +186,7 @@ function TTT.Player.HandleDeathSpectating(ply)
 			-- Move to spectator spawn if mapper defined any.
 			local spectatorSpawns = ents.FindByClass("ttt_spectator_spawn")
 			if spectatorSpawns and #spectatorSpawns > 0 then
-				local spawn = table.Random(spectatorSpawns)
+				local spawn = table.RandomSequential(spectatorSpawns)
 				ply:SetPos(spawn:GetPos())
 				ply:SetEyeAngles(spawn:GetAngles())
 			end
@@ -200,7 +200,8 @@ function TTT.Player.HandleDeathSpectating(ply)
 			ply:SetIsSpectatingCorpse(false)
 		end
 	else
-		if ply:GetMoveType() == MOVETYPE_LADDER then
+		local curMoveType = ply:GetMoveType()
+		if curMoveType == MOVETYPE_LADDER or curMoveType == MOVETYPE_OBSERVER then	-- MOVETYPE_OBSERVER is what causes that laggy feeling free fly cam.
 			ply:SetMoveType(MOVETYPE_NOCLIP)
 		end
 
@@ -218,6 +219,22 @@ function TTT.Player.HandleDeathSpectating(ply)
 			end
 		end
 	end
+end
+
+------------------------
+-- TTT.Player.SetSpeeds
+------------------------
+-- Desc:		Sets the player's movement settings.
+-- Arg One:		Player, to set movement settings up.
+function TTT.Player.SetSpeeds(ply)
+	ply:SetCanZoom(false)	
+	ply:SetJumpPower(160)
+	ply:SetCrouchedWalkSpeed(0.3)
+
+	local speed = GetConVar("ttt_player_movespeed"):GetInt() or 220
+	ply:SetRunSpeed(speed)
+	ply:SetWalkSpeed(speed)
+	ply:SetMaxSpeed(speed)
 end
 
 local timeTillDrown = CreateConVar("ttt_player_timetilldrowning", "8", FCVAR_ARCHIVE, "Time in seconds for a player to be underwater till they start drowning.")
@@ -268,7 +285,7 @@ net.Receive("TTT.Player.AttemptSpectateObject", function(_, ply)
 		if tr.Hit and IsValid(tr.Entity) then
 			if tr.Entity:IsCorpse() then
 				--if not ply:KeyDown(IN_WALK) then
-					--CORPSE.ShowSearch(ply, tr.Entity)
+					--CORPSE.ShowSearch(ply, tr.Entity)	-- TODO
 				--else
 					ply:Spectate(OBS_MODE_IN_EYE)
 					ply:SpectateEntity(tr.Entity)
@@ -289,16 +306,18 @@ end)
 -- Arg Two:		IN_ enum of the key they pressed.
 function TTT.Player.HandleSpectatorKeypresses(ply, key)
 	if key == IN_ATTACK then		-- Spectate random people.
-		ply:Spectate(OBS_MODE_ROAMING)
-		ply:SetEyeAngles(angle_zero)
-		ply:SpectateEntity(nil)
+		if ply:GetObserverMode() ~= OBS_MODE_ROAMING then
+			ply:Spectate(OBS_MODE_ROAMING)
+			ply:SpectateEntity(nil)
+		end
 
 		local alivePlayers = TTT.Player.GetAlivePlayers()
-		
-		if alivePlayers == 0 then
+		if #alivePlayers == 0 then
 			return
 		end
-		
+
+		ply:SetEyeAngles(angle_zero)
+
 		local target = table.RandomSequential(alivePlayers)
 		if IsValid(target) then
 			ply:SetPos(target:EyePos())
@@ -330,17 +349,19 @@ function TTT.Player.HandleSpectatorKeypresses(ply, key)
 		local pos = ply:GetPos()
 		local ang = ply:EyeAngles()
 
+		if ply:GetObserverMode() ~= OBS_MODE_ROAMING then
+			ply:Spectate(OBS_MODE_ROAMING)
+			ply:SpectateEntity(nil)
+		end
+
 		local target = ply:GetObserverTarget()
 		if IsValid(target) and target:IsPlayer() then
 			pos = target:EyePos()
 			ang = target:EyeAngles()
+
+			ply:SetPos(pos)
+			ply:SetEyeAngles(ang)
 		end
-
-		ply:Spectate(OBS_MODE_ROAMING)
-		ply:SpectateEntity(nil)
-
-		ply:SetPos(pos)
-		ply:SetEyeAngles(ang)
 		return true
 	elseif key == IN_RELOAD then
 		local target = ply:GetObserverTarget()
@@ -353,7 +374,6 @@ function TTT.Player.HandleSpectatorKeypresses(ply, key)
 		elseif ply.ttt_specMode == OBS_MODE_IN_EYE then
 			ply.ttt_specMode = OBS_MODE_CHASE
 		end
-		-- roam stays roam
 
 		ply:Spectate(ply.ttt_specMode)
 	end

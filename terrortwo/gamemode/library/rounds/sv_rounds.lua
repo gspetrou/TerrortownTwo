@@ -46,7 +46,7 @@ function TTT.Rounds.SetState(state)
 	net.Broadcast()
 
 	hook.Call("TTT.Rounds.StateChanged", nil, state)
-	print("Round state changed to: ".. TTT.Rounds.TypeToPrint(state))
+	print("Round state changed to: ".. TTT.Rounds.TypeToString(state))
 end
 
 ---------------------------
@@ -286,7 +286,7 @@ local roundtypes = {
 	[ROUND_ACTIVE] = "ACTIVE",
 	[ROUND_POST] = "POST"
 }
-function TTT.Rounds.TypeToPrint(state)
+function TTT.Rounds.TypeToString(state)
 	return roundtypes[state] or "UNKNOWN (".. state ..")"
 end
 

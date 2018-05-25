@@ -61,10 +61,13 @@ function TTT.Map.GetRandomSpawnPoint()
 	local spawn, index = table.RandomSequential(spawnpoints)
 	table.remove(spawnpoints, index)
 	
-	-- TODO: Add case for when no valid spawns are left.
 	while (not TTT.Map.WillPlayerFit(spawn:GetPos())) do
 		spawn, index = table.RandomSequential(spawnpoints)
 		table.remove(spawnpoints, index)
+
+		if #spawnpoints == 0 then
+			return false
+		end
 	end
 
 	return spawn
@@ -77,7 +80,9 @@ end
 -- Arg One:		Player, to to be placed at a random spawn point.
 function TTT.Map.PutPlayerAtRandomSpawnPoint(ply)
 	local spawnpt = TTT.Map.GetRandomSpawnPoint()
-	print(spawnpt)
+	if spawnpt == false then
+		spawnpt = TTT.Map.SelectSpawnPoint(ply)	-- A bit slower but much more likely to find/make a good spawn.
+	end
 	ply:SetPos(spawnpt:GetPos())
 end
 
