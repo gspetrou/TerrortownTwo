@@ -64,7 +64,8 @@ function TTT.Corpse.CreateRagdoll(ply)
 	ragdoll:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)	-- TTT had an option for this but it can cause crashes too easily.
 
 	ragdoll.isbody = true
-	ragdoll.OwnerID = ply:SteamID()
+	ragdoll.OwnerSteamID = ply:SteamID()
+	ragdoll.OwnerEntID = ply:EntIndex()
 
 	return ragdoll
 end
