@@ -1,10 +1,23 @@
 TTT.Roles = TTT.Roles or {}
 
 -- This command will switch the player between spectator and not spectator.
-concommand.Add("ttt_always_spectator", function(ply)
-	net.Start("TTT.Roles.SpectatorModeChange")
-	net.SendToServer()
-end)
+concommand.Add("ttt_always_spectator", function(ply, cmd, args)
+	if #args == 0 or args[1] == "" then
+		print(cmd.." currently set to '".. (ply:IsSpectator() and "1" or "0") .."'. Use this convar to toggle always spectate mode.")
+	else
+		local state = tonumber(args[1])
+		if state and (state == 0 or state == 1) then
+			net.Start("TTT.Roles.SpectatorModeChange")
+				net.WriteBool(tobool(state))
+			net.SendToServer()
+		else
+			print("Invalid argument to ".. cmd ..", must be either 0 or 1.")
+		end
+	end
+end, function(cmd, args)	-- Displays a 1 or 0 depending on if the setting is enabled or not in the console's autocomplete.
+	local num = LocalPlayer():IsSpectator() and "1" or "0"
+	return {cmd.." "..num}
+end, "Used to toggle states between spectator always mode and not.")
 
 ------------------------
 -- TTT.Roles.GetUnknown
@@ -76,4 +89,18 @@ net.Receive("TTT.Roles.PlayerSwitchedRole", function()
 	local role = net.ReadUInt(3)
 	local ply = net.ReadPlayer()
 	ply:SetRole(role)
+end)
+
+-- Received if the player was a spectator when they connected.
+net.Receive("TTT.Roles.SpectatorOnConnect", function()
+	if not IsValid(LocalPlayer()) then
+		hook.Add("OnEntityCreated", "TTT.Roles.SpectatorOnConnect", function(ply)
+			if IsValid(LocalPlayer()) then
+				LocalPlayer():SetRole(ROLE_SPECTATOR)
+				hook.Remove("OnEntityCreated", "TTT.Roles.SpectatorOnConnect")
+			end
+		end)
+	else
+		LocalPlayer():SetRole(ROLE_SPECTATOR)
+	end
 end)

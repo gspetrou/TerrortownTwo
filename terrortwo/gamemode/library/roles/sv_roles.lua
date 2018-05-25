@@ -6,6 +6,7 @@ util.AddNetworkString("TTT.Roles.Sync")
 util.AddNetworkString("TTT.Roles.Clear")
 util.AddNetworkString("TTT.Roles.SpectatorModeChange")
 util.AddNetworkString("TTT.Roles.PlayerSwitchedRole")
+util.AddNetworkString("TTT.Roles.SpectatorOnConnect")
 
 -- Setup the convars.
 local traitor_percent = CreateConVar("ttt_traitor_percent", "0.25", FCVAR_ARCHIVE, "Percentage of players that will be traitors.")
@@ -34,6 +35,9 @@ function TTT.Roles.SetupAlwaysSpectate(ply)
 	local should_spec = q == "1" and true or false
 	if should_spec then
 		ply:SetRole(ROLE_SPECTATOR)
+		net.Start("TTT.Roles.SpectatorOnConnect")
+		net.Send(ply)
+
 		ply:Kill()	-- Killing them after setting their role to spectator will spawn them properly as a spectator.
 	else
 		ply:SetRole(ROLE_WAITING)
@@ -63,7 +67,12 @@ end
 -- When received toggle the player's spectator status.
 net.Receive("TTT.Roles.SpectatorModeChange", function(_, ply)
 	if IsValid(ply) then
-		TTT.Roles.MakeSpectator(ply, not ply:IsSpectator())
+		local wantsSpec = net.ReadBool()
+		if ply:IsSpectator() and not wantsSpec then
+			TTT.Roles.MakeSpectator(ply, false)
+		elseif wantsSpec and not ply:IsSpectator() then
+			TTT.Roles.MakeSpectator(ply, true)
+		end
 	end
 end)
 
@@ -118,7 +127,7 @@ end
 ----------------------------
 -- Desc:		Sets the role of a player but only for the given recipients.
 -- Arg One:		ROLE_ enum, what role this player should have.
--- Arg Two:		Table, player, or true. Table if more than one player should know. Player for a single person. True for everyone to know this person's role changed.
+-- Arg Two:		Table, player, true or nil. Table if more than one player should know. Player for a single person. True for everyone to know this person's role changed. Nil for the player the function is called on.
 function PLAYER:SetRoleClientside(role, recipients)
 	net.Start("TTT.Roles.PlayerSwitchedRole")
 		net.WriteUInt(role, 3)
@@ -127,6 +136,9 @@ function PLAYER:SetRoleClientside(role, recipients)
 	if recipients == true then
 		net.Broadcast()
 	else
+		if not recipients then
+			recipients = self
+		end
 		net.Send(recipients)
 	end
 end
