@@ -2,6 +2,7 @@ AddCSLuaFile()
 
 ENT.Type = "anim"
 ENT.Base = "base_anim"
+ENT.UseSound = Sound("buttons/button24.wav")
 
 function ENT:SetupDataTables()
 	self:NetworkVar("Float", 0, "Delay")
@@ -16,6 +17,8 @@ function ENT:IsUsable()
 end
 
 if SERVER then
+	util.AddNetworkString("TTT.Entities.TraitorButtonUsed")
+
 	ENT.RemoveOnPress = false
 	ENT.Model = Model("models/weapons/w_bugbait.mdl")
 
@@ -91,7 +94,7 @@ if SERVER then
 			return false
 		end
 
-		local use, message = hook.Call("TTT.TraitorButton.CanUse", nil, self, ply)
+		local use, message = hook.Call("TTT.TraitorButtons.CanUse", nil, self, ply)
 		if use == false then
 			if isstring(message) then
 				-- TODO: notify the player they cant use the button.
@@ -120,4 +123,8 @@ if SERVER then
 	function ENT:UpdateTransmitState()
 		return TRANSMIT_ALWAYS
 	end
+else
+	net.Receive("TTT.Entities.TraitorButtonUsed", function()
+		surface.PlaySound(ENT.UseSound)
+	end)
 end

@@ -43,7 +43,7 @@ L.hp_death = "Near Death"
 -- T Buttons
 L.tbutton_singleuse = "Single use"
 L.tbutton_reusable = "Reusable"
-L.tbutton_reuse_time = "Reusable after %s sec"
+L.tbutton_reuse_time = "Reusable after %s seconds"
 L.tbutton_help = "Press %s to activate"
 
 L.invalid = "bork" -- This is used for any invalid text.
