@@ -26,6 +26,7 @@ hook.Add("PostCleanupMap", "TTT.Map.TraitorButtons.CleanupButtons", function()
 	TTT.Map.TraitorButtons.Buttons = {}
 end)
 
+-- Draws the traitor buttons on the player's screen.
 function TTT.Map.TraitorButtons:Draw(ply, w, h)
 	if table.Count(self.Buttons) == 0 then
 		return
@@ -74,19 +75,18 @@ function TTT.Map.TraitorButtons:Draw(ply, w, h)
 		local y = screenPos.y < 0 and 0 or math.min(h - self.ButtonData.size, screenPos.y)
 		surface.DrawTexturedRect(x, y, self.ButtonData.size, self.ButtonData.size)
 
-		local sz = 16
-
 		surface.SetTextColor(255, 50, 50, 255)
 		surface.SetFont("TTT_TButtonText")
 
+		-- Draw button description.
 		x = x + 40
 		y = y - 5
 		surface.SetTextPos(x, y)
 		surface.DrawText(self.HoveredButton:GetDescription())
 
+		-- Draw button reusablilty information.
 		y = y + 12
 		surface.SetTextPos(x, y)
-
 		if self.HoveredButton:GetDelay() < 0 then
 			surface.DrawText(TTT.Languages.GetPhrase("tbutton_singleuse"))
 		elseif self.HoveredButton:GetDelay() == 0 then
@@ -95,8 +95,9 @@ function TTT.Map.TraitorButtons:Draw(ply, w, h)
 			surface.DrawText(TTT.Languages.GetPhrase("tbutton_reuse_time", self.HoveredButton:GetDelay()))
 		end
 
+		-- Draw traitor button use key info.
 		y = y + 12
 		surface.SetTextPos(x, y)
-		surface.DrawText(TTT.Languages.GetPhrase("tbutton_help", "REPLACE THIS"))
+		surface.DrawText(TTT.Languages.GetPhrase("tbutton_help", string.upper(input.LookupBinding("+use", true))))
 	end
 end
