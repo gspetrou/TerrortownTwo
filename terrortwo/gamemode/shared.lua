@@ -83,7 +83,7 @@ function GM:Initialize()
 
 	if SERVER then
 		RunConsoleCommand("mp_friendlyfire", "1")	-- Enables lag compensation.
-		TTT.Player.Initialize()	-- Select the player models for the map.
+		TTT.Player.Initialize()			-- Select the player models for the map.
 	end
 	
 	TTT.Rounds.Initialize()				-- Begin the round managing system.	

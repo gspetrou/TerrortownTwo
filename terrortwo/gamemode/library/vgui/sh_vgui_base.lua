@@ -16,6 +16,14 @@ if CLIENT then
 		weight = 900
 	})
 
+	surface.CreateFont("TTT_TButtonText", {
+		font = "Tahoma",
+		size = 13,
+		weight = 700,
+		shadow = true,
+		antialias = false
+	})
+
 	-----------------------
 	-- TTT.VGUI.AddElement
 	-----------------------
