@@ -45,5 +45,6 @@ L.tbutton_singleuse = "Single use"
 L.tbutton_reusable = "Reusable"
 L.tbutton_reuse_time = "Reusable after %s seconds"
 L.tbutton_help = "Press %s to activate"
+L.tbutton_help_command = "%s in console to activate"
 
 L.invalid = "bork" -- This is used for any invalid text.
