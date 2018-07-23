@@ -98,6 +98,13 @@ function TTT.Map.TraitorButtons:Draw(ply, w, h)
 		-- Draw traitor button use key info.
 		y = y + 12
 		surface.SetTextPos(x, y)
-		surface.DrawText(TTT.Languages.GetPhrase("tbutton_help", string.upper(input.LookupBinding("+use", true))))
+
+		local binding = input.LookupBinding("+use", true)
+
+		if (binding == nil) then
+			surface.DrawText(TTT.Languages.GetPhrase("tbutton_help_command", "+use"))
+		else
+			surface.DrawText(TTT.Languages.GetPhrase("tbutton_help", string.upper(binding)))
+		end
 	end
 end
