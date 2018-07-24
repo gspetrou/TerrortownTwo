@@ -2,7 +2,8 @@ AddCSLuaFile()
 
 ENT.Type = "anim"
 ENT.Base = "base_anim"
-ENT.UseSound = Sound("buttons/button24.wav")
+ENT.DefaultUsableRange = 500
+local UseSound = Sound("buttons/button24.wav")
 
 function ENT:SetupDataTables()
 	self:NetworkVar("Float", 0, "Delay")
@@ -42,7 +43,7 @@ if SERVER then
 		end
 
 		if self:GetUsableRange() < 1 then
-			self:SetUsableRange(1024)
+			self:SetUsableRange(self.DefaultUsableRange)
 		end
 
 		self:SetNextUseTime(0)
@@ -90,16 +91,8 @@ if SERVER then
 			return false
 		end
 
-		if self:GetPos():Distance(ply:GetPos()) > self:GetUsableRange() then
-			return false
-		end
-
-		local use, message = hook.Call("TTT.TraitorButtons.CanUse", nil, self, ply)
+		local use = hook.Call("TTT.Map.TraitorButtons.CanUse", nil, ply, self)
 		if use == false then
-			if isstring(message) then
-				-- TODO: notify the player they cant use the button.
-			end
-
 			return false
 		end
 
@@ -125,6 +118,7 @@ if SERVER then
 	end
 else
 	net.Receive("TTT.Entities.TraitorButtonUsed", function()
-		surface.PlaySound(ENT.UseSound)
+		surface.PlaySound(UseSound)
+		TTT.Map.TraitorButtons:UpdateCache()
 	end)
 end

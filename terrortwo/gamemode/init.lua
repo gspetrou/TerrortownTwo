@@ -48,6 +48,11 @@ hook.Add("TTT.Map.HandleImportScriptSetting", "TTT", function(key, value)
 	end
 end)
 
+-- The player must be alive, a traitor, and within the usable range to use thr traitor button.
+hook.Add("TTT.Map.TraitorButtons.CanUse", "TTT", function(ply, btn)
+	return ply:Alive() and ply:IsTraitor() and ply:GetPos():Distance(btn:GetPos()) < btn:GetUsableRange()
+end)
+
 -----------------
 -- General Hooks
 -----------------

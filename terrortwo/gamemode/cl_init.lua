@@ -152,8 +152,13 @@ end
 -- Key Input Hooks
 -------------------
 function GM:PlayerBindPress(ply, bind, pressed)
-	if bind == "+use" and pressed and not ply:Alive() then
-		TTT.Player.AttemptSpectateObject()	-- Will see if theres anything in front of the player to spectate.
-		return true
+	if bind == "+use" and pressed then
+		if not ply:Alive() then
+			TTT.Player.AttemptSpectateObject()	-- Will see if theres anything in front of the player to spectate.
+			return true
+		elseif ply:IsTraitor() and TTT.Map.TraitorButtons:IsHovered() then
+			TTT.Map.TraitorButtons:UseHoveredButton()
+			return true
+		end
 	end
 end
