@@ -281,6 +281,9 @@ end
 
 function SWEP:OnRemove()
 	if CLIENT and IsValid(self:GetOwner()) and self:GetOwner() == LocalPlayer() and self:GetOwner():Alive() then
-		input.SelectWeapon(self:GetOwner():GetWeapon("weapon_ttt_unarmed"))
+		local weapon = self:GetOwner():GetWeapon("weapon_ttt_unarmed")
+		if IsValid(weapon) then
+			input.SelectWeapon(weapon)
+		end
 	end
 end
