@@ -80,17 +80,23 @@ end
 -- Arg Two:		Vararg, wherever there is a %s in the returned string it will be substituted here.
 -- Returns:		String. Phrase in the clients languages. If that phrase isn't valid in the clients language then it returns it in english.
 -- 				If that phrase is not valid in english either it simply returns the original phrase.
+-- Returns:		Boolean, was the translation successful. Will only be false if no translation was found in both English and whatever the user's default language is.
 function TTT.Languages.GetPhrase(phrase, ...)
 	local p = TTT.Languages.GetTable()[phrase]
 	if not p and TTT.Languages.IsValid("english") then
-		p = TTT.Languages.Languages["english"][phrase] or phrase
+		p = TTT.Languages.Languages["english"][phrase]
+	end
+
+	if not p then
+		p = phrase
+		return p, false
 	end
 
 	if ... then
 		p = string.format(p, ...)
 	end
 
-	return p
+	return p, true
 end
 
 ---------------------------
