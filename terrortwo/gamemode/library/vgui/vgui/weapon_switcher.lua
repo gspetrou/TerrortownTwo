@@ -14,7 +14,7 @@ local SELECT_SOUND	= "Player.WeaponSelected"			-- Sound to play when a weapon is
 
 
 -- Micro-optimize
-local pairs, RealTime, LocalPlayer, math_floor, math_Clamp, math_min, tonumber, string_lower = pairs, RealTime, LocalPlayer, math.floor, math.Clamp, math.min, tonumber, string.lower
+local pairs, RealTime, LocalPlayer, math_floor, math_Clamp, math_min, tonumber, string_lower, table_sort = pairs, RealTime, LocalPlayer, math.floor, math.Clamp, math.min, tonumber, string.lower, table.sort
 local surface_DrawRect, surface_SetDrawColor, surface_GetTextSize, surface_DrawText, surface_SetFont, surface_SetTextPos, surface_SetTextColor = surface.DrawRect, surface.SetDrawColor, surface.GetTextSize, surface.DrawText, surface.SetFont, surface.SetTextPos, surface.SetTextColor
 
 -- Useful Variables
@@ -322,8 +322,11 @@ TTT.VGUI.AddElement("ttt_weapon_switcher", function(ply, w, h)
 	local bar_pos_x = w - bar_w - spacing_right					-- The x pos of the first bar
 	local bar_pos_y = h - ((bar_h + spacing_bottom)*numWeapons)	-- The y pos of the first bar
 	local gapForEachBar = bar_h + spacing_bottom -- Bump this many pixels down for each new bar
-
 	surface_SetFont("TTT_WeaponSwitchText")
+
+	table_sort(plyWeapons, function(wepA, wepB)
+		return (wepA.Kind or 0) < (wepB.Kind or 0)
+	end)
 
 	for i = 1, numWeapons do
 		local i_minusone = i-1	-- Is this excessive? Probably.

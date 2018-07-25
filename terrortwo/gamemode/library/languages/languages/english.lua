@@ -58,9 +58,6 @@ L.weapon_shotgun = "Shotgun"
 L.weapon_scout = "Scout"
 L.weapon_unarmed = "Holstered"
 
-L.weapon_grenade_base = "[TTT2] Missing Name Grenade"
-L.weapon_ttt_base = "[TTT2] Missing Name"
-
 -- Grenades
 L.weapon_firenade = "Incendiary"
 L.weapon_discombob = "Discombobulator"

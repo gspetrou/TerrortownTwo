@@ -63,7 +63,6 @@ SWEP.Secondary.Automatic	= false
 
 -- TTT2 Specific Settings
 --------------------------
-SWEP.PhraseName		= "weapon_ttt_base"		-- (Optional) String, gets a translated name for the weapon given a phrase.
 SWEP.IsTTTWeapon	= true
 SWEP.HoldType		= "normal"
 SWEP.DeploySpeed	= 1.4					-- Number, how long it takes to deploy.
