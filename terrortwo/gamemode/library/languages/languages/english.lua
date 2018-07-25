@@ -47,4 +47,23 @@ L.tbutton_reuse_time = "Reusable after %s seconds"
 L.tbutton_help = "Press %s to activate"
 L.tbutton_help_command = "%s in console to activate"
 
+-- Weapons
+L.weapon_m16 = "M16"
+L.weapon_crowbar = "Crowbar"
+L.weapon_deagle = "Deagle"
+L.weapon_glock = "Glock"
+L.weapon_mac10 = "MAC10"
+L.weapon_pistol = "Pistol"
+L.weapon_shotgun = "Shotgun"
+L.weapon_scout = "Scout"
+L.weapon_unarmed = "Holstered"
+
+L.weapon_grenade_base = "[TTT2] Missing Name Grenade"
+L.weapon_ttt_base = "[TTT2] Missing Name"
+
+-- Grenades
+L.weapon_firenade = "Incendiary"
+L.weapon_discombob = "Discombobulator"
+L.weapon_smokenade = "Smoke Grenade"
+
 L.invalid = "bork" -- This is used for any invalid text.

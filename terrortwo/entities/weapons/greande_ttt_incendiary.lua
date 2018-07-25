@@ -1,7 +1,8 @@
 SWEP.HoldType			= "grenade"
 
 if CLIENT then
-	SWEP.PrintName		= "grenade_fire"
+	SWEP.PrintName		= "Incendiary"
+	SWEP.PhraseName		= "weapon_firenade"
 
 	SWEP.ViewModelFlip	= false
 	SWEP.ViewModelFOV	= 54

@@ -63,6 +63,7 @@ SWEP.Secondary.Automatic	= false
 
 -- TTT2 Grenade Settings
 -------------------------
+SWEP.PhraseName	= "weapon_grenade_base"		-- (Optional) String, gets a translated name for the grenade given a phrase.
 SWEP.IsGrenade		= true
 SWEP.HoldTypeNormal	= "slam"
 SWEP.HoldTypeReady	= "grenade"

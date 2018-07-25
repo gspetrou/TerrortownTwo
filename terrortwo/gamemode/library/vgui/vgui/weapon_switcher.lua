@@ -354,7 +354,7 @@ TTT.VGUI.AddElement("ttt_weapon_switcher", function(ply, w, h)
 		surface_DrawText(wepSlot)
 
 		-- Draw the weapon names.
-		local weaponName = plyWeapons[i]:GetPrintName()
+		local weaponName = isfunction(plyWeapons[i].GetTranslatedName) and plyWeapons[i]:GetTranslatedName() or plyWeapons[i]:GetPrintName()
 		local weptext_w, weptext_h = surface_GetTextSize(weaponName)
 		surface_SetTextPos(bar_pos_x + bar_w/2 - weptext_w/2, bar_pos_y + i_minusone*(bar_h+spacing_bottom) + bar_h/2 - weptext_h/2)
 		surface_DrawText(weaponName)

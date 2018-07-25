@@ -2,6 +2,7 @@ SWEP.Base		= "weapon_ttt_base"
 DEFINE_BASECLASS(SWEP.Base)
 
 SWEP.PrintName	= "Deagle"
+SWEP.PhraseName = "weapon_deagle"
 SWEP.Kind		= WEAPON_SECONDARY
 SWEP.AutoSpawnable	= true
 

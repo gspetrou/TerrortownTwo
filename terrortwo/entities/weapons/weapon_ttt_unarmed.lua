@@ -3,6 +3,7 @@ SWEP.Base		= "weapon_ttt_base"
 DEFINE_BASECLASS(SWEP.Base)
 
 SWEP.PrintName	= "Holstered"
+SWEP.PhraseName	= "weapon_unarmed"
 SWEP.CanDrop		= false
 SWEP.Kind			= WEAPON_UNARMED
 SWEP.SpawnWith		= true

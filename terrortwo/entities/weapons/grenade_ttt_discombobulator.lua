@@ -4,6 +4,7 @@ SWEP.HoldType			 = "grenade"
 
 if CLIENT then
 	SWEP.PrintName		= "Discombobulator"
+	SWEP.PhraseName		= "weapon_discombob"
 	SWEP.ViewModelFlip	= false
 	SWEP.ViewModelFOV	= 54
 

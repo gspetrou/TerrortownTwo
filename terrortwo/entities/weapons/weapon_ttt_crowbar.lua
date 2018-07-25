@@ -3,6 +3,7 @@ SWEP.Base		= "weapon_ttt_base"
 DEFINE_BASECLASS(SWEP.Base)
 
 SWEP.PrintName	= "Crowbar"
+SWEP.PhraseName	= "weapon_crowbar"
 SWEP.CanDrop	= false
 SWEP.Kind		= WEAPON_MELEE
 SWEP.SpawnWith	= true
