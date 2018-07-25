@@ -257,6 +257,16 @@ do
 	function TTT.Equipment.CreateNewEquipment(ID)
 		return TTT.Equipment.EquipmentItem:Create(ID)
 	end
+
+	----------------------------------
+	-- TTT.Equipment.GetEquipmentByID
+	----------------------------------
+	-- Desc:		Gets info for the given equipment.
+	-- Arg One:		String, ID of the equipment.
+	-- Returns:		Table or nil. Table if there is a registered equipment with this ID.
+	function TTT.Equipment.GetEquipmentByID(id)
+		return TTT.Equipment.Equipment[id]
+	end
 end
 
 if SERVER then	

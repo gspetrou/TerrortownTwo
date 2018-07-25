@@ -5,8 +5,10 @@ EQUIPMENT:SetInLoadoutFor({ROLE_DETECTIVE})
 EQUIPMENT:SetInStoreFor({ROLE_DETECTIVE, ROLE_TRAITOR})
 
 if SERVER then
+	local equipID = EQUIPMENT.ID	-- This variable will no longer exist when we need it in hooks so save it.
+	
 	EQUIPMENT:AddHook("ScalePlayerDamage", function(ply, _, dmginfo)
-		if ply:HasEquipmentItem(EQUIPMENT.ID) and dmginfo:IsBulletDamage() then
+		if ply:HasEquipment(equipID) and dmginfo:IsBulletDamage() then
 			dmginfo:ScaleDamage(0.7)
 		end
 	end)
