@@ -28,6 +28,12 @@ local tCache = {}	-- Weapon cache; table of tables. tCache[Slot + 1] contains a 
 local tCacheLength = {}	-- Weapon cache length. tCacheLength[Slot + 1] will contain the number of weapons that slot has
 local cl_drawhud = GetConVar("cl_drawhud")
 
+surface.CreateFont("TTT_WeaponSwitchText", {
+	font = "Verdana",
+	size = 20,
+	weight = 900
+})
+
 -- Initialize tables with slot number
 for i = 1, MAX_SLOTS do
 	tCache[i] = {}

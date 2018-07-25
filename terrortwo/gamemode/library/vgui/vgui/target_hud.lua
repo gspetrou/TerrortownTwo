@@ -2,7 +2,7 @@ local minimalHud = CreateClientConVar("ttt_hud_target_minimal", "0", true, false
 local yOffset = 30	-- Y Offset so we're not blocking their crosshair.
 
 surface.CreateFont("TargetIDSmall2", {
-	font = "TargetID",
+	font = "Verdana",
 	size = 16,
 	weight = 1000
 })
