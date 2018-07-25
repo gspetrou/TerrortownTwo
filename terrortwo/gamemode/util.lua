@@ -143,7 +143,7 @@ end
 -- Arg Two:		Vector, Min.
 -- Arg Three:	Vector, Max.
 -- Returns:		Boolean, is the first vector between the min and max vectors.
-function TTT.IsInMinMax(vec, min, max)
+function TTT.IsInMinMax(vec, mins, maxs)
 	return (vec.x > mins.x and vec.x < maxs.x
 		and vec.y > mins.y and vec.y < maxs.y
 		and vec.z > mins.z and vec.z < maxs.z)
