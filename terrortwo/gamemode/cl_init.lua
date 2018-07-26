@@ -31,6 +31,10 @@ function GM:CalcView(ply, o, a, f)
 	return view
 end
 
+function GM:CreateMove(cmd)
+	TTT.Player.DisableCrouchInFreeRoam(cmd)	-- Fixes weird twitch when hitting IN_DUCK while in free cam sometimes.
+end
+
 ------------
 -- UI Hooks
 ------------

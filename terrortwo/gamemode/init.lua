@@ -140,6 +140,16 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	if TTT.Rounds.IsPrep() then
 		ply:GetCorpse():SetRemoveOnRoundStart(true)
 	end
+
+	-- Anyone who was spectating this player while that player died should exit specate mode.
+	local pos = Vector(0, 0, 25) + ply:GetPos()
+	for i, v in ipairs(player.GetAll()) do
+		if v:GetObserverTarget() == ply then
+			v:Spectate(OBS_MODE_ROAMING)
+			v:SpectateEntity(nil)
+			v:SetPos(pos)
+		end
+	end
 end
 
 function GM:PlayerDeath(ply, inflictor, attacker)

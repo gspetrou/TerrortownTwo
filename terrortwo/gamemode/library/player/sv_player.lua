@@ -80,11 +80,11 @@ function TTT.Player.ForceSpawnPlayer(ply, resetspawn, shouldarm, roleGear)
 
 	ply:SetIsSpectatingCorpse(false)
 	ply:UnSpectate()
-	ply:SetFlyMode(false)
+	ply:SetInFlyMode(false)
 	ply:SetNoDraw(false)
 
 	net.Start("TTT.Player.SwitchedFlyMode")
-		net.WriteBool(ply:GetFlyMode())
+		net.WriteBool(ply:IsInFlyMode())
 	net.Send(ply)
 
 	GAMEMODE:PlayerSetModel(ply)
@@ -207,15 +207,9 @@ function TTT.Player.HandleDeathSpectating(ply)
 
 		if ply:GetObserverMode() ~= OBS_MODE_ROAMING then
 			local target = ply:GetObserverTarget()
-			if IsValid(target) and target:IsPlayer() then
-				if not target:Alive() then
-					-- Stop spectating as soon as the target dies.
-					ply:Spectate(OBS_MODE_ROAMING)
-					ply:SpectateEntity(nil)
-				elseif TTT.Rounds.IsActive() then
-					-- Parenting is so unstable that I'd rather just do it this messy way.
-					ply:SetPos(target:GetPos())
-				end
+			if IsValid(target) and target:IsPlayer() and target:Alive() and TTT.Rounds.IsActive() then
+				-- Parenting is so unstable that I'd rather just do it this messy way.
+				ply:SetPos(target:GetPos())
 			end
 		end
 	end
@@ -308,7 +302,7 @@ function TTT.Player.HandleSpectatorKeypresses(ply, key)
 	if key == IN_ATTACK then		-- Spectate random people.
 		if ply:GetObserverMode() ~= OBS_MODE_ROAMING then
 			ply:Spectate(OBS_MODE_ROAMING)
-			ply:SpectateEntity(nil)
+			ply:SpectateEntity(NULL)
 		end
 
 		local alivePlayers = TTT.Player.GetAlivePlayers()
@@ -343,21 +337,18 @@ function TTT.Player.HandleSpectatorKeypresses(ply, key)
 		local target = alivePlayers[nextPlayerIndex]
 		if IsValid(target) then
 			ply:Spectate(ply.ttt_specMode or OBS_MODE_CHASE)
-			ply:SpectateEntity(target)
+			ply:SpectateEntity(ply.ttt_specMode and target or NULL)
 		end
 	elseif key == IN_DUCK then		-- Go back to roaming.
-		local pos = ply:GetPos()
-		local ang = ply:EyeAngles()
-
 		if ply:GetObserverMode() ~= OBS_MODE_ROAMING then
 			ply:Spectate(OBS_MODE_ROAMING)
-			ply:SpectateEntity(nil)
+			ply:SpectateEntity(NULL)
 		end
 
 		local target = ply:GetObserverTarget()
-		if IsValid(target) and target:IsPlayer() then
-			pos = target:EyePos()
-			ang = target:EyeAngles()
+		if IsValid(target) and target:IsPlayer() and target:Alive() then
+			local pos = target:EyePos()
+			local ang = target:EyeAngles()
 
 			ply:SetPos(pos)
 			ply:SetEyeAngles(ang)
@@ -365,7 +356,7 @@ function TTT.Player.HandleSpectatorKeypresses(ply, key)
 		return true
 	elseif key == IN_RELOAD then
 		local target = ply:GetObserverTarget()
-		if not IsValid(target) or not target:IsPlayer() then
+		if not IsValid(target) or (target:IsPlayer() and not target:Alive()) or ply:GetObserverMode() == OBS_MODE_ROAMING then
 			return
 		end
 

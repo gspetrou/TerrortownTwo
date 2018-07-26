@@ -49,3 +49,15 @@ function TTT.Player.ModifyRagdollInEyeView(ply, view)
 	end
 	return view
 end
+
+--------------------------------------
+-- TTT.Player.DisableCrouchInFreeRoam
+--------------------------------------
+-- Desc:		You can still duck while in free roam because of a bug with specating entities, this will fix that.
+-- Arg One:		CUserCmd Object
+function TTT.Player.DisableCrouchInFreeRoam(cmd)
+	local ply = LocalPlayer()
+	if cmd:KeyDown(IN_DUCK) and not ply:Alive() and ply:GetObserverMode() == OBS_MODE_ROAMING then
+		cmd:SetButtons(bit.band(cmd:GetButtons(), bit.bnot(IN_DUCK)))
+	end
+end
