@@ -376,6 +376,8 @@ if CLIENT then
 
 			if success then
 				return translation
+			if TTT.Languages.PhraseExists(self.PhraseName) then
+				return TTT.Languages.GetPhrase(self.PhraseName)
 			end
 		end
 
