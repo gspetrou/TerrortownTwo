@@ -11,7 +11,21 @@ end
 
 -- If the local player enters fly mode let their game know.
 net.Receive("TTT.Player.SwitchedFlyMode", function()
-	LocalPlayer().ttt_InFlyMode = net.ReadBool()
+	local ply = LocalPlayer()
+	local flyMode = net.ReadBool()
+
+	if IsValid(ply) then
+		ply:SetInFlyMode(flyMode)
+	elseif timer.Exists("TTT.Player.WaitForLocalPlayerValidation") then
+		flyMode = net.ReadBool()
+	else
+		timer.Create("TTT.Player.WaitForLocalPlayerValidation", 0.1, 0, function()
+			if IsValid(LocalPlayer()) then
+				LocalPlayer():SetInFlyMode(flyMode)
+				timer.Remove("TTT.Player.WaitForLocalPlayerValidation")
+			end
+		end)
+	end
 end)
 
 -------------------------------------
