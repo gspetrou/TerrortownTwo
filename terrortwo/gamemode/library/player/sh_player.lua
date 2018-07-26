@@ -52,6 +52,17 @@ function TTT.Player.GetHealthStatus(hp, maxHP)
 	end
 end
 
+-----------------------
+-- PLAYER:SetInFlyMode
+-----------------------
+-- Desc:		Sets the player to be in fly mode or not.
+-- Note:		DO NOT use this to make a player enter fly mode, instead use TTT.Player.SpawnInFlyMode and TTT.Player.ForceSpawnPlayer.
+--				This function should only be used internally.
+-- Arg One:		Boolean, what to set mode into.
+function PLAYER:SetInFlyMode(bool)
+	self.ttt_InFlyMode = bool
+end
+
 ----------------------
 -- PLAYER:IsInFlyMode
 ----------------------

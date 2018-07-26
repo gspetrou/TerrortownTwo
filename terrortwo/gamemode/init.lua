@@ -100,7 +100,7 @@ function GM:PlayerSpawn(ply)
 			isspec = true
 		else
 			ply:UnSpectate()
-			ply.ttt_InFlyMode = false
+			ply:SetInFlyMode(false)
 			ply:SetupHands()
 			isspec = false
 

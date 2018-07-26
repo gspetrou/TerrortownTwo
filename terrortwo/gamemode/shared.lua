@@ -97,8 +97,8 @@ function GM:InitPostEntity()
 		TTT.Weapons.LoadImportWeaponsScript()	-- If one exists, load up the weapon import script for the map.
 	end
 
-	if CLIENT and TTT.Rounds.IsWaiting() and not LocalPlayer():IsSpectator() then
-		LocalPlayer().ttt_InFlyMode = true
+	if CLIENT and ((TTT.Rounds.IsWaiting() or TTT.Rounds.IsPrep()) and not LocalPlayer():IsSpectator()) then
+		LocalPlayer():SetInFlyMode(true)
 	end
 end
 

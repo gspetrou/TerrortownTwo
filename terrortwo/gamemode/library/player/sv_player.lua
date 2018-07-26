@@ -80,11 +80,11 @@ function TTT.Player.ForceSpawnPlayer(ply, resetspawn, shouldarm, roleGear)
 
 	ply:SetIsSpectatingCorpse(false)
 	ply:UnSpectate()
-	ply.ttt_InFlyMode = false
+	ply:SetFlyMode(false)
 	ply:SetNoDraw(false)
 
 	net.Start("TTT.Player.SwitchedFlyMode")
-		net.WriteBool(false)
+		net.WriteBool(ply:GetFlyMode())
 	net.Send(ply)
 
 	GAMEMODE:PlayerSetModel(ply)
