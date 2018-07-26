@@ -372,10 +372,6 @@ end
 if CLIENT then
 	function SWEP:GetTranslatedName()
 		if isstring(self.PhraseName) then
-			local translation, success = TTT.Languages.GetPhrase(self.PhraseName)
-
-			if success then
-				return translation
 			if TTT.Languages.PhraseExists(self.PhraseName) then
 				return TTT.Languages.GetPhrase(self.PhraseName)
 			end

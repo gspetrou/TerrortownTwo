@@ -93,7 +93,24 @@ function TTT.Languages.GetPhrase(phrase, ...)
 		p = string.format(p, ...)
 	end
 
-	return p, true
+	return p
+end
+
+------------------------------
+-- TTT.Languages.PhraseExists
+------------------------------
+-- Desc:		Sees if the given phrase exists in the users set language and if their language isn't set to english, optionally also check for an english translation.
+-- Arg One:		String, phrase to check for existence.
+-- Arg Two:		(Optional=true) Boolean, if the client's default language isn't English, should we also check English for the given translation.
+function TTT.Languages.PhraseExists(phrase, checkEnglish)
+	checkEnglish = isbool(checkEnglish) and checkEnglish or true
+
+	local exists = isstring(TTT.Languages.GetTable()[phrase])
+	if not exists and TTT.Languages.GetClientLanguage() ~= "english" and checkEnglish then
+		exists = isstring(TTT.Languages.Languages["english"][phrase])
+	end
+
+	return exists
 end
 
 ---------------------------
