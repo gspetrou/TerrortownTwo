@@ -49,6 +49,17 @@ function TTT.Rounds.SetState(state)
 	print("Round state changed to: ".. TTT.Rounds.TypeToString(state))
 end
 
+------------------------------------------
+-- TTT.Rounds.TellClientCurrentRoundState
+------------------------------------------
+-- Desc:		Let the client know what the current round state is.
+-- Arg One:		Player entity, to inform.
+function TTT.Rounds.TellClientCurrentRoundState(ply)
+	net.Start("TTT.Rounds.StateChanged")
+		net.WriteUInt(TTT.Rounds.State, 3)
+	net.Send(ply)
+end
+
 ---------------------------
 -- TTT.Rounds.WaitForStart
 ---------------------------

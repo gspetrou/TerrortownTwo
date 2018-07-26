@@ -80,6 +80,7 @@ end
 function GM:PlayerInitialSpawn(ply)
 	TTT.Library.InitPlayerSQLData(ply)
 	TTT.Roles.SetupAlwaysSpectate(ply)
+	TTT.Rounds.TellClientCurrentRoundState(ply)
 	TTT.Languages.SendDefaultLanguage(ply)
 	TTT.Player.SetSpeeds(ply)
 
