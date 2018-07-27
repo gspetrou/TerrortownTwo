@@ -1,11 +1,11 @@
 TTT.Player = TTT.Player or {}
 
-------------------------------------
--- TTT.Player.AttemptSpectateObject
-------------------------------------
--- Desc:		Ask to server to sees if theres anything in front of the player to spectate and spectates it.
-function TTT.Player.AttemptSpectateObject()
-	net.Start("TTT.Player.AttemptSpectateObject")
+-----------------------------------
+-- TTT.Player.AttemptInspectObject
+-----------------------------------
+-- Desc:		Ask to server to sees if theres anything in front of the player to spectate or search and then does so.
+function TTT.Player.AttemptInspectObject()
+	net.Start("TTT.Player.AttemptInspectObject")
 	net.SendToServer()
 end
 

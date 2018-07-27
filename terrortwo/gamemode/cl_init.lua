@@ -158,7 +158,7 @@ end
 function GM:PlayerBindPress(ply, bind, pressed)
 	if bind == "+use" and pressed then
 		if not ply:Alive() then
-			TTT.Player.AttemptSpectateObject()	-- Will see if theres anything in front of the player to spectate.
+			TTT.Player.AttemptInspectObject()	-- Will see if theres anything in front of the player to spectate or search (if its a body).
 			return true
 		elseif ply:IsTraitor() and TTT.Map.TraitorButtons:IsHovered() then
 			TTT.Map.TraitorButtons:UseHoveredButton()

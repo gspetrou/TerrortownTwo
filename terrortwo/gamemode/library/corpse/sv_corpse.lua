@@ -1,4 +1,6 @@
-TTT.Corpse = TTT.Corpse or {}
+TTT.Corpse = TTT.Corpse or {
+	CorpseCache = {}
+}
 local PLAYER = FindMetaTable("Player")
 local ENTITY = FindMetaTable("Entity")
 
@@ -17,6 +19,12 @@ function TTT.Corpse.CreateBody(ply, attacker, dmginfo)
 	end
 
 	ply.ttt_deathragdoll = TTT.Corpse.CreateRagdoll(ply)
+
+	-- Can be used on corpses to get the dmginfo for when they died.
+	function ply.ttt_deathragdoll:GetDeathDamageInfo()
+		return dmginfo
+	end
+
 	TTT.Corpse.SetBodyData(ply, ply.ttt_deathragdoll, attacker, dmginfo)
 	hook.Call("TTT.Corpse.BodyCreated", nil, ply, ply.ttt_deathragdoll)
 
@@ -100,3 +108,60 @@ function TTT.Corpse.SetBodyData(ply, ragdoll, attacker, dmginfo)
 		end
 	end
 end
+
+----------------------------------
+-- TTT.Corpse.GetCorpseSearchInfo
+----------------------------------
+-- Desc:		Gets a struct/table of a corpse's search info.
+-- Arg One:		Entity, the corpse.
+-- Returns:		Table, of body info.
+function TTT.Corpse.GetCorpseSearchInfo(corpse)
+	local corpseInfo = TTT.Corpse.CorpseCache[corpse]
+	if not istable(corpseInfo) then
+
+	end
+	TTT.Corpse.CorpseCache[corpse] = corpseInfo
+end
+
+-----------------------------
+-- TTT.Corpse.SendSearchInfo
+-----------------------------
+-- Desc:		Sends all info necessary to a client in order to display the body search screen.
+-- Arg One:		Entity, the corpse of the player being searched.
+-- Arg Two:		Player, Table, or Boolean. If player will send body info to just them, table for multiple people, true to send body info to every player.
+util.AddNetworkString("TTT.Corpse.SearchInfo")
+function TTT.Corpse.SendSearchInfo(corpse, recipients)
+	if not IsValid(corpse) or not corpse:IsCorpse() then
+		return
+	end
+
+	-- Get coprse info.
+	local corpseInfo = TTT.Corpse.GetCorpseSearchInfo(corpse)
+
+	-- Send that corpse's info.
+	net.Start("TTT.Corpse.SearchInfo")
+
+		net.WriteEntity(corpseInfo.Entity)			-- Which entity is our corpse.
+		net.WritePlayer(corpseInfo.Owner)			-- Who was this corpse's owner.
+		net.WriteString(corpseInfo.Name)			-- Name of the player at death incase it changes or they disconenct.
+		net.WriteUInt(corpseInfo.Role, 3)			-- Even though they client might already know this player's role we have to assume they have no info on them.
+		net.WriteDamageType(corpseInfo.DamageType)	-- Type of damage that killed them.
+		net.WriteString(corpseInfo.WeaponClass)		-- Weapon/entity class that killed them.
+		net.WriteBool(corpseInfo.WasHeadshot)		-- Were they killed via headshot.
+		net.WriteUInt(math.floor(corpseInfo.DeathTime), 32)	-- What time did they die.
+
+		-- TODO: Write equipment
+		-- TODO: Write C4 info
+		-- TODO: Read DNA sample decay time
+
+	if recipients == true then
+		net.Broadcast()
+	else
+		net.Send(recipients)
+	end
+end
+
+-- Clear the corpse cache at prep.
+hook.Add("TTT.Rounds.EnteredPrep", "TTT.Corpse.ClearCorpseCache", function()
+	TTT.Corpse.CorpseCache = {}
+end)

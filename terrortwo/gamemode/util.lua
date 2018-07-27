@@ -53,6 +53,52 @@ if not net.ReadPlayer then
 	end
 end
 
+-- Stores all damage types in a table for easy look up and networking optimization.
+TTT.DamageTypeLookup = {
+	DMG_GENERIC, DMG_CRUSH, DMG_BULLET, DMG_SLASH, DMG_BURN, DMG_VEHICLE,
+	DMG_FALL, DMG_BLAST, DMG_CLUB, DMG_SHOCK, DMG_SONIC, DMG_ENERGYBEAM,
+	DMG_PREVENT_PHYSICS_FORCE, DMG_NEVERGIB, DMG_ALWAYSGIB, DMG_DROWN,
+	DMG_PARALYZE, DMG_NERVEGAS, DMG_POISON, DMG_RADIATION, DMG_DROWNRECOVER,
+	DMG_ACID, DMG_SLOWBURN, DMG_REMOVENORAGDOLL, DMG_PHYSGUN, DMG_PLASMA,
+	DMG_AIRBOAT, DMG_DISSOLVE, DMG_BLAST_SURFACE, DMG_DIRECT, DMG_BUCKSHOT,
+	DMG_SNIPER, DMG_MISSILEDEFENSE
+}
+
+-----------------------
+-- net.WriteDamageType
+-----------------------
+-- Desc:		Writes a damage type, prevents us from having to send their raw values which go up to 2^31
+-- Arg One:		DMG_ enum.
+if not net.WriteDamageType then
+	function net.WriteDamageType(dmgType)
+		local indexInLookup
+
+		for i, DMG in ipairs(TTT.DamageTypeLookup) do
+			if DMG == dmgType then
+				indexInLookup = i
+			end
+		end
+
+		if not isnumber(indexInLookup) then
+			error("Invalid damage type given to net.WriteDamageType")
+		end
+
+		net.WriteUInt(indexInLookup, 6)
+	end
+end
+
+----------------------
+-- net.ReadDamageType
+----------------------
+-- Desc:		Reads a sent damage type.
+-- Returns:		DMG_ enum.
+if not net.ReadDamageType then
+	function net.ReadDamageType()
+		local index = net.ReadUInt(6)
+		return TTT.DamageTypeLookup[index]
+	end
+end
+
 ----------------
 -- table.Filter
 ----------------

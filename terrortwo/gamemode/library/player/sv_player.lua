@@ -272,18 +272,18 @@ function TTT.Player.HandleDrowning(ply)
 end
 
 -- Called when the player presses USE on an entity while spectating.
-util.AddNetworkString("TTT.Player.AttemptSpectateObject")
-net.Receive("TTT.Player.AttemptSpectateObject", function(_, ply)
+util.AddNetworkString("TTT.Player.AttemptInspectObject")
+net.Receive("TTT.Player.AttemptInspectObject", function(_, ply)
 	if not ply:Alive() then
 		local tr = util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * 128, ply)
 		if tr.Hit and IsValid(tr.Entity) then
 			if tr.Entity:IsCorpse() then
-				--if not ply:KeyDown(IN_WALK) then
-					--CORPSE.ShowSearch(ply, tr.Entity)	-- TODO
-				--else
+				if not ply:KeyDown(IN_WALK) then
+					hook.Call("TTT.Player.WantsToSearchCorpse", nil, ply, tr.Entity)
+				else
 					ply:Spectate(OBS_MODE_IN_EYE)
 					ply:SpectateEntity(tr.Entity)
-				--end
+				end
 			elseif tr.Entity:IsPlayer() and tr.Entity:Alive() then
 				ply:Spectate(ply.ttt_specMode or OBS_MODE_CHASE)
 				ply:SpectateEntity(tr.Entity)

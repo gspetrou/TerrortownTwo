@@ -252,6 +252,10 @@ function GM:PlayerSwitchFlashlight(ply)
 	return ply:Alive()
 end
 
+hook.Add("TTT.Player.WantsToSearchCorpse", "TTT", function(ply, corpse)
+	
+end)
+
 ---------------
 -- Round Hooks
 ---------------
