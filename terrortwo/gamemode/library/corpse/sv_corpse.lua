@@ -1,6 +1,4 @@
-TTT.Corpse = TTT.Corpse or {
-	CorpseCache = {}
-}
+TTT.Corpse = TTT.Corpse or {}
 local PLAYER = FindMetaTable("Player")
 local ENTITY = FindMetaTable("Entity")
 
@@ -72,8 +70,6 @@ function TTT.Corpse.CreateRagdoll(ply)
 	ragdoll:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)	-- TTT had an option for this but it can cause crashes too easily.
 
 	ragdoll.isbody = true
-	ragdoll.OwnerSteamID = ply:SteamID()
-	ragdoll.OwnerEntID = ply:EntIndex()
 
 	return ragdoll
 end
@@ -107,6 +103,15 @@ function TTT.Corpse.SetBodyData(ply, ragdoll, attacker, dmginfo)
 			bone:SetVelocity(velocity)
 		end
 	end
+
+	-- Info at time of death. All stored rather then obtainned later through the player because they might disconnect.
+	ragdoll.Owner = ply
+	ragdoll.OwnerSteamID = ply:SteamID()
+	ragdoll.OwnerName = ply:Nick()
+	ragdoll.OwnerRole = ply:GetRole()
+	ragdoll.DeathTime = CurTime()
+	ragdoll.OwnerEquipment = ply:GetEquipment()
+	ragdoll.DeathDamageInfo = dmginfo
 end
 
 ----------------------------------
@@ -116,11 +121,16 @@ end
 -- Arg One:		Entity, the corpse.
 -- Returns:		Table, of body info.
 function TTT.Corpse.GetCorpseSearchInfo(corpse)
-	local corpseInfo = TTT.Corpse.CorpseCache[corpse]
-	if not istable(corpseInfo) then
-
-	end
-	TTT.Corpse.CorpseCache[corpse] = corpseInfo
+	return {
+		Entity = corpse,
+		Owner = corpse.Owner,
+		OwnerSteamID = corpse.OwnerSteamID,
+		OwnerName = corpse.OwnerName,
+		OwnerRole = corpse.OwnerRole,
+		OwnerEquipment = corpse.OwnerEquipment,
+		DeathTime = corpse.DeathTime,
+		DeathDamageInfo = corpse.DeathDamageInfo
+	}
 end
 
 -----------------------------
@@ -137,17 +147,18 @@ function TTT.Corpse.SendSearchInfo(corpse, recipients)
 
 	-- Get coprse info.
 	local corpseInfo = TTT.Corpse.GetCorpseSearchInfo(corpse)
+	local dmgInfo = corpseInfo.DeathDamageInfo
+	local damageType, weaponClass = dmgInfo:GetDamageType(), TTT.WeaponFromDamageInfo(dmgInfo)
 
 	-- Send that corpse's info.
 	net.Start("TTT.Corpse.SearchInfo")
 
 		net.WriteEntity(corpseInfo.Entity)			-- Which entity is our corpse.
-		net.WritePlayer(corpseInfo.Owner)			-- Who was this corpse's owner.
-		net.WriteString(corpseInfo.Name)			-- Name of the player at death incase it changes or they disconenct.
-		net.WriteUInt(corpseInfo.Role, 3)			-- Even though they client might already know this player's role we have to assume they have no info on them.
-		net.WriteDamageType(corpseInfo.DamageType)	-- Type of damage that killed them.
-		net.WriteString(corpseInfo.WeaponClass)		-- Weapon/entity class that killed them.
-		net.WriteBool(corpseInfo.WasHeadshot)		-- Were they killed via headshot.
+		net.WriteString(corpseInfo.OwnerName)		-- Name of the player at death incase it changes or they disconenct.
+		net.WriteUInt(corpseInfo.OwnerRole, 3)		-- Even though they client might already know this player's role we have to assume they have no info on them.
+		net.WriteUInt(damageType, 31)				-- Write the damage type.
+		net.WriteString(weaponClass)				-- Weapon/entity class that killed them.
+		net.WriteBool(corpseInfo.OwnerWasHeadshotted)		-- Were they killed via headshot.
 		net.WriteUInt(math.floor(corpseInfo.DeathTime), 32)	-- What time did they die.
 
 		-- TODO: Write equipment
@@ -160,8 +171,3 @@ function TTT.Corpse.SendSearchInfo(corpse, recipients)
 		net.Send(recipients)
 	end
 end
-
--- Clear the corpse cache at prep.
-hook.Add("TTT.Rounds.EnteredPrep", "TTT.Corpse.ClearCorpseCache", function()
-	TTT.Corpse.CorpseCache = {}
-end)

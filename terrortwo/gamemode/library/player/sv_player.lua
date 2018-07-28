@@ -369,3 +369,16 @@ function TTT.Player.HandleSpectatorKeypresses(ply, key)
 		ply:Spectate(ply.ttt_specMode)
 	end
 end
+
+-- Player damage related.
+
+----------------------------------
+-- TTT.Player.StoreDeathSceneData
+----------------------------------
+-- Desc:		Stores some data used for scene building.
+-- Arg One:		Player, to store info on.
+-- Arg Two:		TraceResult struct.
+function TTT.Player.StoreDeathSceneData(ply, trace)
+	ply.ttt_HitTrace = trace
+end
+
