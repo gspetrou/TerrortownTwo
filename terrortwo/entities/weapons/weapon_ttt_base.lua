@@ -183,13 +183,17 @@ end
 -----------------------
 -- Attacking Functions
 -----------------------
-function SWEP:PrimaryAttack()
+function SWEP:PrimaryAttack(globalSound)
 	if not self:CanPrimaryAttack() then
 		return
 	end
 
 	if self.Sound_Primary then
-		self:EmitSound(self.Sound_Primary)
+		if globalSound then
+			sound.Play(self.Sound_Primary, self:GetPos(), self.Primary.SoundLevel)
+		else
+			self:EmitSound(self.Sound_Primary, self.Primary.SoundLevel)
+		end
 	end
 	
 	if self.Animations_Primary then
@@ -324,6 +328,38 @@ if CLIENT then
 		surface.DrawLine(x, y - length, x, y - gap)
 		surface.DrawLine(x, y + length, x, y + gap)
 	end
+end
+
+-- Shooting a shot as you die.
+CreateConVar("ttt_weapon_dyingshot", "0", FCVAR_ARCHIVE, "Should players shoot a shot as they die.")
+function SWEP:DyingShot()
+	local fired = false
+	--if self:GetIronsights() then TODO
+	--	self:SetIronsights(false)
+
+		if self:GetNextPrimaryFire() > CurTime() then
+			return fired
+		end
+
+		-- Owner should still be alive here.
+		if IsValid(self:GetOwner()) then
+			local punch = self:GetPrimaryRecoil() or 5
+
+			-- Punch view to disorient aim before firing dying shot.
+			local eyeAng = self:GetOwner():EyeAngles()
+			eyeAng.pitch = eyeAng.pitch - math.Rand(-punch, punch)
+			eyeAng.yaw = eyeAng.yaw - math.Rand(-punch, punch)
+			self:GetOwner():SetEyeAngles(eyeAng)
+
+			MsgN(self:GetOwner():Nick() .. " fired his DYING SHOT")
+
+			self:GetOwner().DyingWeapon = self
+			self:PrimaryAttack(true)
+			fired = true
+		end
+	--end
+
+	return fired
 end
 
 -------------------------

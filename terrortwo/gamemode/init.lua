@@ -74,6 +74,32 @@ function GM:KeyPress(ply, key)
 	end
 end
 
+-- Handle +use overrides and body searching.
+function GM:KeyRelease(ply, key)
+	if key == IN_USE and IsValid(ply) and ply:Alive() then
+		local tr = util.TraceLine({
+			start  = ply:GetShootPos(),
+			endpos = ply:GetShootPos() + ply:GetAimVector() * 84,
+			filter = ply,
+			mask   = MASK_SHOT
+		})
+
+		if tr.Hit and IsValid(tr.Entity) then
+			if tr.Entity.CanUseKey and tr.Entity.UseOverride then
+				local phys = tr.Entity:GetPhysicsObject()
+				if IsValid(phys) and not phys:HasGameFlag(FVPHYSICS_PLAYER_HELD) then
+					tr.Entity:UseOverride(ply)
+				end
+				return true
+			elseif tr.Entity:IsCorpse() then
+				--CORPSE.ShowSearch(ply, tr.Entity, (ply:KeyDown(IN_WALK) or ply:KeyDownLast(IN_WALK)))
+				-- TODO: Show body search
+				return true
+			end
+		end
+	end
+end
+
 ----------------
 -- Player Hooks
 ----------------
