@@ -296,14 +296,14 @@ else
 	-- Desc:		Drops the player's given weapon.
 	-- Arg One:		Player, to drop weapon of.
 	-- Arg Two:		Entity, weapon to drop.
-	function TTT.Weapons.DropWeapon(ply, wep)
+	function TTT.Weapons.DropWeapon(ply, wep, isDeathDrop)
 		if not IsValid(ply) or not IsValid(wep) then
 			return
 		end
 
 		local weaponIsValid = true
 		if wep.PreDrop then
-			wep:PreDrop()
+			wep:PreDrop(isDeathDrop)
 
 			if not IsValid(wep) then
 				weaponIsValid = false
@@ -311,8 +311,10 @@ else
 		end
 
 		if weaponIsValid then
+			wep.IsDropped = true
 			ply:DropWeapon(wep)
 			wep:PhysWake()
+			ply:AnimPerformGesture(ACT_ITEM_PLACE)
 		end
 		
 		ply:SelectWeapon("weapon_ttt_unarmed")
