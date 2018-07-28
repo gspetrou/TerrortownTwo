@@ -161,11 +161,28 @@ function GM:PlayerSpawnAsSpectator(ply)	-- For backwards compatability.
 end
 
 function GM:DoPlayerDeath(ply, attacker, dmginfo)
-	TTT.Corpse.CreateBody(ply, attacker, dmginfo)
-	TTT.Player.RecordDeathPos(ply)	-- Record  their death position so that their spectator camera spawns here.
+	if ply:IsSpectator() or ply:IsInFlyMode() then
+		return
+	end
+
+	-- Shoot a dying shot.
+	if GetConVar("ttt_weapon_dyingshot"):GetBool() then
+		local weapon = ply:GetActiveWeapon()
+		if IsValid(weapon) and weapon.DyingShot and dmginfo:IsBulletDamage() then --TODO: and not ply.was_headshot then
+			weapon:DyingShot()
+		end
+	end
+
+	TTT.Corpse.CreateBody(ply, attacker, dmginfo)	-- Create body.
+	TTT.Player.RecordDeathPos(ply)	-- Record their death position so that their spectator camera spawns here.
+
+	-- Remove the body at round start if they died during prep.
 	if TTT.Rounds.IsPrep() then
 		ply:GetCorpse():SetRemoveOnRoundStart(true)
 	end
+
+	-- Drop all weapons on death.
+	-- TODO
 
 	-- Anyone who was spectating this player while that player died should exit specate mode.
 	local pos = Vector(0, 0, 25) + ply:GetPos()
@@ -281,6 +298,15 @@ end
 hook.Add("TTT.Player.WantsToSearchCorpse", "TTT", function(ply, corpse)
 	
 end)
+
+function GM:PlayerTraceAttack(ply, dmgInfo, dir, trace)
+	TTT.Player.StoreDeathSceneData(ply, trace)
+	return false
+end
+
+function GM:ScalePlayerDamage()
+
+end
 
 ---------------
 -- Round Hooks

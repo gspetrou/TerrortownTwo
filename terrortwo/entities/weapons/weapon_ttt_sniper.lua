@@ -6,7 +6,7 @@ SWEP.PhraseName = "weapon_scout"
 SWEP.Kind		= WEAPON_PRIMARY
 SWEP.AutoSpawnable	= true
 
-SWEP.HoldType	= "pistol"
+SWEP.HoldType	= "ar2"
 SWEP.WorldModel	= "models/weapons/w_snip_scout.mdl"
 SWEP.ViewModel	= "models/weapons/cstrike/c_snip_scout.mdl"
 SWEP.UseHands		= true
