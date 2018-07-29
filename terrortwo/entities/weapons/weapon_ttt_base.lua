@@ -346,6 +346,16 @@ function SWEP:ShootEffects()
 	self:GetOwner():MuzzleFlash()
 end
 
+-- Called when dropping a weapon as we die. Normally dropping a weapon throws it at 400 u/s which is super fast.
+-- This will slow the velocity down so that the player's weapons can actually be found around their body when they die.
+function SWEP:DampenDrop()
+	local phys = self:GetPhysicsObject()
+	if IsValid(phys) then
+		phys:SetVelocityInstantaneous(Vector(0,0,-75) + phys:GetVelocity() * 0.001)
+		phys:AddAngleVelocity(phys:GetAngleVelocity() * -0.99)
+	end
+end
+
 -- Crosshair
 if CLIENT then
 	local crosshairOpacity = CreateClientConVar("ttt_crosshair_opacity", "0.8", true, false, "How transparent is your crosshair. (From 0 to 1)")

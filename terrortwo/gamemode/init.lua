@@ -183,7 +183,11 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	end
 
 	-- Drop all weapons on death.
-	-- TODO
+	for k, weapon in pairs(ply:GetWeapons()) do
+		TTT.Weapons.DropWeapon(ply, weapon, true)
+		weapon:DampenDrop()
+	end
+
 	TTT.Player.CreateDeathEffects(ply)
 	util.StartBleeding(ragdoll, dmginfo:GetDamage(), math.random(10, 20))
 

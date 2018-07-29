@@ -57,9 +57,9 @@ if SERVER then
 	-- Arg One:		Entity, to check ammo of.
 	-- Returns:		Boolean, if they have a weapon that takes this ammo.
 	function ENT:HasWeaponForAmmo(ent)
-		--if not self.Precached then
+		if not self.Precached then
 			self:PrecacheAmmo()
-		--end
+		end
 
 		for i, v in ipairs(self.WeaponsUsingThisAmmo) do
 			if ent:HasWeapon(v) then
@@ -126,6 +126,10 @@ if SERVER then
 				hook.Call("TTT.Ammo.PickedUp", nil, ply, self)
 			end
 		end
+	end
+
+	function ENT:SetAmmoAmount(num)
+		self.AmmoGive = num
 	end
 end
 

@@ -257,10 +257,34 @@ if CLIENT then
 		net.SendToServer()
 	end
 
-	net.Receive("TTT.Weapons.RequestDropCurrentWeapon", function()
-		chat.AddText(Color(255, 0, 0), TTT.Languages.GetPhrase("dropweapon_noroom"))
+	----------------------------------------
+	-- TTT.Weapons.RequestDropCurrentWeapon
+	----------------------------------------
+	-- Desc:		Client only. Asks server to drop their current weapon's ammo if they can.
+	function TTT.Weapons.RequestDropCurrentAmmo()
+		net.Start("TTT.Weapons.RequestDropCurrentAmmo")
+		net.SendToServer()
+	end
+
+	net.Receive("TTT.Weapons.CantDropWeaponNotify", function()
+		chat.AddText(Color(255, 0, 0), TTT.Languages.GetPhrase("weapon_drop_no_room"))
 	end)
-else
+
+	net.Receive("TTT.Weapons.CantDropAmmoNotify", function()
+		if net.ReadBool() then
+			chat.AddText(Color(255, 0, 0), TTT.Languages.GetPhrase("ammo_not_enough"))
+		else
+			chat.AddText(Color(255, 0, 0), TTT.Languages.GetPhrase("ammo_drop_no_room"))
+		end
+	end)
+end
+
+if SERVER then
+	util.AddNetworkString("TTT.Weapons.RequestDropCurrentWeapon")
+	util.AddNetworkString("TTT.Weapons.RequestDropCurrentAmmo")
+	util.AddNetworkString("TTT.Weapons.CantDropWeaponNotify")
+	util.AddNetworkString("TTT.Weapons.CantDropAmmoNotify")
+
 	-----------------------------
 	-- TTT.Weapons.CanDropWeapon
 	-----------------------------
@@ -280,9 +304,8 @@ else
 		end
 		
 		-- Thanks TTT.
-		local tr = util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * 32, ply)
-		if tr.HitWorld then
-			net.Start("TTT.Weapons.RequestDropCurrentWeapon")	-- Tell them theres no room to drop their weapon, reuse the same network string.
+		if util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * 32, ply).HitWorld then
+			net.Start("TTT.Weapons.CantDropWeaponNotify")
 			net.Send(ply)
 			return false
 		end
@@ -297,7 +320,7 @@ else
 	-- Arg One:		Player, to drop weapon of.
 	-- Arg Two:		Entity, weapon to drop.
 	function TTT.Weapons.DropWeapon(ply, wep, isDeathDrop)
-		if not IsValid(ply) or not IsValid(wep) then
+		if not IsValid(ply) or not IsValid(wep) or not TTT.Weapons.CanDropWeapon(ply, wep) then
 			return
 		end
 
@@ -314,7 +337,8 @@ else
 			wep.IsDropped = true
 			ply:DropWeapon(wep)
 			wep:PhysWake()
-			ply:AnimPerformGesture(ACT_ITEM_PLACE)
+
+			ply:AnimPerformGesture(ACT_GMOD_GESTURE_ITEM_PLACE)
 		end
 		
 		ply:SelectWeapon("weapon_ttt_unarmed")
@@ -322,8 +346,107 @@ else
 	end
 
 	net.Receive("TTT.Weapons.RequestDropCurrentWeapon", function(_, ply)
-		if IsValid(ply) and IsValid(ply:GetActiveWeapon()) and TTT.Weapons.CanDropWeapon(ply, ply:GetActiveWeapon()) then
+		if IsValid(ply) and IsValid(ply:GetActiveWeapon()) then
 			TTT.Weapons.DropWeapon(ply, ply:GetActiveWeapon())
+		end
+	end)
+
+	---------------------------------
+	-- TTT.Weapons.CanDropActiveAmmo
+	---------------------------------
+	-- Desc:		Sees if the given player can drop the ammo of their current weapon.
+	-- Arg One:		Player, to drop their ammo.
+	-- Returns:		Boolean, can they drop their ammo.
+	function TTT.Weapons.CanDropActiveAmmo(ply)
+		if not IsValid(ply) then
+			return false
+		end
+
+		local weapon = ply:GetActiveWeapon()
+		if not IsValid(weapon) then
+			return false
+		end
+
+		local ammoEnt = TTT.Weapons.GetAmmoEntityForWeapon(weapon:GetClass())
+		if not isstring(ammoEnt) then
+			return false
+		end
+
+		local ammoAmount = weapon:Clip1()
+		if ammoAmount < 1 or ammoAmount <= (weapon.Primary.ClipSize * 0.25) then
+			net.Start("TTT.Weapons.CantDropAmmoNotify")
+				net.WriteBool(true)
+			net.Send(ply)
+			return false
+		elseif util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * 32, ply).HitWorld then
+			net.Start("TTT.Weapons.CantDropAmmoNotify")
+				net.WriteBool(false)
+			net.Send(ply)
+			return false
+		end
+
+		local hookResult = hook.Call("TTT.Weapons.CanDropActiveAmmo", nil, ply, weapon, ammoEnt)
+		if hookResult == false then
+			return false
+		end
+
+		return true
+	end
+
+	------------------------------
+	-- TTT.Weapons.DropActiveAmmo
+	------------------------------
+	-- Desc:		Drops a player's current ammo.
+	-- Arg One:		Player, who wants to drop ammo.
+	-- Returns:		Entity, created ammo box. Nil if it was able to be created.
+	function TTT.Weapons.DropActiveAmmo(ply)
+		if not TTT.Weapons.CanDropActiveAmmo(ply) then
+			return
+		end
+
+		local weapon = ply:GetActiveWeapon()
+		local ammoEnt = TTT.Weapons.GetAmmoEntityForWeapon(weapon:GetClass())
+		local ammoAmount = weapon:Clip1()
+		
+		local plyPos, ang = ply:GetShootPos(), ply:EyeAngles()
+		local throwDirection = (ang:Forward() * 32) + (ang:Right() * 6) + (ang:Up() * -5)
+
+		local tr = util.QuickTrace(plyPos, throwDirection, ply)
+		if tr.HitWorld then return end
+		weapon:SetClip1(0)
+		ply:AnimPerformGesture(ACT_GMOD_GESTURE_ITEM_GIVE)
+
+		local box = ents.Create(ammoEnt)
+		if not IsValid(box) then return end
+
+		box:SetPos(plyPos + throwDirection)
+		box:SetOwner(ply)
+		box:Spawn()
+
+		box:PhysWake()
+
+		local phys = box:GetPhysicsObject()
+		if IsValid(phys) then
+			phys:ApplyForceCenter(ang:Forward() * 1000)
+			phys:ApplyForceOffset(VectorRand(), vector_origin)
+		end
+
+		box:SetAmmoAmount(ammoAmount)
+
+		-- Not sure why TTT does this but I feel like it might be for good reason.
+		timer.Simple(2, function()
+			if IsValid(box) then
+				box:SetOwner(nil)
+			end
+		end)
+
+		hook.Call("TTT.Weapons.PlayerDroppedActiveAmmo", nil, ply, weapon, box)
+		return box
+	end
+
+	net.Receive("TTT.Weapons.RequestDropCurrentAmmo", function(_, ply)
+		if IsValid(ply) then
+			TTT.Weapons.DropActiveAmmo(ply)
 		end
 	end)
 end
