@@ -1,5 +1,4 @@
 TTT.Weapons = TTT.Weapons or {}
-util.AddNetworkString("TTT.Weapons.RequestDropCurrentWeapon")
 local PLAYER = FindMetaTable("Player")
 
 -------------------------------
@@ -110,4 +109,12 @@ function TTT.Weapons.CreateFire(position, numberFlames, burnTime, shouldExplode,
 			phys:AddAngleVelocity(Vector(ang.p, ang.r, ang.y))
 		end
 	end
+end
+
+function PLAYER:SetCanDyingShot(bool)
+	self.ttt_CanDyingShot = bool
+end
+
+function PLAYER:CanDyingShot()
+	return isbool(self.ttt_CanDyingShot) and self.ttt_CanDyingShot or false
 end

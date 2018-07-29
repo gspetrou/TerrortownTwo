@@ -166,10 +166,11 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	end
 
 	-- Shoot a dying shot.
-	if GetConVar("ttt_weapon_dyingshot"):GetBool() then
+	if GetConVar("ttt_weapon_dyingshot"):GetBool() and ply:CanDyingShot() then
 		local weapon = ply:GetActiveWeapon()
-		if IsValid(weapon) and weapon.DyingShot and dmginfo:IsBulletDamage() then --TODO: and not ply.was_headshot then
-			weapon:DyingShot()
+		if IsValid(weapon) and weapon.DyingShot and dmginfo:IsBulletDamage() and not ply:WasHeadshotted() then
+			local fired = weapon:DyingShot()
+			ply:SetCanDyingShot(false)
 		end
 	end
 
@@ -425,6 +426,7 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	TTT.Roles.Sync()
 
 	for i, ply in ipairs(player.GetAll()) do
+		ply:SetCanDyingShot(true)				-- Enable dying shots on all the players (so long as ttt_weapon_dyingshot is enabled).
 		TTT.Weapons.GiveRoleWeapons(ply)		-- Give all players the weapons for their newly given roles.
 		TTT.Equipment.GiveRoleEquipment(ply)	-- Give all players the equipment their role starts with.
 	end
