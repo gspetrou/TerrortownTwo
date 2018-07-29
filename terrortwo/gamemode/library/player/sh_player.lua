@@ -22,10 +22,10 @@ end
 -- Colors used to indicated how injured someone is. Thanks TTT.
 TTT.Player.HealthColors = {
 	Healthy = Color(0, 255, 0, 255),
-	Hurt    = Color(170, 230, 10, 255),
+	Hurt	= Color(170, 230, 10, 255),
 	Wounded = Color(230, 215, 10, 255),
 	Badwound= Color(255, 140, 0, 255),
-	Death   = Color(255, 0, 0, 255)
+	Death	= Color(255, 0, 0, 255)
 }
 
 ------------------------------

@@ -11,11 +11,13 @@ end
 
 function ENT:KeyValue(k, v)
 	if k == "cbar_doors" then
-		
+		local opens = (v == "1")
+		TTT.Weapons.OpennableTypes[OPEN_DOOR] = opens
+		TTT.Weapons.OpennableTypes[OPEN_ROT] = opens
 	elseif k == "cbar_buttons" then
-		
+		TTT.Weapons.OpennableTypes[OPEN_BUT] = (v == "1")
 	elseif k == "cbar_other" then
-		
+		TTT.Weapons.OpennableTypes[OPEN_NOTOGGLE] = (v == "1")
 	elseif k == "plymodel" and v ~= "" then
 		if util.IsValidModel(v) then
 			util.PrecacheModel(v)

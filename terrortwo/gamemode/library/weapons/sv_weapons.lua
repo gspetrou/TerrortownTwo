@@ -118,3 +118,12 @@ end
 function PLAYER:CanDyingShot()
 	return isbool(self.ttt_CanDyingShot) and self.ttt_CanDyingShot or false
 end
+
+-- Sets who pushed us and some other info
+function PLAYER:SetPushedData(data)
+	self.ttt_PushedData = data
+end
+
+function PLAYER:GetPushedData()
+	return self.ttt_PushedData
+end

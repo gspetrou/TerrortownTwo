@@ -18,6 +18,13 @@ WEAPON_EQUIP1		= 7
 WEAPON_EQUIP2		= 8
 WEAPON_SPECIALEQUIP	= 9
 
+-- Crowbar door open types.
+OPEN_NO = 0
+OPEN_ROT = 1
+OPEN_DOOR = 2
+OPEN_BUT = 3
+OPEN_NOTOGGLE = 4
+
 -- Ammo Types. Values copied from Source Engine.
 
 -- SMG1
@@ -449,4 +456,60 @@ if SERVER then
 			TTT.Weapons.DropActiveAmmo(ply)
 		end
 	end)
+end
+
+function TTT.Weapons.GetOpennableEntityType(ent)
+	local class = ent:GetClass()
+
+	if ent:GetName() == "" then
+		return OPEN_NO
+	elseif class == "prop_door_rotating" then
+		return OPEN_ROT
+	elseif class == "func_door" or class == "func_door_rotating" then
+		return OPEN_DOOR
+	elseif class == "func_button" then
+		return OPEN_BUT
+	elseif class == "func_movelinear" then
+		return OPEN_NOTOGGLE
+	else
+		return OPEN_NO
+	end
+end
+
+TTT.Weapons.OpennableTypes = {
+	[OPEN_DOOR] = true,
+	[OPEN_ROT] = true,
+	[OPEN_BUT] = true,
+	[OPEN_NOTOGGLE]= true
+}
+
+function TTT.Weapons.CanOpenType(openType)
+	return isbool(TTT.Weapons.OpennableTypes[openType]) and TTT.Weapons.OpennableTypes[openType] or false
+end
+
+function TTT.Weapons.OpenEntity(ent)
+	local openType = TTT.Weapons.GetOpennableEntityType(ent)
+
+	if not TTT.Weapons.CanOpenType(openType) then
+		return OPEN_NO
+	end
+
+	if openType == OPEN_DOOR or openType == OPEN_ROT then
+		ent:Fire("Unlock", nil, 0)
+
+		if ent:HasSpawnFlags(256) then
+			if openType == OPEN_ROT then
+				ent:Fire("OpenAwayFrom", self:GetOwner(), 0)
+			end
+
+			ent:Fire("Toggle", nil, 0)
+		end
+	elseif openType == OPEN_BUT then
+		ent:Fire("Unlock", nil, 0)
+		ent:Fire("Press", nil, 0)
+	elseif openType == OPEN_NOTOGGLE then
+		ent:Fire("Open", nil, 0)
+	end
+
+	return openType
 end
