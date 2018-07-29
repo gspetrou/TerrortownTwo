@@ -427,3 +427,72 @@ end
 function PLAYER:SetWasHeadshotted(bool)
 	self.ttt_WasHeadshotted = bool
 end
+
+TTT.Player.FallSounds = {
+	Sound("player/damage1.wav"),
+	Sound("player/damage2.wav"),
+	Sound("player/damage3.wav")
+}
+
+function TTT.Player.HandleFallDamage(ply, inWater, onFloater, speed)
+	if inWater or speed < 450 or not IsValid(ply) then
+		return
+	end
+
+	-- Everything over a threshold hurts you, rising exponentially with speed
+	local damage = math.pow(0.05 * (speed - 420), 1.75)
+
+	-- If landing on a floating object then do half damage.
+	if on_floater then
+		damage = damage / 2
+	end
+
+	-- If we land on a player do some damage to them.
+	local groundPlayer = ply:GetGroundEntity()
+	if IsValid(groundPlayer) and groundPlayer:IsPlayer() then
+		if math.floor(damage) > 0 then
+			local attacker = ply
+
+			-- If the person who fell on to another person was pushed then attribute the damage to the pusher.
+			local push = ply:GetPushData()
+			if push then
+				if math.max(push.Time or 0, push.Hurt or 0) > CurTime() - 4 then
+					attacker = push.Attacker
+				end
+			end
+
+			local dmg = DamageInfo()
+			if attacker == ply then
+				dmg:SetDamageType(DMG_CRUSH + DMG_PHYSGUN)		-- hijack physgun damage as a marker of this type of kill
+			else
+				dmg:SetDamageType(DMG_CRUSH)		-- if attributing to pusher, show more generic crush msg for now
+			end
+
+			dmg:SetAttacker(attacker)
+			dmg:SetInflictor(attacker)
+			dmg:SetDamageForce(Vector(0,0,-1))
+			dmg:SetDamage(damage)
+
+			groundPlayer:TakeDamageInfo(dmg)
+		end
+
+		-- our own falling damage is cushioned
+		damage = damage / 3
+	end
+
+	if math.floor(damage) > 0 then
+		local dmg = DamageInfo()
+		dmg:SetDamageType(DMG_FALL)
+		dmg:SetAttacker(game.GetWorld())
+		dmg:SetInflictor(game.GetWorld())
+		dmg:SetDamageForce(Vector(0,0,1))
+		dmg:SetDamage(damage)
+
+		ply:TakeDamageInfo(dmg)
+
+		-- Play CS:S fall sound if we got somewhat significant damage
+		if damage > 5 then
+			sound.Play(table.RandomSequential(TTT.Player.FallSounds), ply:GetShootPos(), 55 + math.Clamp(damage, 0, 50), 100)
+		end
+	end
+end

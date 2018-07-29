@@ -100,6 +100,12 @@ function GM:KeyRelease(ply, key)
 	end
 end
 
+-- The GetFallDamage hook does not get called until around 600 speed, which is a
+-- rather high drop already. Hence we do our own fall damage handling in OnPlayerHitGround.
+function GM:GetFallDamage(ply, speed)
+	return 0
+end
+
 ----------------
 -- Player Hooks
 ----------------
@@ -352,6 +358,10 @@ function GM:ScalePlayerDamage(ply, hitGroup, dmgInfo)
 	end
 end
 
+function GM:OnPlayerHitGround(ply, inWater, onFloater, speed)
+	TTT.Player.HandleFallDamage(ply, inWater, onFloater, speed)
+end
+
 ---------------
 -- Round Hooks
 ---------------
@@ -476,7 +486,3 @@ end)
 function GM:PlayerCanPickupWeapon(ply, wep)
 	return TTT.Weapons.CanPickupWeapon(ply, wep)
 end
-
-hook.Add("TTT.Weapons.DroppedWeapon", "TTT", function(ply, wep)
-	-- TODO: PLAY WEAPON DROP ANIMATION!
-end)
