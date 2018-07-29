@@ -24,6 +24,7 @@ SWEP.Primary.Ammo			= "sniper"
 
 SWEP.Sound_Primary	= Sound("Weapon_Scout.Single")
 SWEP.Sound_Secondary = Sound("Default.Zoom")
+SWEP.HeadshotMultiplier = 4
 
 SWEP.IronSightsPos	= Vector(5, -15, -2)
 SWEP.IronSightsAng	= Vector(2.6, 1.37, 3.5)

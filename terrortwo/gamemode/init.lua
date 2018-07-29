@@ -304,8 +304,38 @@ function GM:PlayerTraceAttack(ply, dmgInfo, dir, trace)
 	return false
 end
 
-function GM:ScalePlayerDamage()
+function GM:ScalePlayerDamage(ply, hitGroup, dmgInfo)
+	local wasHeadShotted = false
 
+	-- actual damage scaling
+	if hitGroup == HITGROUP_HEAD then
+		-- headshot if it was dealt by a bullet
+		wasHeadShotted = dmgInfo:IsBulletDamage()
+
+		local wep = TTT.WeaponFromDamageInfo(dmgInfo)
+
+		if IsValid(wep) then
+			local scale = wep:GetHeadshotMultiplier(ply, dmgInfo) or 2
+			dmgInfo:ScaleDamage(scale)
+		end
+	elseif (hitGroup == HITGROUP_LEFTARM or
+		hitGroup == HITGROUP_RIGHTARM or
+		hitGroup == HITGROUP_LEFTLEG or
+		hitGroup == HITGROUP_RIGHTLEG or
+		hitGroup == HITGROUP_GEAR) then
+
+		dmgInfo:ScaleDamage(0.55)
+	end
+
+	ply:SetWasHeadshotted(wasHeadShotted)
+
+	if (dmgInfo:IsDamageType(DMG_DIRECT) or
+		dmgInfo:IsExplosionDamage() or
+		dmgInfo:IsDamageType(DMG_FALL) or
+		dmgInfo:IsDamageType(DMG_PHYSGUN)) then
+
+		dmgInfo:ScaleDamage(2)
+	end
 end
 
 ---------------

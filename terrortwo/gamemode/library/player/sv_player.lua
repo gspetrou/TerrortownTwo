@@ -382,3 +382,10 @@ function TTT.Player.StoreDeathSceneData(ply, trace)
 	ply.ttt_HitTrace = trace
 end
 
+function PLAYER:WasHeadshotted()
+	return isbool(self.ttt_WasHeadshotted) and self.ttt_WasHeadshotted or false
+end
+
+function PLAYER:SetWasHeadshotted(bool)
+	self.ttt_WasHeadshotted = bool
+end

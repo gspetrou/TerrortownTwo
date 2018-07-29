@@ -114,6 +114,7 @@ SWEP.ZoomFOV = 0	-- 0 to disable.
 SWEP.ZoomInTime = 0.5
 SWEP.ZoomOutTime = 0.5
 
+SWEP.HeadshotMultiplier		= 2.7		-- Number, headshot damage multiplier.
 
 SWEP.StoredAmmo_Primary		= 0		-- Used to store ammo on a weapon when it is dropped.
 
