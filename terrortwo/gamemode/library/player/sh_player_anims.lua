@@ -2,6 +2,7 @@ TTT.Player = TTT.Player or {}
 local PLAYER = FindMetaTable("Player")
 	
 -- Implements the animation system from Badking's TTT. Mostly just copy-paste.
+-- It actually turns out that this system only even works/is used for the ear-holding animation.
 
 if CLIENT then
 	-- Instead of making a seperate function for each animation we instead do this. It makes a simple function for each given ACT_ enum to perform the animation.
@@ -36,14 +37,14 @@ if CLIENT then
 		ACT_GMOD_GESTURE_WAVE,
 		ACT_GMOD_GESTURE_BECON,
 		ACT_GMOD_GESTURE_BOW,
-		ACT_GMOD_GESTURE_SALUTE,
-		ACT_GMOD_CHEER,
+		ACT_GMOD_TAUNT_SALUTE,
+		ACT_GMOD_TAUNT_CHEER ,
 		ACT_SIGNAL_FORWARD,
 		ACT_SIGNAL_HALT,
 		ACT_SIGNAL_GROUP,
-		ACT_ITEM_PLACE,
-		ACT_ITEM_DROP,
-		ACT_ITEM_GIVE
+		ACT_GMOD_GESTURE_ITEM_PLACE,
+		ACT_GMOD_GESTURE_ITEM_DROP,
+		ACT_GMOD_GESTURE_ITEM_GIVE
 	}
 
 	-- Insert all the "simple" gestures that do not need weight control
@@ -51,69 +52,79 @@ if CLIENT then
 		ActRunners[act] = MakeSimpleAnimationRunner(act)
 	end
 
+	---------------------------
+	-- PLAYER:AnimApplyGesture
+	---------------------------
+	-- Desc:		Sets up the given gesture on the player to be used.
+	-- Arg One:		ACT_ enum, to be played.
+	-- Arg Two:		Number, weight of the animation.
 	function PLAYER:AnimApplyGesture(act, weight)
-		self:AnimRestartGesture(GESTURE_SLOT_CUSTOM, act, true) -- true = autokill
+		self:AnimRestartGesture(GESTURE_SLOT_CUSTOM, act, true)
 		self:AnimSetGestureWeight(GESTURE_SLOT_CUSTOM, weight)
 	end
 
 	local enabledGestures = CreateClientConVar("ttt_player_show_gestures", "1", true, false, "Should we play gestures such as ear grab when speaking.")
 
-	-- Perform the gesture using the GestureRunner system. If custom_runner is
-	-- non-nil, it will be used instead of the default runner for the act.
-	function PLAYER:AnimPerformGesture(act, custom_runner)
+	-----------------------------
+	-- PLAYER:AnimPerformGesture
+	-----------------------------
+	-- Desc:		Plays the given animation on the player with either a pre-built simple runner function or a given custom runner.
+	-- Arg One:		ACT_ enum, to play.
+	-- Arg Two:		(Optional) Function, custom runner for the animation. Animations in simpleGestures had this built by default and don't need a runner.
+	function PLAYER:AnimPerformGesture(act, customRunnerFunc)
 		if not enabledGestures:GetBool() then
 			return
 		end
 
-		local runner = custom_runner or ActRunners[act]
-		if not runner then return false end
+		local runner = customRunnerFunc or ActRunners[act]
+		if not runner then
+			return false
+		end
 
-		self.GestureWeight = 0
-		self.GestureRunner = runner
+		self.ttt_GestureWeight = 0
+		self.ttt_GestureRunner = runner
 
 		return true
 	end
 
-	-- Perform a gesture update
+	----------------------------
+	-- PLAYER:AnimUpdateGesture
+	----------------------------
+	-- Desc:		Updates the current gesture being played on the player.
 	function PLAYER:AnimUpdateGesture()
-		if self.GestureRunner then
-			self.GestureWeight = self:GestureRunner(self.GestureWeight)
+		if self.ttt_GestureRunner then
+			self.ttt_GestureWeight = self:ttt_GestureRunner(self.ttt_GestureWeight)
 
-			if self.GestureWeight <= 0 then
-				self.GestureRunner = nil
+			if self.ttt_GestureWeight <= 0 then
+				self.ttt_GestureRunner = nil
 			end
 		end
 	end
 
-	function GM:UpdateAnimation(ply, vel, maxseqgroundspeed)
-		ply:AnimUpdateGesture()
-
-		return self.BaseClass.UpdateAnimation(self, ply, vel, maxseqgroundspeed)
-	end
-
-	function GM:GrabEarAnimation(ply) end
-
-	net.Receive("TTT_PerformGesture", function()
-		local ply = net.ReadEntity()
-		local act = net.ReadUInt(16)
+	net.Receive("TTT.Player.PerformGesture", function()
+		local ply = net.ReadPlayer()
+		local act = net.ReadUInt(14)
 
 		if IsValid(ply) and act then
 			ply:AnimPerformGesture(act)
 		end
 	end)
-else -- SERVER
-	util.AddNetworkString("TTT_PerformGesture")
-	-- On the server, we just send the client a message that the player is
-	-- performing a gesture. This allows the client to decide whether it should
-	-- play, depending on eg. a cvar.
+else
+	util.AddNetworkString("TTT.Player.PerformGesture")
+
+	-----------------------------
+	-- PLAYER:AnimPerformGesture
+	-----------------------------
+	-- Desc:		Plays a given animation on the player.
+	-- Arg One:		ACT_ enum, to be played.
 	function PLAYER:AnimPerformGesture(act)
 		if not act then
 			return
 		end
 
-		net.Start("TTT_PerformGesture")
-			net.WriteEntity(self)
-			net.WriteUInt(act, 16)
+		net.Start("TTT.Player.PerformGesture")
+			net.WritePlayer(self)
+			net.WriteUInt(act, 14)
 		net.Broadcast()
 	end
 end

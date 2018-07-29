@@ -164,5 +164,19 @@ function GM:PlayerBindPress(ply, bind, pressed)
 			TTT.Map.TraitorButtons:UseHoveredButton()
 			return true
 		end
+	elseif (bind == "gmod_undo" or bind == "undo") and pressed then
+		TTT.Weapons.RequestDropCurrentAmmo()
+		return true
 	end
 end
+
+---------------------
+-- Player Animations
+---------------------
+function GM:UpdateAnimation(ply, vel, maxseqgroundspeed)
+	ply:AnimUpdateGesture()
+
+	return self.BaseClass.UpdateAnimation(self, ply, vel, maxseqgroundspeed)
+end
+
+function GM:GrabEarAnimation(ply) end
