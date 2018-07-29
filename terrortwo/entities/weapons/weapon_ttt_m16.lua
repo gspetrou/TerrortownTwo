@@ -23,3 +23,10 @@ SWEP.Primary.CarrySize		= 60
 SWEP.Primary.Ammo			= "pistol_light"
 
 SWEP.Sound_Primary	= Sound("Weapon_M4A1.Single")
+
+SWEP.IronSightsPos	= Vector(-7.58, -9.2, 0.55)
+SWEP.IronSightsAng	= Vector(2.599, -1.3, -3.6)
+
+SWEP.ZoomFOV = 35
+SWEP.ZoomInTime = 0.5
+SWEP.ZoomOutTime = 0.2

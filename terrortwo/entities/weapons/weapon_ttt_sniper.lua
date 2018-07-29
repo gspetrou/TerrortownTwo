@@ -23,7 +23,22 @@ SWEP.Primary.CarrySize		= 20
 SWEP.Primary.Ammo			= "sniper"
 
 SWEP.Sound_Primary	= Sound("Weapon_Scout.Single")
-SWEP.HeadshotMultiplier = 4if CLIENT then
+SWEP.Sound_Secondary = Sound("Default.Zoom")
+
+SWEP.IronSightsPos	= Vector(5, -15, -2)
+SWEP.IronSightsAng	= Vector(2.6, 1.37, 3.5)
+
+SWEP.ZoomFOV = 20
+SWEP.ZoomInTime = 0.3
+SWEP.ZoomOutTime = 0.2
+
+-- Add a delay to secondary fire when we primary fire.
+function SWEP:PrimaryAttack(worldSound)
+	BaseClass.PrimaryAttack(self, worldSound)
+	self:SetNextSecondaryFire(CurTime() + 0.1)
+end
+
+if CLIENT then
 	local scope = surface.GetTextureID("sprites/scope")
 	function SWEP:DrawHUD()
 		if self:GetIronsights() then

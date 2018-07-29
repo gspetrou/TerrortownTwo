@@ -80,7 +80,7 @@ SWEP.Kind			= WEAPON_PRIMARY		-- WEAPON_ enum for what slot this gun takes.
 
 -- Set the sounds to false to disable them.
 SWEP.Sound_Primary	= Sound("Weapon_Pistol.Single")
-SWEP.Sound_Secondary= Sound("Weapon_Pistol.Empty")
+SWEP.Sound_Secondary= nil
 SWEP.Sound_Empty	= Sound("Weapon_Pistol.Empty")
 SWEP.Sound_Reload	= Sound("Weapon_Pistol.Reload")
 
@@ -110,7 +110,10 @@ SWEP.Secondary.Cone			= 0.02	-- Number, radius of the spread cone the gun shoots
 SWEP.Secondary.DryFireDelay	= 0.2	-- Number, time between each time you can dry fire. No real reason to change this unless you wan't to.
 SWEP.Secondary.Ammo			= "none"-- String, type of ammo the weapon takes.
 
-SWEP.HeadshotMultiplier		= 1		-- Number, headshot damage multiplier.
+SWEP.ZoomFOV = 0	-- 0 to disable.
+SWEP.ZoomInTime = 0.5
+SWEP.ZoomOutTime = 0.5
+
 
 SWEP.StoredAmmo_Primary		= 0		-- Used to store ammo on a weapon when it is dropped.
 
@@ -132,23 +135,69 @@ function SWEP:Initialize()
 	self:SetDeploySpeed(self.DeploySpeed)
 
 	self:SetClip1(self.Primary.DefaultClip)
+	self:SetIronsights(false)
 end
 
 function SWEP:Reload()
-	if self.Animations_Reload then
-		local reloaded = self:DefaultReload(self.Animations_Reload)
+	local reloaded = self:DefaultReload(self.Animations_Reload)
 
-		if reloaded and self.Sound_Reload then
-			self:EmitSound(self.Sound_Reload)
-		end
+	if reloaded and self.Sound_Reload then
+		self:EmitSound(self.Sound_Reload)
 	end
+
+	self:SetIronsights(false)
+	self:SetZoom(false)
+end
+
+function SWEP:Holster()
+	self:SetIronsights(false)
+	self:SetZoom(false)
+	return true
 end
 
 function SWEP:Deploy()
+	self:SetIronsights(false)
+	self:SetZoom(false)
 	return true -- Its really annoying when people forget to return true here.
 end
 
+function SWEP:OnRestore()
+	self:SetIronsights(false)
+	self:SetZoom(false)
+end
+
+function SWEP:SetIronsights(b)
+	self:SetIronsightsPredicted(b)
+	self:SetIronsightsTime(CurTime())
+	if CLIENT then
+		self:CalcViewModel()
+	end
+end
+
+function SWEP:GetIronsights()
+	return self:GetIronsightsPredicted()
+end
+
 function SWEP:SetupDataTables()
+	self:NetworkVar("Bool", 0, "IronsightsPredicted")
+	self:NetworkVar("Float", 0, "IronsightsTime")
+end
+
+function SWEP:CalcViewModel()
+	if not CLIENT or not IsFirstTimePredicted() then
+		return
+	end
+
+	self.bIron = self:GetIronsights()
+	self.fIronTime = self:GetIronsightsTime()
+	self.fCurrentTime = CurTime()
+	self.fCurrentSysTime = SysTime()
+end
+
+-- Note that if you override Think in your SWEP, you should call
+-- BaseClass.Think(self) so as not to break ironsights
+function SWEP:Think()
+	self:CalcViewModel()
 end
 
 -- Largely copied from weapon_tttbase.
@@ -179,6 +228,7 @@ end
 -- Called right before a weapon is dropped and is still considered to be in the player's hands.
 function SWEP:PreDrop()
 	self.StoredAmmo_Primary = self:Clip1()
+	self:SetZoom(false)
 end
 
 -----------------------
@@ -223,17 +273,15 @@ function SWEP:SecondaryAttack()
 	if self.Sound_Secondary then
 		self:EmitSound(self.Sound_Secondary)
 	end
-	
-	if self.Animations_Secondary then
-		self:SendWeaponAnim(self.Animations_Secondary)
-	end
-	if self.Animations_Secondary3rdPerson then
-		self:GetOwner():SetAnimation(self.Animations_Secondary3rdPerson)
+
+	local s = not self:GetIronsights()
+	self:SetIronsights(s)
+
+	if self.ZoomFOV ~= 0 then
+		self:SetZoom(s)
 	end
 
-	if self.Secondary.Delay then
-		self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
-	end
+	self:SetNextSecondaryFire(CurTime() + 0.3)
 end
 
 function SWEP:CanPrimaryAttack()
@@ -252,18 +300,20 @@ function SWEP:CanPrimaryAttack()
 end
 
 function SWEP:CanSecondaryAttack()
-	local ply = self:GetOwner()
-	if not self.Secondary.Enabled or not IsValid(ply) or not ply:Alive() then
+	if self.NoSights or not self.IronSightsPos then
 		return false
 	end
-
-	if self:Clip2() <= 0 then
-		self:EmitSound(self.Sound_Empty)
-		self:SetNextSecondaryFire(CurTime() + self.Secondary.DryFireDelay)
-		return false
-	end
-
+	
 	return true
+end
+
+function SWEP:SetZoom(state)
+	if not (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer()) then return end
+	if state then
+		self:GetOwner():SetFOV(self.ZoomFOV, self.ZoomInTime)
+	else
+		self:GetOwner():SetFOV(0, self.ZoomOutTime)
+	end
 end
 
 function SWEP:ShootBullets(damage, numBullets, aimCone, recoil, tracers, force)
@@ -280,6 +330,8 @@ function SWEP:ShootBullets(damage, numBullets, aimCone, recoil, tracers, force)
 
 	-- Recoil.
 	if (game.SinglePlayer() and SERVER) or (not game.SinglePlayer() and CLIENT and IsFirstTimePredicted()) then
+		recoil = self:GetIronsights() and (recoil * 0.6) or recoil
+
 		local eyeAngs = self:GetOwner():EyeAngles()
 		eyeAngs.pitch = eyeAngs.pitch - recoil
 		self:GetOwner():SetEyeAngles(eyeAngs)
@@ -301,8 +353,7 @@ if CLIENT then
 	local crosshairDisabled = CreateClientConVar("ttt_crosshair_disabled", "0", true, false, "Switch to 1 to disable the crosshair, 0 to enable.")
 
 	function SWEP:DrawHUD()
-		-- TODO: Hud Help and sights support
-
+		-- TODO: Hud Help
 		local ply = LocalPlayer()
 		local alpha = math.Clamp(crosshairOpacity:GetFloat(), 0.0, 1.0)
 		if not self.DrawTTTCrosshair or crosshairDisabled:GetBool() or alpha == 0 then
@@ -322,7 +373,8 @@ if CLIENT then
 			surface.SetDrawColor(50 * brightness, 255 * brightness, 50 * brightness, 255 * alpha)
 		end
 
-		local gap = math.floor(20 * scale)
+		local sights = (not self.NoSights) and self:GetIronsights()
+		local gap = math.floor(20 * scale * (sights and 0.8 or 1))
 		local length = math.floor(gap + (25 * crosshairSize:GetFloat()) * scale)
 		surface.DrawLine(x - length, y, x - gap, y)
 		surface.DrawLine(x + length, y, x + gap, y)
@@ -331,12 +383,15 @@ if CLIENT then
 	end
 end
 
+-- Iron sights
+
+
 -- Shooting a shot as you die.
 CreateConVar("ttt_weapon_dyingshot", "0", FCVAR_ARCHIVE, "Should players shoot a shot as they die.")
 function SWEP:DyingShot()
 	local fired = false
-	--if self:GetIronsights() then TODO
-	--	self:SetIronsights(false)
+	if self:GetIronsights() then
+		self:SetIronsights(false)
 
 		if self:GetNextPrimaryFire() > CurTime() then
 			return fired
@@ -358,7 +413,7 @@ function SWEP:DyingShot()
 			self:PrimaryAttack(true)
 			fired = true
 		end
-	--end
+	end
 
 	return fired
 end
@@ -387,7 +442,7 @@ end
 ----------------------------------
 -- Gun Property Related Functions
 ----------------------------------
-function SWEP:GetPrimaryCone() return self.Primary.Cone end
+function SWEP:GetPrimaryCone() return self:GetIronsights() and self.Primary.Cone * 0.85 or self.Primary.Cone end
 function SWEP:GetPrimaryRecoil() return self.Primary.Recoil end
 function SWEP:GetPrimaryDamage() return self.Primary.Damage end
 function SWEP:GetSecondaryCone() return self.Secondary.Cone end
@@ -402,8 +457,8 @@ function SWEP:Ammo2()
 	return IsValid(self:GetOwner()) and self:GetOwner():GetAmmoCount(self.Secondary.Ammo) or false
 end
 
-function SWEP:GetHeadshotMultiplier()
-	return self.HeadshotMultiplier or 1
+function SWEP:GetHeadshotMultiplier(ply, dmginfo)
+	return self.HeadshotMultiplier
 end
 
 if CLIENT then
@@ -415,5 +470,58 @@ if CLIENT then
 		end
 
 		return self:GetPrintName()
+	end
+
+	-- Ironsight zoom transition. This seems to use code copied from somewhere in the source engine.
+	local ttt_lowered = CreateClientConVar("ttt_ironsights_loweronzoom", "1", true, false, "Should we lower the weapon when using ironsights to prevent it from blocking your view.")
+	local host_timescale = GetConVar("host_timescale")
+	local lowerAmount = Vector(0, 0, -2)	-- How much to lower by if ttt_ironsights_loweronzoom is enabled.
+	local transitionTime = 0.25
+
+	function SWEP:GetViewModelPosition(pos, ang)
+		if not self.IronSightsPos or self.bIron == nil then
+			return pos, ang
+		end
+
+		local bIron = self.bIron
+		local time = self.fCurrentTime + (SysTime() - self.fCurrentSysTime) * game.GetTimeScale() * host_timescale:GetFloat()
+
+		if bIron then
+			self.SwayScale = 0.3
+			self.BobScale = 0.1
+		else
+			self.SwayScale = 1.0
+			self.BobScale = 1.0
+		end
+
+		local fIronTime = self.fIronTime
+		if not bIron and fIronTime < time - transitionTime then
+			return pos, ang
+		end
+
+		local mul = 1.0
+
+		if fIronTime > time - transitionTime then
+			mul = math.Clamp((time - fIronTime) / transitionTime, 0, 1)
+
+			if not bIron then
+				mul = 1 - mul
+			end
+		end
+
+		local offset = self.IronSightsPos + (ttt_lowered:GetBool() and lowerAmount or vector_origin)
+
+		if self.IronSightsAng then
+			ang = ang * 1
+			ang:RotateAroundAxis(ang:Right(), self.IronSightsAng.x * mul)
+			ang:RotateAroundAxis(ang:Up(), self.IronSightsAng.y * mul)
+			ang:RotateAroundAxis(ang:Forward(), self.IronSightsAng.z * mul)
+		end
+
+		pos = pos + offset.x * ang:Right() * mul
+		pos = pos + offset.y * ang:Forward() * mul
+		pos = pos + offset.z * ang:Up() * mul
+
+		return pos, ang
 	end
 end

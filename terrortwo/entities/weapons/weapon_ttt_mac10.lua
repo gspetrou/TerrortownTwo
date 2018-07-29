@@ -24,3 +24,6 @@ SWEP.Primary.Ammo			= "ar"
 
 SWEP.Sound_Primary	= Sound("Weapon_mac10.Single")
 SWEP.DeploySpeed	= 3
+
+SWEP.IronSightsPos	= Vector(-8.921, -9.528, 2.9)
+SWEP.IronSightsAng	= Vector(0.699, -5.301, -7)

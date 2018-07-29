@@ -26,6 +26,9 @@ SWEP.Primary.Ammo			= "shotgun_buckshot"
 SWEP.Sound_Primary	= Sound("Weapon_XM1014.Single")
 SWEP.HeadshotMultiplier = 4
 
+SWEP.IronSightsPos	= Vector(-6.881, -9.214, 2.66)
+SWEP.IronSightsAng	= Vector(-0.101, -0.7, -0.201)
+
 -- Shotguns need special stuff to reload properly.
 function SWEP:SetupDataTables()
 	self:NetworkVar("Bool", 0, "Reloading")
@@ -45,6 +48,7 @@ function SWEP:StartReload()
 		return false
 	end
 
+	self:SetIronsights(false)
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 
 	local ply = self:GetOwner()
@@ -103,4 +107,15 @@ function SWEP:Deploy()
 	self:SetReloading(false)
 	self:SetReloadTimer(0)
 	return BaseClass.Deploy(self)
+end
+
+function SWEP:CanSecondaryAttack()
+	if self:GetReloading() then
+		return false
+	end
+	
+	return BaseClass.CanSecondaryAttack(self)
+end
+
+-- The shotgun's headshot damage multiplier is based on distance. The closer it
 end
