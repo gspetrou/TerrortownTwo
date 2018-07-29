@@ -71,6 +71,7 @@ SWEP.AutoSpawnable	= false					-- Can the ttt_random_weapon entity spawn this.
 SWEP.SilentKiller	= false					-- When someone is killed by this weapon they won't scream.
 SWEP.CanDrop		= true					-- Boolean, can they drop this weapon.
 SWEP.DrawTTTCrosshair	= true				-- Boolean, should we draw the default TTT crosshair.
+SWEP.NoSights		= false
 
 SWEP.Fingerprints	= {}
 SWEP.SpawnWith		= nil					-- Boolean. If true, everyone will spawn with this weapon.
