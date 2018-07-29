@@ -173,7 +173,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 		end
 	end
 
-	TTT.Corpse.CreateBody(ply, attacker, dmginfo)	-- Create body.
+	local ragdoll = TTT.Corpse.CreateBody(ply, attacker, dmginfo)	-- Create body.
 	TTT.Player.RecordDeathPos(ply)	-- Record their death position so that their spectator camera spawns here.
 
 	-- Remove the body at round start if they died during prep.
@@ -183,6 +183,15 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 
 	-- Drop all weapons on death.
 	-- TODO
+	TTT.Player.CreateDeathEffects(ply)
+	util.StartBleeding(ragdoll, dmginfo:GetDamage(), math.random(10, 20))
+
+	local killWeapon = TTT.WeaponFromDamageInfo(dmginfo)
+	if not (ply:WasHeadshotted() or dmginfo:IsDamageType(DMG_SLASH) or (IsValid(killWeapon) and killWeapon.IsSilent)) then
+		TTT.Player.PlayDeathYell(ply)
+	end
+
+	-- TODO: Voice stuff.
 
 	-- Anyone who was spectating this player while that player died should exit specate mode.
 	local pos = Vector(0, 0, 25) + ply:GetPos()

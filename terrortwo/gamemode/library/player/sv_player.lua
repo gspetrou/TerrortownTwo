@@ -370,6 +370,44 @@ function TTT.Player.HandleSpectatorKeypresses(ply, key)
 	end
 end
 
+TTT.Player.DeathSounds = {
+	Sound("player/death1.wav"),
+	Sound("player/death2.wav"),
+	Sound("player/death3.wav"),
+	Sound("player/death4.wav"),
+	Sound("player/death5.wav"),
+	Sound("player/death6.wav"),
+	Sound("vo/npc/male01/pain07.wav"),
+	Sound("vo/npc/male01/pain08.wav"),
+	Sound("vo/npc/male01/pain09.wav"),
+	Sound("vo/npc/male01/pain04.wav"),
+	Sound("vo/npc/Barney/ba_pain06.wav"),
+	Sound("vo/npc/Barney/ba_pain07.wav"),
+	Sound("vo/npc/Barney/ba_pain09.wav"),
+	Sound("vo/npc/Barney/ba_ohshit03.wav"),
+	Sound("vo/npc/Barney/ba_no01.wav"),
+	Sound("vo/npc/male01/no02.wav"),
+	Sound("hostage/hpain/hpain1.wav"),
+	Sound("hostage/hpain/hpain2.wav"),
+	Sound("hostage/hpain/hpain3.wav"),
+	Sound("hostage/hpain/hpain4.wav"),
+	Sound("hostage/hpain/hpain5.wav"),
+	Sound("hostage/hpain/hpain6.wav")
+}
+
+function TTT.Player.PlayDeathYell(ply)
+	sound.Play(table.RandomSequential(TTT.Player.DeathSounds), ply:GetShootPos(), 90, 100)
+end
+
+function TTT.Player.CreateDeathEffects(ent)
+	local pos = ent:GetPos() + Vector(0, 0, 20)
+
+	local jitterAmmount = 35.0
+
+	local jitter = Vector(math.Rand(-jitterAmmount, jitterAmmount), math.Rand(-jitterAmmount, jitterAmmount), 0)
+	util.PaintDown(pos + jitter, "Blood", ent)
+end
+
 -- Player damage related.
 
 ----------------------------------

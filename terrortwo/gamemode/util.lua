@@ -191,3 +191,68 @@ if CLIENT then
 		return x >= 0 and x <= ScrW() and y >= 0 and y <= ScrH()
 	end
 end
+
+------------------
+-- util.PaintDown
+------------------
+-- Desc:		Puts a decal on whatever is below the starting point.
+-- Arg One:		Vector, starting point.
+-- Arg Two:		String, effect name to put.
+-- Arg Three:	Entity or table of entities, to ignore hitting in our trace.
+function util.PaintDown(start, effname, ignore)
+	local btr = util.TraceLine({
+		start = start,
+		endpos = (start + Vector(0,0,-256)),
+		filter = ignore,
+		mask = MASK_SOLID
+	})
+
+	util.Decal(effname, btr.HitPos + btr.HitNormal, btr.HitPos - btr.HitNormal)
+end
+
+----------------------
+-- util.StartBleeding
+----------------------
+-- Desc:		Makes a given entity bleed.
+-- Arg One:		Entity, to bleed.
+-- Arg Two:		Number, how much damage the entity recieved to scale the bleeding.
+-- Arg Three:	Number, how long should they bleed for.
+function util.StartBleeding(ent, dmg, time)
+	if dmg < 5 or not IsValid(ent) then
+		return
+	end
+
+	if ent:IsPlayer() and not ent:Alive()  then
+		return
+	end
+
+	local times = math.Clamp(math.Round(dmg / 15), 1, 20)
+	local delay = math.Clamp(time / times , 0.1, 2)
+
+	if ent:IsPlayer() then
+		times = times * 2
+		delay = delay / 2
+	end
+
+	timer.Create("TTT.Bleed_" .. ent:EntIndex(), delay, times, function()
+		if not IsValid(ent) or (ent:IsPlayer() and not ent:Alive()) then
+			return
+		end
+
+		local jitter = VectorRand() * 30
+		jitter.z = 20
+
+		util.PaintDown(ent:GetPos() + jitter, "Blood", ent)
+	end)
+end
+
+---------------------
+-- util.StopBleeding
+---------------------
+-- Desc:		Stops the given entity from bleeding if they are.
+-- Arg One:		Player, to stop bleeding.
+function util.StopBleeding(ent)
+	if timer.Exists("TTT.Bleed_" .. ent:EntIndex()) then
+		timer.Remove("TTT.Bleed_" .. ent:EntIndex())
+	end
+end
