@@ -175,8 +175,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	if GetConVar("ttt_weapon_dyingshot"):GetBool() and ply:CanDyingShot() then
 		local weapon = ply:GetActiveWeapon()
 		if IsValid(weapon) and weapon.DyingShot and dmginfo:IsBulletDamage() and not ply:WasHeadshotted() then
-			local fired = weapon:DyingShot()
-			ply:SetCanDyingShot(false)
+			weapon:DyingShot()
 		end
 	end
 

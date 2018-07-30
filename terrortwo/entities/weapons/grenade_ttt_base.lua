@@ -63,7 +63,7 @@ SWEP.Secondary.Automatic	= false
 
 -- TTT2 Grenade Settings
 -------------------------
-SWEP.IsGrenade		= true
+SWEP.IsGrenade		= true					-- Boolean, is this entity a grenade. If you're making a grenade based off grenade_ttt_base you don't have to set this since it will already be inherited to true.
 SWEP.HoldTypeNormal	= "slam"
 SWEP.HoldTypeReady	= "grenade"
 SWEP.DeploySpeed	= 1.5					-- Number, how long it takes to deploy.
@@ -205,6 +205,7 @@ function SWEP:GetGrenadeName()
 	return self.GrenadeName
 end
 
+-- Creates and throws the physical grenade entity. (Not what is in your hands)
 function SWEP:CreateGrenade(source, ang, velocity, additionalVelocity, ply)
 	local grenade = ents.Create(self:GetGrenadeName())
 	if not IsValid(grenade) then

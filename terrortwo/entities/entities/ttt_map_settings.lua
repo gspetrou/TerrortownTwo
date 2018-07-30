@@ -14,10 +14,13 @@ function ENT:KeyValue(k, v)
 		local opens = (v == "1")
 		TTT.Weapons.OpennableTypes[OPEN_DOOR] = opens
 		TTT.Weapons.OpennableTypes[OPEN_ROT] = opens
+		TTT.Debug.Print("ttt_map_settings: crowbar door unlocking = " .. v)
 	elseif k == "cbar_buttons" then
 		TTT.Weapons.OpennableTypes[OPEN_BUT] = (v == "1")
+		TTT.Debug.Print("ttt_map_settings: crowbar button unlocking = " .. v)
 	elseif k == "cbar_other" then
 		TTT.Weapons.OpennableTypes[OPEN_NOTOGGLE] = (v == "1")
+		TTT.Debug.Print("ttt_map_settings: crowbar movelinear unlocking = " .. v)
 	elseif k == "plymodel" and v ~= "" then
 		if util.IsValidModel(v) then
 			util.PrecacheModel(v)
@@ -27,7 +30,7 @@ function ENT:KeyValue(k, v)
 			TTT.Debug.Print("Map settings: Failed to set default player model due to invalid path: \""..v.."\"")
 		end
 	elseif k == "propspec_named" then
-		
+		-- TODO: Add propspec stuff here.
 	elseif k == "MapSettingsSpawned" or k == "RoundEnd" or k == "RoundPreparation" or k == "RoundStart" then
 		self:StoreOutput(k, v)
 	end

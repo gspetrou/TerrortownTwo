@@ -63,7 +63,7 @@ SWEP.Secondary.Automatic	= false
 
 -- TTT2 Specific Settings
 --------------------------
-SWEP.IsTTTWeapon	= true
+SWEP.IsTTTWeapon	= true					-- Boolean, you really should never touch this.
 SWEP.HoldType		= "normal"
 SWEP.DeploySpeed	= 1.4					-- Number, how long it takes to deploy.
 SWEP.Icon			= "vgui/ttt/icon_nades"	-- String, icon path to be displayed for the weapon. Can be PNG.
@@ -78,7 +78,7 @@ SWEP.SpawnWith		= nil					-- Boolean. If true, everyone will spawn with this wea
 SWEP.RoleWeapon		= nil					-- ROLE_ enum or table of ROLE_ enums. Any player with one of these roles will be given this weapon at the start of the round.
 SWEP.Kind			= WEAPON_PRIMARY		-- WEAPON_ enum for what slot this gun takes.
 
--- Set the sounds to false to disable them.
+-- Set the sounds to false or nil to disable them.
 SWEP.Sound_Primary	= Sound("Weapon_Pistol.Single")
 SWEP.Sound_Secondary= nil
 SWEP.Sound_Empty	= Sound("Weapon_Pistol.Empty")
@@ -96,23 +96,16 @@ SWEP.Primary.Cone			= 0.02	-- Number, radius of the spread cone the gun shoots.
 SWEP.Primary.DefaultClip	= 10	-- Number, how much ammo is in the clip of the gun when it is first picked up.
 SWEP.Primary.ClipSize		= 10	-- Number, how many bullets go in one clip of the weapon.
 SWEP.Primary.CarrySize		= 30	-- Number, how many bullets get carried on the side.
-SWEP.Primary.Tracers		= 1		-- Number, of visible "tracer" shots. If set to 4 that means that one in four bullets can be seen flying from the gun.
+SWEP.Primary.Tracers		= 2		-- Number, of visible "tracer" shots. If set to 4 that means that one in four bullets can be seen flying from the gun.
 SWEP.Primary.BulletForce	= 1		-- Number, push force with each shot.
 SWEP.Primary.DryFireDelay	= 0.2	-- Number, time between each time you can dry fire. No real reason to change this unless you wan't to.
 SWEP.Primary.RequiresAmmo	= true	-- Boolean, does this weapon require ammo to function.
 SWEP.Primary.Ammo			= "none"-- String, type of ammo the weapon takes.
 
-SWEP.Secondary.Enabled		= true	-- Boolean, if false then primary attacking won't do anything,
-SWEP.Secondary.Damage		= 1		-- Number, how much damage per shot.
-SWEP.Secondary.Delay		= 0.15	-- Number, time delay between each shot.
-SWEP.Secondary.Recoil		= 1.5	-- Number, how much the shooter's camera angles up each shot.
-SWEP.Secondary.Cone			= 0.02	-- Number, radius of the spread cone the gun shoots.
-SWEP.Secondary.DryFireDelay	= 0.2	-- Number, time between each time you can dry fire. No real reason to change this unless you wan't to.
-SWEP.Secondary.Ammo			= "none"-- String, type of ammo the weapon takes.
-
-SWEP.ZoomFOV = 0	-- 0 to disable.
-SWEP.ZoomInTime = 0.5
-SWEP.ZoomOutTime = 0.5
+-- Right click to zoom.
+SWEP.ZoomFOV = 0			-- Number, set to 0 to disable right-click from zooming.
+SWEP.ZoomInTime = 0.5		-- Number, how long it takes to zoom in.
+SWEP.ZoomOutTime = 0.5		-- Number, how long it takes to zoom out.
 
 SWEP.HeadshotMultiplier		= 2.7		-- Number, headshot damage multiplier.
 
@@ -137,6 +130,7 @@ function SWEP:Initialize()
 
 	self:SetClip1(self.Primary.DefaultClip)
 	self:SetIronsights(false)
+	self:SetZoom(false)
 end
 
 function SWEP:Reload()
@@ -159,7 +153,7 @@ end
 function SWEP:Deploy()
 	self:SetIronsights(false)
 	self:SetZoom(false)
-	return true -- Its really annoying when people forget to return true here.
+	return true
 end
 
 function SWEP:OnRestore()
@@ -167,14 +161,36 @@ function SWEP:OnRestore()
 	self:SetZoom(false)
 end
 
-function SWEP:SetIronsights(b)
-	self:SetIronsightsPredicted(b)
+function SWEP:SetZoom(state)
+	if not (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer()) then
+		return
+	end
+
+	if state then
+		self:GetOwner():SetFOV(self.ZoomFOV, self.ZoomInTime)
+	else
+		self:GetOwner():SetFOV(0, self.ZoomOutTime)
+	end
+end
+
+----------------------
+-- SWEP:SetIronsights
+----------------------
+-- Desc:		Puts the player in or out of ironsight view.
+-- Arg One:		Boolean.
+function SWEP:SetIronsights(bool)
+	self:SetIronsightsPredicted(bool)
 	self:SetIronsightsTime(CurTime())
 	if CLIENT then
 		self:CalcViewModel()
 	end
 end
 
+----------------------
+-- SWEP:GetIronSights
+----------------------
+-- Desc:		Sees if a player is looking down their iron sights.
+-- Returns:		Boolean.
 function SWEP:GetIronsights()
 	return self:GetIronsightsPredicted()
 end
@@ -189,14 +205,14 @@ function SWEP:CalcViewModel()
 		return
 	end
 
+	-- Seems to use Source Engine styled variable names, going to keep it that way.
 	self.bIron = self:GetIronsights()
 	self.fIronTime = self:GetIronsightsTime()
 	self.fCurrentTime = CurTime()
 	self.fCurrentSysTime = SysTime()
 end
 
--- Note that if you override Think in your SWEP, you should call
--- BaseClass.Think(self) so as not to break ironsights
+-- Note that if you override Think in your SWEP, you should call BaseClass.Think(self) so as not to break ironsights. See how ttt_ammo_pistol_heavy does something similar for ENT.Initialize as an example.
 function SWEP:Think()
 	self:CalcViewModel()
 end
@@ -219,15 +235,15 @@ function SWEP:Equip(newOwner)
 
 		-- Add fingerprints to the weapon if necessary.
 		self:SetFingerprints()
-
-		if IsValid(newOwner) and self.Primary.Ammo ~= "none" and self.StoredAmmo_Primary > 0 then
-			
-		end
 	end
 end
 
--- Called right before a weapon is dropped and is still considered to be in the player's hands.
-function SWEP:PreDrop()
+----------------
+-- SWEP:PreDrop
+----------------
+-- Desc:		Called right before a weapon is dropped and is still considered to be in the player's hands.
+-- Arg One:		Boolean or nil. Will be true if the weapon is being dropped due to the owner dying.
+function SWEP:PreDrop(isDeathDrop)
 	self.StoredAmmo_Primary = self:Clip1()
 	self:SetZoom(false)
 end
@@ -235,6 +251,22 @@ end
 -----------------------
 -- Attacking Functions
 -----------------------
+function SWEP:CanPrimaryAttack()
+	local ply = self:GetOwner()
+	if not self.Primary.Enabled or not IsValid(ply) or not ply:Alive() then
+		return false
+	end
+
+	if self.Primary.RequiresAmmo and self:Clip1() <= 0 then
+		self:EmitSound(self.Sound_Empty)
+		self:SetNextPrimaryFire(CurTime() + self.Primary.DryFireDelay)
+		return false
+	end
+
+	return true
+end
+
+-- First arg is an optional boolean. True will make the shooting sound be heard by everyone.
 function SWEP:PrimaryAttack(globalSound)
 	if not self:CanPrimaryAttack() then
 		return
@@ -266,6 +298,14 @@ function SWEP:PrimaryAttack(globalSound)
 	end
 end
 
+function SWEP:CanSecondaryAttack()
+	if self.NoSights or not self.IronSightsPos then
+		return false
+	end
+	
+	return true
+end
+
 function SWEP:SecondaryAttack()
 	if not self:CanSecondaryAttack() then
 		return
@@ -283,38 +323,6 @@ function SWEP:SecondaryAttack()
 	end
 
 	self:SetNextSecondaryFire(CurTime() + 0.3)
-end
-
-function SWEP:CanPrimaryAttack()
-	local ply = self:GetOwner()
-	if not self.Primary.Enabled or not IsValid(ply) or not ply:Alive() then
-		return false
-	end
-
-	if self.Primary.RequiresAmmo and self:Clip1() <= 0 then
-		self:EmitSound(self.Sound_Empty)
-		self:SetNextPrimaryFire(CurTime() + self.Primary.DryFireDelay)
-		return false
-	end
-
-	return true
-end
-
-function SWEP:CanSecondaryAttack()
-	if self.NoSights or not self.IronSightsPos then
-		return false
-	end
-	
-	return true
-end
-
-function SWEP:SetZoom(state)
-	if not (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer()) then return end
-	if state then
-		self:GetOwner():SetFOV(self.ZoomFOV, self.ZoomInTime)
-	else
-		self:GetOwner():SetFOV(0, self.ZoomOutTime)
-	end
 end
 
 function SWEP:ShootBullets(damage, numBullets, aimCone, recoil, tracers, force)
@@ -363,46 +371,47 @@ if CLIENT then
 	local crosshairSize = CreateClientConVar("ttt_crosshair_size", "1.0", true, false, "Size of the crosshair. (From 0 to 1)")
 	local crosshairDisabled = CreateClientConVar("ttt_crosshair_disabled", "0", true, false, "Switch to 1 to disable the crosshair, 0 to enable.")
 
+	local LocalPlayer, ScrW, ScrH, math_max, math_Clamp, math_floor, CurTime, surface_DrawLine, surface_SetDrawColor = LocalPlayer, ScrW, ScrH, math.max, math.Clamp, math.floor, CurTime, surface.DrawLine, surface.SetDrawColor
+
+	-- Draws just the crosshair.
 	function SWEP:DrawHUD()
 		-- TODO: Hud Help
 		local ply = LocalPlayer()
-		local alpha = math.Clamp(crosshairOpacity:GetFloat(), 0.0, 1.0)
+		local alpha = math_Clamp(crosshairOpacity:GetFloat(), 0.0, 1.0)
 		if not self.DrawTTTCrosshair or crosshairDisabled:GetBool() or alpha == 0 then
 			return
 		end
 
 		local x = ScrW()/2
 		local y = ScrH()/2
-		local scale = math.max(0.2, 10 * self:GetPrimaryCone()) * (2 - math.Clamp((CurTime() - self:LastShootTime()) * 5, 0.0, 1.0))
+		local scale = math_max(0.2, 10 * self:GetPrimaryCone()) * (2 - math_Clamp((CurTime() - self:LastShootTime()) * 5, 0.0, 1.0))
 
-		local brightness = math.Clamp(crosshairBrightness:GetFloat(), 0.0, 1.0)
+		local brightness = math_Clamp(crosshairBrightness:GetFloat(), 0.0, 1.0)
 		if ply.IsTraitor and ply:IsTraitor() then
-			surface.SetDrawColor(255 * brightness, 50 * brightness, 50 * brightness, 255 * alpha)
+			surface_SetDrawColor(255 * brightness, 50 * brightness, 50 * brightness, 255 * alpha)
 		elseif ply.IsDetective and ply:IsDetective() then
-			surface.SetDrawColor(50 * brightness, 50 * brightness, 255 * brightness, 255 * alpha)
+			surface_SetDrawColor(50 * brightness, 50 * brightness, 255 * brightness, 255 * alpha)
 		else
-			surface.SetDrawColor(50 * brightness, 255 * brightness, 50 * brightness, 255 * alpha)
+			surface_SetDrawColor(50 * brightness, 255 * brightness, 50 * brightness, 255 * alpha)
 		end
 
 		local sights = (not self.NoSights) and self:GetIronsights()
-		local gap = math.floor(20 * scale * (sights and 0.8 or 1))
-		local length = math.floor(gap + (25 * crosshairSize:GetFloat()) * scale)
-		surface.DrawLine(x - length, y, x - gap, y)
-		surface.DrawLine(x + length, y, x + gap, y)
-		surface.DrawLine(x, y - length, x, y - gap)
-		surface.DrawLine(x, y + length, x, y + gap)
+		local gap = math_floor(20 * scale * (sights and 0.8 or 1))
+		local length = math_floor(gap + (25 * crosshairSize:GetFloat()) * scale)
+		surface_DrawLine(x - length, y, x - gap, y)
+		surface_DrawLine(x + length, y, x + gap, y)
+		surface_DrawLine(x, y - length, x, y - gap)
+		surface_DrawLine(x, y + length, x, y + gap)
 	end
 end
 
--- Iron sights
-
-
--- Shooting a shot as you die.
+-- Shooting your gun as you die.
 CreateConVar("ttt_weapon_dyingshot", "0", FCVAR_ARCHIVE, "Should players shoot a shot as they die.")
 function SWEP:DyingShot()
 	local fired = false
 	if self:GetIronsights() then
 		self:SetIronsights(false)
+		self:SetZoom(false)
 
 		if self:GetNextPrimaryFire() > CurTime() then
 			return fired
@@ -422,6 +431,7 @@ function SWEP:DyingShot()
 
 			self:GetOwner().DyingWeapon = self
 			self:PrimaryAttack(true)
+			ply:SetCanDyingShot(false)	-- Forgetting to set this to false will cause an infinite loop in DoPlayerDeath and crash the server!
 			fired = true
 		end
 	end
@@ -456,23 +466,30 @@ end
 function SWEP:GetPrimaryCone() return self:GetIronsights() and self.Primary.Cone * 0.85 or self.Primary.Cone end
 function SWEP:GetPrimaryRecoil() return self.Primary.Recoil end
 function SWEP:GetPrimaryDamage() return self.Primary.Damage end
-function SWEP:GetSecondaryCone() return self.Secondary.Cone end
-function SWEP:GetSecondaryRecoil() return self.Secondary.Recoil end
-function SWEP:GetSecondaryDamage() return self.Secondary.Damage end
 
 -- TTT1 added an extra validity check to these two functions so I might as well add that extra safety here as well.
 function SWEP:Ammo1()
 	return IsValid(self:GetOwner()) and self:GetOwner():GetAmmoCount(self.Primary.Ammo) or false
 end 
-function SWEP:Ammo2()
-	return IsValid(self:GetOwner()) and self:GetOwner():GetAmmoCount(self.Secondary.Ammo) or false
-end
 
+------------------------------
+-- SWEP:GetHeadshotMultiplier
+------------------------------
+-- Desc:		Used to get how much we should multiply damage by for a headshot.
+-- 				You can override this instead of just SWEP.HeadshotMultiplier for more control.
+-- Arg One:		Player, who is getting headshot.
+-- Arg Two:		CTakeDamageInfo Object.
+-- Returns:		Number, how much to multiply weapon damage by.
 function SWEP:GetHeadshotMultiplier(ply, dmginfo)
 	return self.HeadshotMultiplier
 end
 
 if CLIENT then
+	--------------------------
+	-- SWEP:GetTranslatedName
+	--------------------------
+	-- Desc:		Tries to get a localized weapon name for this weapon.
+	-- Returns:		String, name for the weapon.
 	function SWEP:GetTranslatedName()
 		if isstring(self.PhraseName) then
 			if TTT.Languages.PhraseExists(self.PhraseName) then
