@@ -49,7 +49,8 @@ if CLIENT then
 		CHudHealth = true,
 		CHudBattery = true,
 		CHudAmmo = true,
-		CHudSecondaryAmmo = true
+		CHudSecondaryAmmo = true,
+		CHudDamageIndicato = true
 	}
 	--------------------------
 	-- TTT.VGUI.HUDShouldDraw

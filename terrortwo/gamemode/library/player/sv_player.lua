@@ -420,27 +420,50 @@ function TTT.Player.StoreDeathSceneData(ply, trace)
 	ply.ttt_HitTrace = trace
 end
 
+-------------------------
+-- PLAYER:WasHeadshotted
+-------------------------
+-- Desc:		Was the most recent/last shot to hit the player a headshot?
+-- Returns:		Boolean.
 function PLAYER:WasHeadshotted()
 	return isbool(self.ttt_WasHeadshotted) and self.ttt_WasHeadshotted or false
 end
 
+----------------------------
+-- PLAYER:SetWasHeadshotted
+----------------------------
+-- Desc:		Sets if the lost shot to hit a player was a headshot.
+-- Arg One:		Boolean, was headshotted.
 function PLAYER:SetWasHeadshotted(bool)
 	self.ttt_WasHeadshotted = bool
 end
 
+-- Sounds to make when we fall from high heights.
 TTT.Player.FallSounds = {
 	Sound("player/damage1.wav"),
 	Sound("player/damage2.wav"),
 	Sound("player/damage3.wav")
 }
 
+-- If the player hits the ground going this speed or more then deal damage, rising exponentially.
+TTT.Player.FallDamageSpeedThreshold = 420
+
+-------------------------------
+-- TTT.Player.HandleFallDamage
+-------------------------------
+-- Desc:		Handles fall damage.
+-- Arg One:		Player, suffering from fall damange.
+-- Arg Two:		Boolean, was the player in water when they landed.
+-- Arg Three:	Boolean, did the player land on a floating object.
+-- Arg Four:	Number, speed the player was going when they landed.
 function TTT.Player.HandleFallDamage(ply, inWater, onFloater, speed)
-	if inWater or speed < 450 or not IsValid(ply) then
+	-- The plus 30 here is to stay consistent with how TTT1 handled fall damage.
+	if inWater or speed < (TTT.Player.FallDamageSpeedThreshold + 30) or not IsValid(ply) then
 		return
 	end
 
 	-- Everything over a threshold hurts you, rising exponentially with speed
-	local damage = math.pow(0.05 * (speed - 420), 1.75)
+	local damage = math.pow(0.05 * (speed - TTT.Player.FallDamageSpeedThreshold), 1.75)
 
 	-- If landing on a floating object then do half damage.
 	if on_floater then
@@ -470,7 +493,7 @@ function TTT.Player.HandleFallDamage(ply, inWater, onFloater, speed)
 
 			dmg:SetAttacker(attacker)
 			dmg:SetInflictor(attacker)
-			dmg:SetDamageForce(Vector(0,0,-1))
+			dmg:SetDamageForce(Vector(0, 0, -1))
 			dmg:SetDamage(damage)
 
 			groundPlayer:TakeDamageInfo(dmg)
@@ -485,7 +508,7 @@ function TTT.Player.HandleFallDamage(ply, inWater, onFloater, speed)
 		dmg:SetDamageType(DMG_FALL)
 		dmg:SetAttacker(game.GetWorld())
 		dmg:SetInflictor(game.GetWorld())
-		dmg:SetDamageForce(Vector(0,0,1))
+		dmg:SetDamageForce(Vector(0, 0, 1))
 		dmg:SetDamage(damage)
 
 		ply:TakeDamageInfo(dmg)

@@ -210,19 +210,15 @@ function util.PaintDown(start, effname, ignore)
 	util.Decal(effname, btr.HitPos + btr.HitNormal, btr.HitPos - btr.HitNormal)
 end
 
-----------------------
--- util.StartBleeding
-----------------------
+---------------------
+-- TTT.StartBleeding
+---------------------
 -- Desc:		Makes a given entity bleed.
 -- Arg One:		Entity, to bleed.
 -- Arg Two:		Number, how much damage the entity recieved to scale the bleeding.
 -- Arg Three:	Number, how long should they bleed for.
-function util.StartBleeding(ent, dmg, time)
-	if dmg < 5 or not IsValid(ent) then
-		return
-	end
-
-	if ent:IsPlayer() and not ent:Alive()  then
+function TTT.StartBleeding(ent, dmg, time)
+	if dmg < 5 or not IsValid(ent) or (ent:IsPlayer() and not ent:Alive()) then
 		return
 	end
 
@@ -246,12 +242,12 @@ function util.StartBleeding(ent, dmg, time)
 	end)
 end
 
----------------------
--- util.StopBleeding
----------------------
+--------------------
+-- TTT.StopBleeding
+--------------------
 -- Desc:		Stops the given entity from bleeding if they are.
 -- Arg One:		Player, to stop bleeding.
-function util.StopBleeding(ent)
+function TTT.StopBleeding(ent)
 	if timer.Exists("TTT.Bleed_" .. ent:EntIndex()) then
 		timer.Remove("TTT.Bleed_" .. ent:EntIndex())
 	end

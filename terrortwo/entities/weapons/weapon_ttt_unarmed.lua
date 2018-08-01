@@ -33,10 +33,14 @@ function SWEP:ShouldDropOnDie()
 end
 
 function SWEP:Holster()
+	self:SetIronsights(false)
+	self:SetZoom(false)
 	return true
 end
 
 function SWEP:Reload()
+	self:SetIronsights(false)
+	self:SetZoom(false)
 end
 
 function SWEP:DrawWorldModel()

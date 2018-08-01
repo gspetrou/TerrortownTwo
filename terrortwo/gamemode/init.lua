@@ -69,7 +69,7 @@ end
 
 function GM:KeyPress(ply, key)
 	if not ply:Alive() and not ply:IsSpectatingCorpse() then
-		ply:ResetViewRoll()
+		--ply:ResetViewRoll() -- TODO: Why am I resetting view roll here... wtf?
 		TTT.Player.HandleSpectatorKeypresses(ply, key)
 	end
 end
@@ -194,7 +194,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	end
 
 	TTT.Player.CreateDeathEffects(ply)
-	util.StartBleeding(ragdoll, dmginfo:GetDamage(), math.random(10, 20))
+	TTT.StartBleeding(ragdoll, dmginfo:GetDamage(), math.random(10, 20))
 
 	local killWeapon = TTT.WeaponFromDamageInfo(dmginfo)
 	if not (ply:WasHeadshotted() or dmginfo:IsDamageType(DMG_SLASH) or (IsValid(killWeapon) and killWeapon.IsSilent)) then
@@ -239,10 +239,13 @@ function GM:PostPlayerDeath(ply)
 end
 
 function GM:PlayerDisconnected(ply)
+	local steamID = ply:SteamID()
+
 	timer.Create("TTT.WaitForFullPlayerDisconnect", .5, 0, function()
 		if not IsValid(ply) then
 			TTT.Rounds.CheckForRoundEnd()
 			timer.Remove("TTT.WaitForFullPlayerDisconnect")
+			hook.Call("TTT.PlayerFullyDisconnect", nil, steamID)	-- Who knows, someone might find this useful.
 		end
 	end)
 end
@@ -314,10 +317,6 @@ function GM:PlayerSwitchFlashlight(ply)
 	return ply:Alive()
 end
 
-hook.Add("TTT.Player.WantsToSearchCorpse", "TTT", function(ply, corpse)
-	
-end)
-
 function GM:PlayerTraceAttack(ply, dmgInfo, dir, trace)
 	TTT.Player.StoreDeathSceneData(ply, trace)
 	return false
@@ -326,7 +325,7 @@ end
 function GM:ScalePlayerDamage(ply, hitGroup, dmgInfo)
 	local wasHeadShotted = false
 
-	-- actual damage scaling
+	-- Actual damage scaling.
 	if hitGroup == HITGROUP_HEAD then
 		-- headshot if it was dealt by a bullet
 		wasHeadShotted = dmgInfo:IsBulletDamage()
@@ -360,6 +359,10 @@ end
 function GM:OnPlayerHitGround(ply, inWater, onFloater, speed)
 	TTT.Player.HandleFallDamage(ply, inWater, onFloater, speed)
 end
+
+hook.Add("TTT.Player.WantsToSearchCorpse", "TTT", function(ply, corpse)
+	
+end)
 
 ---------------
 -- Round Hooks
@@ -440,6 +443,8 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 
 	for i, ply in ipairs(player.GetAll()) do
 		ply:SetCanDyingShot(true)				-- Enable dying shots on all the players (so long as ttt_weapon_dyingshot is enabled).
+		ply:ClearPushData()						-- Clear data stored about the last time the player was pushed.
+		ply:SetWasHeadshotted(false)			-- The round just began, clear headshots.
 		TTT.Weapons.GiveRoleWeapons(ply)		-- Give all players the weapons for their newly given roles.
 		TTT.Equipment.GiveRoleEquipment(ply)	-- Give all players the equipment their role starts with.
 	end

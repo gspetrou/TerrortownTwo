@@ -264,9 +264,9 @@ if CLIENT then
 		net.SendToServer()
 	end
 
-	----------------------------------------
-	-- TTT.Weapons.RequestDropCurrentWeapon
-	----------------------------------------
+	--------------------------------------
+	-- TTT.Weapons.RequestDropCurrentAmmo
+	--------------------------------------
 	-- Desc:		Client only. Asks server to drop their current weapon's ammo if they can.
 	function TTT.Weapons.RequestDropCurrentAmmo()
 		net.Start("TTT.Weapons.RequestDropCurrentAmmo")
@@ -419,12 +419,16 @@ if SERVER then
 		local throwDirection = (ang:Forward() * 32) + (ang:Right() * 6) + (ang:Up() * -5)
 
 		local tr = util.QuickTrace(plyPos, throwDirection, ply)
-		if tr.HitWorld then return end
+		if tr.HitWorld then
+			return
+		end
 		weapon:SetClip1(0)
 		ply:AnimPerformGesture(ACT_GMOD_GESTURE_ITEM_GIVE)
 
 		local box = ents.Create(ammoEnt)
-		if not IsValid(box) then return end
+		if not IsValid(box) then
+			return
+		end
 
 		box:SetPos(plyPos + throwDirection)
 		box:SetOwner(ply)
@@ -458,6 +462,12 @@ if SERVER then
 	end)
 end
 
+--------------------------------------
+-- TTT.Weapons.GetOpennableEntityType
+--------------------------------------
+-- Desc:		Gets the OPEN status of an entity. Entites must be named for them to be opennable.
+-- Arg One:		Entity, to see if its opennable.
+-- Returns:		OPEN_ enum, what kind of opennable entity is this. OPEN_NO for unnopenable.
 function TTT.Weapons.GetOpennableEntityType(ent)
 	local class = ent:GetClass()
 
@@ -476,6 +486,7 @@ function TTT.Weapons.GetOpennableEntityType(ent)
 	end
 end
 
+-- List of all opennable entity types.
 TTT.Weapons.OpennableTypes = {
 	[OPEN_DOOR] = true,
 	[OPEN_ROT] = true,
@@ -483,10 +494,22 @@ TTT.Weapons.OpennableTypes = {
 	[OPEN_NOTOGGLE]= true
 }
 
+---------------------------
+-- TTT.Weapons.CanOpenType
+---------------------------
+-- Desc:		Sees if the given OPEN_ type is opennable.
+-- Arg One:		OPEN_ enum, to see if it is permitted to be openned.
+-- Returns:		Boolean, is it opennable.
 function TTT.Weapons.CanOpenType(openType)
 	return isbool(TTT.Weapons.OpennableTypes[openType]) and TTT.Weapons.OpennableTypes[openType] or false
 end
 
+--------------------------
+-- TTT.Weapons.OpenEntity
+--------------------------
+-- Desc:		Attempts to open the given entity, if it is opennable.
+-- Arg One:		Entity, that you want to open.
+-- Returns:		OPEN_ enum, what kind of door the entity was. OPEN_NO for failure.
 function TTT.Weapons.OpenEntity(ent)
 	local openType = TTT.Weapons.GetOpennableEntityType(ent)
 
@@ -499,7 +522,7 @@ function TTT.Weapons.OpenEntity(ent)
 
 		if ent:HasSpawnFlags(256) then
 			if openType == OPEN_ROT then
-				ent:Fire("OpenAwayFrom", self:GetOwner(), 0)
+				ent:Fire("OpenAwayFrom", ent:GetOwner(), 0)
 			end
 
 			ent:Fire("Toggle", nil, 0)

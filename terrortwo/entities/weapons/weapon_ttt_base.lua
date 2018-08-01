@@ -77,6 +77,7 @@ SWEP.Fingerprints	= {}
 SWEP.SpawnWith		= nil					-- Boolean. If true, everyone will spawn with this weapon.
 SWEP.RoleWeapon		= nil					-- ROLE_ enum or table of ROLE_ enums. Any player with one of these roles will be given this weapon at the start of the round.
 SWEP.Kind			= WEAPON_PRIMARY		-- WEAPON_ enum for what slot this gun takes.
+SWEP.IsSilent		= true					-- Boolean, is this weapon a silent killer. Does not mean it is quiet! Means things like victim won't scream when they die.
 
 -- Set the sounds to false or nil to disable them.
 SWEP.Sound_Primary	= Sound("Weapon_Pistol.Single")
@@ -162,7 +163,7 @@ function SWEP:OnRestore()
 end
 
 function SWEP:SetZoom(state)
-	if not (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer()) then
+	if not (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer()) or self.ZoomFOV <= 0 then
 		return
 	end
 

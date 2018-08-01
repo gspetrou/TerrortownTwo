@@ -18,7 +18,6 @@ function TTT.Player.SetupMovement(ply, mv)
 	end
 end
 
-
 -- Colors used to indicated how injured someone is. Thanks TTT.
 TTT.Player.HealthColors = {
 	Healthy = Color(0, 255, 0, 255),

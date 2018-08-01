@@ -111,19 +111,46 @@ function TTT.Weapons.CreateFire(position, numberFlames, burnTime, shouldExplode,
 	end
 end
 
+---------------------------
+-- PLAYER:SetCanDryingShot
+---------------------------
+-- Desc:		Sets if the player is allowed to shoot a dying shot. Even with this enabled they still wont shoot if they have a melee weapon or got headshotted.
+-- Arg One:		Boolean, can the player dying shot.
 function PLAYER:SetCanDyingShot(bool)
 	self.ttt_CanDyingShot = bool
 end
 
+-----------------------
+-- PLAYER:CanDyingShot
+-----------------------
+-- Desc:		Can the player shoot their dying shot. Does not check for the ttt_weapon_dyingshot convar.
+-- Returns:		Boolean, can they shoot their dying shot.
 function PLAYER:CanDyingShot()
 	return isbool(self.ttt_CanDyingShot) and self.ttt_CanDyingShot or false
 end
 
--- Sets who pushed us and some other info
+------------------------
+-- PLAYER:SetPushedData
+------------------------
+-- Desc:		Sets info on a player about who last pushed them.
+-- Arg One:		Table, push data.
 function PLAYER:SetPushedData(data)
 	self.ttt_PushedData = data
 end
 
+------------------------
+-- PLAYER:GetPushedData
+------------------------
+-- Desc:		Gets the data on the most recent time a player was pushed.
+-- Returns:		Table or nil, table of push data or nil if they weren't pushed.
 function PLAYER:GetPushedData()
 	return self.ttt_PushedData
+end
+
+------------------------
+-- PLAYER:ClearPushData
+------------------------
+-- Desc:		Clears the info about a player's last push.
+function PLAYER:ClearPushData()
+	self.ttt_PushedData = nil
 end
