@@ -24,3 +24,5 @@ SWEP.Primary.Ammo			= "pistol_light"
 
 SWEP.Sound_Primary	= Sound("Weapon_Glock.Single")
 SWEP.HeadshotMultiplier = 1.75
+
+SWEP.IronSightsPos	= Vector(-5.79, -3.9982, 2.8289)

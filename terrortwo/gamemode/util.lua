@@ -53,52 +53,6 @@ if not net.ReadPlayer then
 	end
 end
 
--- Stores all damage types in a table for easy look up and networking optimization.
-TTT.DamageTypeLookup = {
-	DMG_GENERIC, DMG_CRUSH, DMG_BULLET, DMG_SLASH, DMG_BURN, DMG_VEHICLE,
-	DMG_FALL, DMG_BLAST, DMG_CLUB, DMG_SHOCK, DMG_SONIC, DMG_ENERGYBEAM,
-	DMG_PREVENT_PHYSICS_FORCE, DMG_NEVERGIB, DMG_ALWAYSGIB, DMG_DROWN,
-	DMG_PARALYZE, DMG_NERVEGAS, DMG_POISON, DMG_RADIATION, DMG_DROWNRECOVER,
-	DMG_ACID, DMG_SLOWBURN, DMG_REMOVENORAGDOLL, DMG_PHYSGUN, DMG_PLASMA,
-	DMG_AIRBOAT, DMG_DISSOLVE, DMG_BLAST_SURFACE, DMG_DIRECT, DMG_BUCKSHOT,
-	DMG_SNIPER, DMG_MISSILEDEFENSE
-}
-
------------------------
--- net.WriteDamageType
------------------------
--- Desc:		Writes a damage type, prevents us from having to send their raw values which go up to 2^31
--- Arg One:		DMG_ enum.
-if not net.WriteDamageType then
-	function net.WriteDamageType(dmgType)
-		local indexInLookup
-
-		for i, DMG in ipairs(TTT.DamageTypeLookup) do
-			if DMG == dmgType then
-				indexInLookup = i
-			end
-		end
-
-		if not isnumber(indexInLookup) then
-			error("Invalid damage type given to net.WriteDamageType")
-		end
-
-		net.WriteUInt(indexInLookup, 6)
-	end
-end
-
-----------------------
--- net.ReadDamageType
-----------------------
--- Desc:		Reads a sent damage type.
--- Returns:		DMG_ enum.
-if not net.ReadDamageType then
-	function net.ReadDamageType()
-		local index = net.ReadUInt(6)
-		return TTT.DamageTypeLookup[index]
-	end
-end
-
 ----------------
 -- table.Filter
 ----------------
@@ -195,6 +149,36 @@ function TTT.IsInMinMax(vec, mins, maxs)
 		and vec.z > mins.z and vec.z < maxs.z)
 end
 
+----------------------------
+-- TTT.WeaponFromDamageInfo
+----------------------------
+-- Desc:		Gets what weapon caused damage from the given damage info.
+-- Arg One:		CTakeDamageInfo object.
+-- Returns:		Weapon or nil. Nil if it was world or unknown.
+function TTT.WeaponFromDamageInfo(dmgInfo)
+	local inflictor = dmgInfo:GetInflictor()
+	local weapon = nil
+	
+	if IsValid(inflictor) then
+		if inflictor:IsWeapon() or inflictor.IsProjectile then
+			weapon = inflictor
+		elseif dmgInfo:IsDamageType(DMG_DIRECT) or dmgInfo:IsDamageType(DMG_CRUSH) then
+			-- DMG_DIRECT is the player burning, no weapon involved
+			-- DMG_CRUSH is physics or falling on someone
+			weapon = nil
+		elseif inflictor:IsPlayer() then
+			weapon = inflictor:GetActiveWeapon()
+			if not IsValid(weapon) then
+				-- This may have been a dying shot, in which case we need a
+				-- workaround to find the weapon because it was dropped on death
+				weapon = IsValid(inflictor.DyingWeapon) and inflictor.DyingWeapon or nil
+			end
+		end
+	end
+
+	return weapon
+end
+
 if CLIENT then
 	-----------------------
 	-- TTT.IsCoordOnScreen
@@ -205,5 +189,66 @@ if CLIENT then
 	-- Returns:		Boolean, would the given coordinate pair appear on the player's screen.
 	function TTT.IsCoordOnScreen(x, y)
 		return x >= 0 and x <= ScrW() and y >= 0 and y <= ScrH()
+	end
+end
+
+------------------
+-- util.PaintDown
+------------------
+-- Desc:		Puts a decal on whatever is below the starting point.
+-- Arg One:		Vector, starting point.
+-- Arg Two:		String, effect name to put.
+-- Arg Three:	Entity or table of entities, to ignore hitting in our trace.
+function util.PaintDown(start, effname, ignore)
+	local btr = util.TraceLine({
+		start = start,
+		endpos = (start + Vector(0,0,-256)),
+		filter = ignore,
+		mask = MASK_SOLID
+	})
+
+	util.Decal(effname, btr.HitPos + btr.HitNormal, btr.HitPos - btr.HitNormal)
+end
+
+---------------------
+-- TTT.StartBleeding
+---------------------
+-- Desc:		Makes a given entity bleed.
+-- Arg One:		Entity, to bleed.
+-- Arg Two:		Number, how much damage the entity recieved to scale the bleeding.
+-- Arg Three:	Number, how long should they bleed for.
+function TTT.StartBleeding(ent, dmg, time)
+	if dmg < 5 or not IsValid(ent) or (ent:IsPlayer() and not ent:Alive()) then
+		return
+	end
+
+	local times = math.Clamp(math.Round(dmg / 15), 1, 20)
+	local delay = math.Clamp(time / times , 0.1, 2)
+
+	if ent:IsPlayer() then
+		times = times * 2
+		delay = delay / 2
+	end
+
+	timer.Create("TTT.Bleed_" .. ent:EntIndex(), delay, times, function()
+		if not IsValid(ent) or (ent:IsPlayer() and not ent:Alive()) then
+			return
+		end
+
+		local jitter = VectorRand() * 30
+		jitter.z = 20
+
+		util.PaintDown(ent:GetPos() + jitter, "Blood", ent)
+	end)
+end
+
+--------------------
+-- TTT.StopBleeding
+--------------------
+-- Desc:		Stops the given entity from bleeding if they are.
+-- Arg One:		Player, to stop bleeding.
+function TTT.StopBleeding(ent)
+	if timer.Exists("TTT.Bleed_" .. ent:EntIndex()) then
+		timer.Remove("TTT.Bleed_" .. ent:EntIndex())
 	end
 end

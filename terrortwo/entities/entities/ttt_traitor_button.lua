@@ -13,6 +13,11 @@ function ENT:SetupDataTables()
 	self:NetworkVar("Int", 0, "UsableRange", {KeyName = "UsableRange"})
 end
 
+----------------
+-- ENT:IsUsable
+----------------
+-- Desc:		Returns true if this button is unlocked and hasn't been pressed too recently.
+-- Returns:		Boolean, is this button usable.
 function ENT:IsUsable()
 	return not self:GetLocked() and self:GetNextUseTime() < CurTime()
 end
@@ -86,6 +91,11 @@ if SERVER then
 		end
 	end
 
+	------------------
+	-- ENT:TraitorUse
+	------------------
+	-- Desc:		Uses a traitor button.
+	-- Arg One:		Player, who is using/activating the button.
 	function ENT:TraitorUse(ply)
 		if not (IsValid(ply) and ply:IsTraitor() and self:IsUsable()) then
 			return false

@@ -177,12 +177,16 @@ function TTT.Weapons.RedirectWeapons()
 
 	for className, wepInfo in pairs(TTT.Weapons.RedirectedWeapons) do
 		local newWepInfo = weapons_Get(wepInfo.Base)
-		for k, v in pairs(wepInfo) do
-			newWepInfo[k] = v
-		end
+		if istable(newWepInfo) then
+			for k, v in pairs(wepInfo) do
+				newWepInfo[k] = v
+			end
 
-		newWepInfo.IsConvertedEntity = true
-		weapons_Register(newWepInfo, className)
+			newWepInfo.IsConvertedEntity = true
+			weapons_Register(newWepInfo, className)
+		else
+			TTT.Debug.Print("Unable to find weapon base class for '"..className.."' with base of '"..wepInfo.Base.."'!")
+		end
 	end
 end
 

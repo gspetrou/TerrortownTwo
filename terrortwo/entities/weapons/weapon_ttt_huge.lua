@@ -23,3 +23,6 @@ SWEP.Primary.Ammo			= "none"
 
 SWEP.Sound_Primary	= Sound("Weapon_m249.Single")
 SWEP.HeadshotMultiplier = 2.2
+
+SWEP.IronSightsPos	= Vector(-5.96, -5.119, 2.349)
+SWEP.IronSightsAng	= Vector(0, 0, 0)

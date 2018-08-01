@@ -2,12 +2,12 @@
 AddCSLuaFile()
 ENT.Base = "base_entity"
 ENT.Type = "anim"
-ENT.Category 	= "TTT2 Ammo"
+ENT.Category 	= "TTT Ammo"
 ENT.Spawnable	= false
 ENT.Editable	= false
 ENT.AdminOnly	= false
 
-ENT.PrintName	= "TTT2 Ammo"
+ENT.PrintName	= "TTT Ammo"
 ENT.Author		= "Stalker"
 ENT.Contact		= "http://steamcommunity.com/id/your-stalker/"
 ENT.Purpose		= "A TTT ammo base."
@@ -57,9 +57,9 @@ if SERVER then
 	-- Arg One:		Entity, to check ammo of.
 	-- Returns:		Boolean, if they have a weapon that takes this ammo.
 	function ENT:HasWeaponForAmmo(ent)
-		--if not self.Precached then
+		if not self.Precached then
 			self:PrecacheAmmo()
-		--end
+		end
 
 		for i, v in ipairs(self.WeaponsUsingThisAmmo) do
 			if ent:HasWeapon(v) then
@@ -111,6 +111,7 @@ if SERVER then
 		return false
 	end
 
+	-- Pickup the ammo on touch if we have enough space for it.
 	function ENT:Touch(ply)
 		if self:CanBePickedUpByEnt(ply) then
 			local ammo = ply:GetAmmoCount(self.AmmoType)
@@ -119,13 +120,22 @@ if SERVER then
 				given = math.min(given, self.AmmoMax - ammo)
 				ply:GiveAmmo(given, self.AmmoType)
 
-				self:Remove()
-
 				-- Just in case remove does not happen soon enough.
 				self.PickedUp = true
 				hook.Call("TTT.Ammo.PickedUp", nil, ply, self)
+
+				self:Remove()
 			end
 		end
+	end
+
+	---------------------
+	-- ENT:SetAmmoAmount
+	---------------------
+	-- Desc:		Can be used to set how much ammo a given weapon box contains.
+	-- Arg One:		Number, how much ammunition is in this box.
+	function ENT:SetAmmoAmount(num)
+		self.AmmoGive = num
 	end
 end
 

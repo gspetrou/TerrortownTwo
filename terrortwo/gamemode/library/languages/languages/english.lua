@@ -48,6 +48,8 @@ L.tbutton_help = "Press %s to activate"
 L.tbutton_help_command = "%s in console to activate"
 
 -- Weapons
+L.weapon_drop_no_room = "You have no room here to drop your weapon!"
+
 L.weapon_m16 = "M16"
 L.weapon_crowbar = "Crowbar"
 L.weapon_deagle = "Deagle"
@@ -62,5 +64,8 @@ L.weapon_unarmed = "Holstered"
 L.weapon_firenade = "Incendiary"
 L.weapon_discombob = "Discombobulator"
 L.weapon_smokenade = "Smoke Grenade"
+
+L.ammo_not_enough = "Insufficient ammo in your weapon's clip to drop as an ammo box."
+L.ammo_drop_no_room = "You have no room here to drop your ammo!"
 
 L.invalid = "bork" -- This is used for any invalid text.

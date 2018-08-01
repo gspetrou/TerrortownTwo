@@ -69,9 +69,41 @@ end
 
 function GM:KeyPress(ply, key)
 	if not ply:Alive() and not ply:IsSpectatingCorpse() then
-		ply:ResetViewRoll()
+		--ply:ResetViewRoll() -- TODO: Why am I resetting view roll here... wtf?
 		TTT.Player.HandleSpectatorKeypresses(ply, key)
 	end
+end
+
+-- Handle +use overrides and body searching.
+function GM:KeyRelease(ply, key)
+	if key == IN_USE and IsValid(ply) and ply:Alive() then
+		local tr = util.TraceLine({
+			start  = ply:GetShootPos(),
+			endpos = ply:GetShootPos() + ply:GetAimVector() * 84,
+			filter = ply,
+			mask   = MASK_SHOT
+		})
+
+		if tr.Hit and IsValid(tr.Entity) then
+			if tr.Entity.CanUseKey and tr.Entity.UseOverride then
+				local phys = tr.Entity:GetPhysicsObject()
+				if IsValid(phys) and not phys:HasGameFlag(FVPHYSICS_PLAYER_HELD) then
+					tr.Entity:UseOverride(ply)
+				end
+				return true
+			elseif tr.Entity:IsCorpse() then
+				--CORPSE.ShowSearch(ply, tr.Entity, (ply:KeyDown(IN_WALK) or ply:KeyDownLast(IN_WALK)))
+				-- TODO: Show body search
+				return true
+			end
+		end
+	end
+end
+
+-- The GetFallDamage hook does not get called until around 600 speed, which is a
+-- rather high drop already. Hence we do our own fall damage handling in OnPlayerHitGround.
+function GM:GetFallDamage(ply, speed)
+	return 0
 end
 
 ----------------
@@ -135,11 +167,41 @@ function GM:PlayerSpawnAsSpectator(ply)	-- For backwards compatability.
 end
 
 function GM:DoPlayerDeath(ply, attacker, dmginfo)
-	TTT.Corpse.CreateBody(ply, attacker, dmginfo)
-	TTT.Player.RecordDeathPos(ply)	-- Record  their death position so that their spectator camera spawns here.
+	if ply:IsSpectator() or ply:IsInFlyMode() then
+		return
+	end
+
+	-- Shoot a dying shot.
+	if GetConVar("ttt_weapon_dyingshot"):GetBool() and ply:CanDyingShot() then
+		local weapon = ply:GetActiveWeapon()
+		if IsValid(weapon) and weapon.DyingShot and dmginfo:IsBulletDamage() and not ply:WasHeadshotted() then
+			weapon:DyingShot()
+		end
+	end
+
+	local ragdoll = TTT.Corpse.CreateBody(ply, attacker, dmginfo)	-- Create body.
+	TTT.Player.RecordDeathPos(ply)	-- Record their death position so that their spectator camera spawns here.
+
+	-- Remove the body at round start if they died during prep.
 	if TTT.Rounds.IsPrep() then
 		ply:GetCorpse():SetRemoveOnRoundStart(true)
 	end
+
+	-- Drop all weapons on death.
+	for k, weapon in pairs(ply:GetWeapons()) do
+		TTT.Weapons.DropWeapon(ply, weapon, true)
+		weapon:DampenDrop()
+	end
+
+	TTT.Player.CreateDeathEffects(ply)
+	TTT.StartBleeding(ragdoll, dmginfo:GetDamage(), math.random(10, 20))
+
+	local killWeapon = TTT.WeaponFromDamageInfo(dmginfo)
+	if not (ply:WasHeadshotted() or dmginfo:IsDamageType(DMG_SLASH) or (IsValid(killWeapon) and killWeapon.IsSilent)) then
+		TTT.Player.PlayDeathYell(ply)
+	end
+
+	-- TODO: Voice stuff.
 
 	-- Anyone who was spectating this player while that player died should exit specate mode.
 	local pos = Vector(0, 0, 25) + ply:GetPos()
@@ -177,10 +239,13 @@ function GM:PostPlayerDeath(ply)
 end
 
 function GM:PlayerDisconnected(ply)
+	local steamID = ply:SteamID()
+
 	timer.Create("TTT.WaitForFullPlayerDisconnect", .5, 0, function()
 		if not IsValid(ply) then
 			TTT.Rounds.CheckForRoundEnd()
 			timer.Remove("TTT.WaitForFullPlayerDisconnect")
+			hook.Call("TTT.PlayerFullyDisconnect", nil, steamID)	-- Who knows, someone might find this useful.
 		end
 	end)
 end
@@ -250,6 +315,49 @@ end
 
 function GM:PlayerSwitchFlashlight(ply)
 	return ply:Alive()
+end
+
+function GM:PlayerTraceAttack(ply, dmgInfo, dir, trace)
+	TTT.Player.StoreDeathSceneData(ply, trace)
+	return false
+end
+
+function GM:ScalePlayerDamage(ply, hitGroup, dmgInfo)
+	local wasHeadShotted = false
+
+	-- Actual damage scaling.
+	if hitGroup == HITGROUP_HEAD then
+		-- headshot if it was dealt by a bullet
+		wasHeadShotted = dmgInfo:IsBulletDamage()
+
+		local wep = TTT.WeaponFromDamageInfo(dmgInfo)
+
+		if IsValid(wep) then
+			local scale = wep:GetHeadshotMultiplier(ply, dmgInfo) or 2
+			dmgInfo:ScaleDamage(scale)
+		end
+	elseif (hitGroup == HITGROUP_LEFTARM or
+		hitGroup == HITGROUP_RIGHTARM or
+		hitGroup == HITGROUP_LEFTLEG or
+		hitGroup == HITGROUP_RIGHTLEG or
+		hitGroup == HITGROUP_GEAR) then
+
+		dmgInfo:ScaleDamage(0.55)
+	end
+
+	ply:SetWasHeadshotted(wasHeadShotted)
+
+	if (dmgInfo:IsDamageType(DMG_DIRECT) or
+		dmgInfo:IsExplosionDamage() or
+		dmgInfo:IsDamageType(DMG_FALL) or
+		dmgInfo:IsDamageType(DMG_PHYSGUN)) then
+
+		dmgInfo:ScaleDamage(2)
+	end
+end
+
+function GM:OnPlayerHitGround(ply, inWater, onFloater, speed)
+	TTT.Player.HandleFallDamage(ply, inWater, onFloater, speed)
 end
 
 hook.Add("TTT.Player.WantsToSearchCorpse", "TTT", function(ply, corpse)
@@ -334,6 +442,9 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	TTT.Roles.Sync()
 
 	for i, ply in ipairs(player.GetAll()) do
+		ply:SetCanDyingShot(true)				-- Enable dying shots on all the players (so long as ttt_weapon_dyingshot is enabled).
+		ply:ClearPushData()						-- Clear data stored about the last time the player was pushed.
+		ply:SetWasHeadshotted(false)			-- The round just began, clear headshots.
 		TTT.Weapons.GiveRoleWeapons(ply)		-- Give all players the weapons for their newly given roles.
 		TTT.Equipment.GiveRoleEquipment(ply)	-- Give all players the equipment their role starts with.
 	end
@@ -379,7 +490,3 @@ end)
 function GM:PlayerCanPickupWeapon(ply, wep)
 	return TTT.Weapons.CanPickupWeapon(ply, wep)
 end
-
-hook.Add("TTT.Weapons.DroppedWeapon", "TTT", function(ply, wep)
-	-- TODO: PLAY WEAPON DROP ANIMATION!
-end)

@@ -166,7 +166,7 @@ function TTT.Weapons.LoadImportWeaponsScript()
 
 	-- If we messed up loading the scripts then fail.
 	if not success then
-		print("Failed to load import script settings, improper formatting. Error throw:\n"..err)
+		print("Failed to load import script settings, improper formatting. Error thrown:\n"..err)
 		TTT.Weapons.ImportScriptMapSettings = nil
 		return
 	end
@@ -212,7 +212,7 @@ function TTT.Weapons.LoadImportWeaponsScript()
 	end
 
 	if not success then
-		print("Failed to load import script weapons, improper formatting. Error throw:\n"..err)
+		print("Failed to load import script weapons, improper formatting. Error thrown:\n"..err)
 		TTT.Weapons.ImportScriptWeapons = nil
 		TTT.Weapons.ImportScriptMapSettings = nil
 		return

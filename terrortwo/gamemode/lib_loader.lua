@@ -7,7 +7,7 @@ TTT.Debug = TTT.Debug or {}
 -------------------------
 -- Desc:		Returns if debug mode is enabled or not.
 -- Returns:		Boolean, is debug mode enabled.
-local debugmode = CreateConVar("ttt_debug_prints", "0", nil, "Enables debug prints.")
+local debugmode = CreateConVar("ttt_debug_prints", "0", FCVAR_ARCHIVE, "Enables debug prints.")
 function TTT.Debug.IsDebugMode()
 	return debugmode:GetBool()
 end
@@ -138,7 +138,7 @@ end
 --------------------------
 -- Desc:		Loads the library folder containning the library used by the gamemode.
 function TTT.Library.Initialize()
-	local rootPath = GM.FolderName.."/gamemode/library/"
+	local rootPath = (istable(GM) and GM.FolderName or GAMEMODE.FolderName).."/gamemode/library/"
 	local miscFiles, folders = file.Find(rootPath .."*", "LUA")
 
 	-- Load misc files in library/
@@ -172,4 +172,24 @@ function GM:LoadLibraries()
 	hook.Call("TTT.PreLibraryLoaded")
 	TTT.Library.Initialize()			-- Load the libraries.
 	hook.Call("TTT.PostLibraryLoaded")
+end
+
+--------------------
+-- TTT.Reinitialize
+--------------------
+-- Desc:		Reinitializes the gamemode, useful for use while developing.
+function TTT.Reinitialize()
+	TTT.Library.Initialize()
+
+	TTT.Languages.Initialize()			-- Load the languages.
+	TTT.Weapons.RedirectMapEntities()	-- Swap non-TTT entities with TTT entities.
+	TTT.VGUI.Initialize()				-- Get their HUDs working.
+	TTT.Scoreboard.Initialize()			-- Load up the scoreboard.
+	TTT.Equipment.Initialize()			-- Load up equipment.
+
+	if SERVER then
+		TTT.Player.Initialize()			-- Select the player models for the map.
+	end
+	
+	TTT.Rounds.Initialize()				-- Begin the round managing system.	
 end

@@ -23,3 +23,6 @@ SWEP.Primary.CarrySize		= 60
 SWEP.Primary.Ammo			= "pistol_light"
 
 SWEP.Sound_Primary	= Sound("Weapon_FiveSeven.Single")
+
+SWEP.IronSightsPos	= Vector(-5.95, -4, 2.799)
+SWEP.IronSightsAng	= Vector(0, 0, 0)

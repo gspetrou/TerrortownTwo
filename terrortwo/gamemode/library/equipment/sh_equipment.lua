@@ -2,6 +2,7 @@ TTT.Equipment = TTT.Equipment or {}
 TTT.Equipment.Equipment = TTT.Equipment.Equipment or {}
 TTT.Equipment.EquipmentHooks = TTT.Equipment.EquipmentHooks or {}
 TTT.Equipment.InLoadoutCache = TTT.Equipment.InLoadoutCache or {}
+TTT.Equipment.NetworkIndex = TTT.Equipment.NetworkIndex or -1
 
 -- TTT.Equipment.EquipmentItem Class.
 do
@@ -27,6 +28,10 @@ do
 		item.InStoreFor = {}
 		item.OnEquip = function() end
 		item.OnUnequip = function() end
+		
+		TTT.Equipment.NetworkIndex = TTT.Equipment.NetworkIndex + 1
+		item.NetworkIndex = TTT.Equipment.NetworkIndex
+
 		return item
 	end
 
@@ -267,9 +272,49 @@ do
 	function TTT.Equipment.GetEquipmentByID(id)
 		return TTT.Equipment.Equipment[id]
 	end
+
+	---------------------------------
+	-- TTT.Equipment.GetAllEquipment
+	---------------------------------
+	-- Desc:		Gets all existing equipment objects.
+	-- Returns:		Table. Indices are equipment IDs, values are tables with object info.
+	function TTT.Equipment.GetAllEquipment()
+		return TTT.Equipment.Equipment
+	end
+
+	------------------------------------------
+	-- TTT.Equipment.GetEquipmentNetworkIndex
+	------------------------------------------
+	-- Desc:		Gets the unique number to identify this equipment. Should only be used for efficiently networking what equipment a player has.
+	-- Arg One:		String, ID of the equipment.
+	-- Returns:		Number, network ID of that equipment.	
+	function TTT.Equipment.GetEquipmentNetworkIndex(id)
+		return TTT.Equipment.GetEquipmentByID(id).NetworkIndex
+	end
+
+	-----------------------------------------------
+	-- TTT.Equipment.FindEquipmentIDByNetworkIndex
+	-----------------------------------------------
+	-- Desc:		Finds an equipment item by its network index.
+	-- Arg One:		Number, network index of a given equipment.
+	-- Returns:		String or nil. String of found equipment ID, nil if none found.
+	function TTT.Equipment.FindEquipmentIDByNetworkIndex(networkIndex)
+		for id, info in pairs(TTT.Equipment.GetAllEquipment()) do
+			if info.NetworkIndex == networkIndex then
+				return id
+			end
+		end
+
+		return nil
+	end
 end
 
-if SERVER then	
+if SERVER then
+	-----------------------------------
+	-- TTT.Equipment.GiveRoleEquipment
+	-----------------------------------
+	-- Desc:		Gives the given player all the equipment that their role should start with.
+	-- Arg One:		Player, to be given equipment.
 	function TTT.Equipment.GiveRoleEquipment(ply)
 		local role = ply:GetRole()
 		if istable(TTT.Equipment.InLoadoutCache[role]) then
@@ -278,7 +323,6 @@ if SERVER then
 			end
 		end
 	end
-
 
 	local PLAYER = FindMetaTable("Player")
 

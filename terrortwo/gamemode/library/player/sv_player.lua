@@ -369,3 +369,153 @@ function TTT.Player.HandleSpectatorKeypresses(ply, key)
 		ply:Spectate(ply.ttt_specMode)
 	end
 end
+
+TTT.Player.DeathSounds = {
+	Sound("player/death1.wav"),
+	Sound("player/death2.wav"),
+	Sound("player/death3.wav"),
+	Sound("player/death4.wav"),
+	Sound("player/death5.wav"),
+	Sound("player/death6.wav"),
+	Sound("vo/npc/male01/pain07.wav"),
+	Sound("vo/npc/male01/pain08.wav"),
+	Sound("vo/npc/male01/pain09.wav"),
+	Sound("vo/npc/male01/pain04.wav"),
+	Sound("vo/npc/Barney/ba_pain06.wav"),
+	Sound("vo/npc/Barney/ba_pain07.wav"),
+	Sound("vo/npc/Barney/ba_pain09.wav"),
+	Sound("vo/npc/Barney/ba_ohshit03.wav"),
+	Sound("vo/npc/Barney/ba_no01.wav"),
+	Sound("vo/npc/male01/no02.wav"),
+	Sound("hostage/hpain/hpain1.wav"),
+	Sound("hostage/hpain/hpain2.wav"),
+	Sound("hostage/hpain/hpain3.wav"),
+	Sound("hostage/hpain/hpain4.wav"),
+	Sound("hostage/hpain/hpain5.wav"),
+	Sound("hostage/hpain/hpain6.wav")
+}
+
+function TTT.Player.PlayDeathYell(ply)
+	sound.Play(table.RandomSequential(TTT.Player.DeathSounds), ply:GetShootPos(), 90, 100)
+end
+
+function TTT.Player.CreateDeathEffects(ent)
+	local pos = ent:GetPos() + Vector(0, 0, 20)
+
+	local jitterAmmount = 35.0
+
+	local jitter = Vector(math.Rand(-jitterAmmount, jitterAmmount), math.Rand(-jitterAmmount, jitterAmmount), 0)
+	util.PaintDown(pos + jitter, "Blood", ent)
+end
+
+-- Player damage related.
+
+----------------------------------
+-- TTT.Player.StoreDeathSceneData
+----------------------------------
+-- Desc:		Stores some data used for scene building.
+-- Arg One:		Player, to store info on.
+-- Arg Two:		TraceResult struct.
+function TTT.Player.StoreDeathSceneData(ply, trace)
+	ply.ttt_HitTrace = trace
+end
+
+-------------------------
+-- PLAYER:WasHeadshotted
+-------------------------
+-- Desc:		Was the most recent/last shot to hit the player a headshot?
+-- Returns:		Boolean.
+function PLAYER:WasHeadshotted()
+	return isbool(self.ttt_WasHeadshotted) and self.ttt_WasHeadshotted or false
+end
+
+----------------------------
+-- PLAYER:SetWasHeadshotted
+----------------------------
+-- Desc:		Sets if the lost shot to hit a player was a headshot.
+-- Arg One:		Boolean, was headshotted.
+function PLAYER:SetWasHeadshotted(bool)
+	self.ttt_WasHeadshotted = bool
+end
+
+-- Sounds to make when we fall from high heights.
+TTT.Player.FallSounds = {
+	Sound("player/damage1.wav"),
+	Sound("player/damage2.wav"),
+	Sound("player/damage3.wav")
+}
+
+-- If the player hits the ground going this speed or more then deal damage, rising exponentially.
+TTT.Player.FallDamageSpeedThreshold = 420
+
+-------------------------------
+-- TTT.Player.HandleFallDamage
+-------------------------------
+-- Desc:		Handles fall damage.
+-- Arg One:		Player, suffering from fall damange.
+-- Arg Two:		Boolean, was the player in water when they landed.
+-- Arg Three:	Boolean, did the player land on a floating object.
+-- Arg Four:	Number, speed the player was going when they landed.
+function TTT.Player.HandleFallDamage(ply, inWater, onFloater, speed)
+	-- The plus 30 here is to stay consistent with how TTT1 handled fall damage.
+	if inWater or speed < (TTT.Player.FallDamageSpeedThreshold + 30) or not IsValid(ply) then
+		return
+	end
+
+	-- Everything over a threshold hurts you, rising exponentially with speed
+	local damage = math.pow(0.05 * (speed - TTT.Player.FallDamageSpeedThreshold), 1.75)
+
+	-- If landing on a floating object then do half damage.
+	if on_floater then
+		damage = damage / 2
+	end
+
+	-- If we land on a player do some damage to them.
+	local groundPlayer = ply:GetGroundEntity()
+	if IsValid(groundPlayer) and groundPlayer:IsPlayer() then
+		if math.floor(damage) > 0 then
+			local attacker = ply
+
+			-- If the person who fell on to another person was pushed then attribute the damage to the pusher.
+			local push = ply:GetPushData()
+			if push then
+				if math.max(push.Time or 0, push.Hurt or 0) > CurTime() - 4 then
+					attacker = push.Attacker
+				end
+			end
+
+			local dmg = DamageInfo()
+			if attacker == ply then
+				dmg:SetDamageType(DMG_CRUSH + DMG_PHYSGUN)		-- hijack physgun damage as a marker of this type of kill
+			else
+				dmg:SetDamageType(DMG_CRUSH)		-- if attributing to pusher, show more generic crush msg for now
+			end
+
+			dmg:SetAttacker(attacker)
+			dmg:SetInflictor(attacker)
+			dmg:SetDamageForce(Vector(0, 0, -1))
+			dmg:SetDamage(damage)
+
+			groundPlayer:TakeDamageInfo(dmg)
+		end
+
+		-- our own falling damage is cushioned
+		damage = damage / 3
+	end
+
+	if math.floor(damage) > 0 then
+		local dmg = DamageInfo()
+		dmg:SetDamageType(DMG_FALL)
+		dmg:SetAttacker(game.GetWorld())
+		dmg:SetInflictor(game.GetWorld())
+		dmg:SetDamageForce(Vector(0, 0, 1))
+		dmg:SetDamage(damage)
+
+		ply:TakeDamageInfo(dmg)
+
+		-- Play CS:S fall sound if we got somewhat significant damage
+		if damage > 5 then
+			sound.Play(table.RandomSequential(TTT.Player.FallSounds), ply:GetShootPos(), 55 + math.Clamp(damage, 0, 50), 100)
+		end
+	end
+end
