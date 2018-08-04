@@ -19,9 +19,10 @@ if CLIENT then
 	--		Arg One:		Player, the local player.
 	--		Arg Two:		Number, screen width.
 	--		Arg Three:		Number, screen height.
+	--		Arg Four:		Boolean, is the local player alive.
 	-- Arg Three:	Function, decides if the panel should be drawn.
-	--		Arg One:		Player, who this vgui is being drawn for.
-	--		Arg Two:		Boolean, is that player alive.
+	--		Arg One:		Player, who this vgui is being drawn for (local player).
+	--		Arg Two:		Boolean, is the player alive.
 	--		Returns:		Boolean, should we draw the hud.
 	function TTT.VGUI.AddElement(name, func, condition)
 		TTT.VGUI.Elements[name] = {func, condition}

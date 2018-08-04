@@ -208,17 +208,6 @@ function TTT.Rounds.EnterPost()
 	end
 end
 
---------------------------
--- TTT.Rounds.CheckForWin
---------------------------
--- Desc:		Checks if there should be a win and if there should be, end the round.
-function TTT.Rounds.CheckForWin()
-	local wintype = TTT.Rounds.ShouldEnd()
-	if wintype then
-		TTT.Rounds.End(wintype)
-	end
-end
-
 ----------------------
 -- TTT.Rounds.Waiting
 ----------------------

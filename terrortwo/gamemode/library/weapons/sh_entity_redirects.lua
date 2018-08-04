@@ -195,10 +195,10 @@ end
 -----------------------------------
 -- Desc:		Redirects non-TTT weapons and entities to their TTT counterparts.
 function TTT.Weapons.RedirectMapEntities()
-	local hookResult = hook.Call("TTT.Weapons.ShouldRedirectWeapons")
+	local hookResult = hook.Call("TTT.Weapons.ShouldRedirectEntities")
 	if hookResult ~= false then
 		TTT.Weapons.RedirectWeapons()
 		TTT.Weapons.RedirectEntities()
-		hook.Call("TTT.Weapons.ReplacedMapEntities")
+		hook.Call("TTT.Weapons.RedirectedEntities")
 	end
 end
