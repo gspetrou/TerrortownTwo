@@ -143,7 +143,6 @@ end
 -- TTT.Weapons.CreateCaches
 ----------------------------
 -- Desc:		Precache all weapon models since nondeveloper commands can show the first time equipment has been bought.
--- 				Then also cache weaponASDASD
 function TTT.Weapons.CreateCaches()
 	local util_PrecacheModel = util.PrecacheModel
 	for k, wep in ipairs(weapons.GetList()) do

@@ -1,9 +1,20 @@
 TTT.Map = TTT.Map or {}
 local ENTITY = FindMetaTable("Entity")
 
-function ENTITY:SetRemoveOnRoundStart(b)
-	self.ttt_removeOnRoundStart = b
+--------------------------------
+-- ENTITY:SetRemoveOnRoundStart
+--------------------------------
+-- Desc:		Sets the given entity to be removed when the round starts.
+-- Arg One:		Boolean, true to remove the entity on round start.
+function ENTITY:SetRemoveOnRoundStart(bool)
+	self.ttt_removeOnRoundStart = bool
 end
+
+--------------------------------
+-- ENTITY:GetRemoveOnRoundStart
+--------------------------------
+-- Desc:		Sees if the given entity should be removed when the round starts.
+-- Returns:		Boolean, should the entity be removed at round start.
 function ENTITY:GetRemoveOnRoundStart()
 	return self.ttt_removeOnRoundStart or false
 end

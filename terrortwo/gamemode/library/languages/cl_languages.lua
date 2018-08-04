@@ -36,6 +36,7 @@ concommand.Add("ttt_language", function(_, _, arg)
 
 	TTT.Languages.ActiveLanguage = lang
 	file.Write("ttt/clientlanguage.txt", lang)
+	hook.Call("TTT.Languages.ChangedDefaultLanguage", nil, lang)
 end)
 
 ------------------------------------------
@@ -102,6 +103,7 @@ end
 -- Desc:		Sees if the given phrase exists in the users set language and if their language isn't set to english, optionally also check for an english translation.
 -- Arg One:		String, phrase to check for existence.
 -- Arg Two:		(Optional=true) Boolean, if the client's default language isn't English, should we also check English for the given translation.
+-- Returns:		Boolean, does the phrase exist.
 function TTT.Languages.PhraseExists(phrase, checkEnglish)
 	checkEnglish = isbool(checkEnglish) and checkEnglish or true
 

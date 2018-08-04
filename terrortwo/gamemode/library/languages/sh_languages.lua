@@ -48,6 +48,7 @@ if SERVER then
 		net.Start("TTT.Languages.ServerDefault")
 			net.WriteUInt(TTT.Languages.GetLanguageNWID(lang), 6)
 		net.Broadcast()
+		hook.Call("TTT.Languages.ChangedServerLanguage", nil, lang)
 	end
 
 	-------------------------------------------
