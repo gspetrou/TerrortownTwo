@@ -477,7 +477,7 @@ function TTT.Player.HandleFallDamage(ply, inWater, onFloater, speed)
 			local attacker = ply
 
 			-- If the person who fell on to another person was pushed then attribute the damage to the pusher.
-			local push = ply:GetPushData()
+			local push = ply:GetPushedData()
 			if push then
 				if math.max(push.Time or 0, push.Hurt or 0) > CurTime() - 4 then
 					attacker = push.Attacker
@@ -517,5 +517,171 @@ function TTT.Player.HandleFallDamage(ply, inWater, onFloater, speed)
 		if damage > 5 then
 			sound.Play(table.RandomSequential(TTT.Player.FallSounds), ply:GetShootPos(), 55 + math.Clamp(damage, 0, 50), 100)
 		end
+	end
+end
+
+-----------------------
+-- TTT.Player.AllowPVP
+-----------------------
+-- Desc:		Decides if PVP should be enabled.
+-- Returns:		Boolean.
+function TTT.Player.AllowPVP()
+	local hookResult = hook.Call("TTT.Player.AllowPVP")
+	return isbool(hookResult) and hookResult or true
+end
+
+function TTT.Player.HandleDamage(ply, dmgInfo)
+	-- Use this hook to modify the CTakeDamageInfo to reflect however you want the damage to be handled.
+	hook.Call("TTT.Player.OnTakeDamage", nil, ply, dmgInfo)
+
+	-- Use this hook if you just want to know the end results after all damage handling has been done.
+	hook.Call("TTT.Player.PostPlayerDamage", nil, ply, dmgInfo)
+end
+
+function TTT.Player.OnTakeDamage(ply, dmgInfo)
+	local inflictor, attacker = dmgInfo:GetInflictor(), dmgInfo:GetAttacker()
+
+	-- Change damage attribution if necessary.
+	if inflictor or attacker then
+		local hurter, owner, ownerHurtTime
+
+		-- Fall back to the attacker if there is no inflictor.
+		if IsValid(inflictor) then
+			hurter = infl
+		elseif IsValid(attacker) then
+			hurter = att
+		end
+
+		if hurter then
+			-- Do we already have a damage owner?
+			if istable(hurter:GetDamageOwner()) then
+				local damageOwnerInfo = hurter:GetDamageOwner()
+				owner, ownerHurtTime = damageOwnerInfo.Player, damageOwnerInfo.Time
+
+			-- Barrel bangs can hurt us even if we threw them, but that's our fault.
+			elseif ply == hurter:GetPhysicsAttacker() and dmgInfo:IsDamageType(DMG_BLAST) then
+				owner = ply
+
+			-- Guess we should account for everything, even vehicles.
+			elseif hurter:IsVehicle() and IsValid(hurter:GetDriver()) then
+				owner = hurter:GetDriver()
+			end
+		end
+
+		-- NOTE: To avoid confusion when reading this code just remember that tables in Lua are passed by reference.
+		-- This fact is used to update the pushed data with more information without having to call ply:SetPushedData().
+
+		-- If we were hurt by a trap or by a non-player entity, and we were pushed recently, then our pusher is the attacker.
+		if ownerHurtTime or not IsValid(att) or not att:IsPlayer() then
+			local pushData = ply:GetPushedData()
+
+			if istable(pushData) and IsValid(pushData.Attacker) and isnumber(pushData.Time) then
+				-- Push must be within the last 4 seconds, and must be done after the trap was enabled (if any).
+				ownerHurtTime = ownerHurtTime or 0
+				local time = math.max(pushData.Time or 0, pushData.LeechHurtTime or 0)
+				if time > ownerHurtTime and time > CurTime() - 4 then
+					owner = pushData.Attacker
+
+					-- Pushed by a trap?
+					if IsValid(pushData.Inflictor) then
+						dmgInfo:SetInflictor(pushData.Inflictor)
+					end
+
+					-- For slow-hurting traps we do leech-like damage timing.
+					pushData.LeechHurtTime = CurTime()
+				end
+			end
+		end
+
+		-- If we are being hurt by a physics object, we will take damage from the world entity as well, which screws with damage
+		-- attribution so we need to detect and work around that.
+		if IsValid(owner) and dmgInfo:IsDamageType(DMG_CRUSH) then
+			-- We should be able to use the push system for this, as the cases are similar:
+			-- An event causes future damage but should still be attributed physics traps can also push you to your death, for example.
+			local pushData = ply:GetPushedData()
+			if not istable(pushData) then
+				ply:SetPushedData({})
+				pushData = ply:GetPushedData()
+			end
+
+			-- If we already blamed this on a pusher, no need to do more else we override
+			-- whatever was in pushData with info pointing at our damage owner.
+			if pushData.Attacker ~= owner then
+				ownerHurtTime = ownerHurtTime or CurTime()
+
+				push.Attacker = owner
+				push.Time = ownerHurtTime
+				push.LeechHurtTime = CurTime()
+
+				-- store the current inflictor so that we can attribute it as the
+				-- trap used by the player in the event
+				if IsValid(inflictor) then
+					push.Inflictor = inflictor
+				end
+			end
+		end
+
+		-- Make the owner of the damage the attacker.
+		attacker = IsValid(owner) and owner or attacker
+		dmgInfo:SetAttacker(attacker)
+	end
+
+	-- Scale physics damage caused by props.
+	if dmgInfo:IsDamageType(DMG_CRUSH) and IsValid(attacker) then
+
+		-- Player falling on player, or player hurt by prop?
+		if not dmgInfo:IsDamageType(DMG_PHYSGUN) then
+
+			-- This is prop-based physics damage.
+			dmgInfo:ScaleDamage(0.25)
+
+			-- If the prop is held, no damage.
+			if IsValid(inflictor) and IsValid(inflictor:GetOwner()) and inflictor:GetOwner():IsPlayer() then
+				dmgInfo:ScaleDamage(0)
+				dmgInfo:SetDamage(0)
+			end
+		end
+	end
+
+	-- Handle fire damage responsibility.
+	if istable(ply:GetIgnitedData()) and dmgInfo:IsDamageType(DMG_DIRECT) then
+		local datt = dmgInfo:GetAttacker()
+		if not IsValid(datt) or not datt:IsPlayer() then
+			local igniteInfo = ply:GetIgnitedData()
+			if IsValid(igniteInfo.Attacker) and IsValid(igniteInfo.Inflictor)then
+				dmgInfo:SetAttacker(igniteInfo.Attacker)
+				dmgInfo:SetInflictor(igniteInfo.Inflictor)
+			end
+		end
+	end
+
+	-- Try to work out if this was push-induced leech-water damage (common on some popular maps like dm_island17).
+	if istable(ply:GetPushedData()) and ply == attacker and dmgInfo:GetDamageType() == DMG_GENERIC and util.BitSet(util.PointContents(dmgInfo:GetDamagePosition()), CONTENTS_WATER) then
+		local pushData = ply:GetPushedData()
+		local time = math.max(pushData.Time or 0, pushData.LeechHurtTime or 0)
+		if time > CurTime() - 3 then
+			dmgInfo:SetAttacker(pushData.Attacker)
+			pushData.LeechHurtTime = CurTime()
+		end
+	end
+
+	-- Start painting blood decals.
+	TTT.StartBleeding(ply, dmgInfo:GetDamage(), 5)
+
+	-- General actions for PVP damage.
+	if ply ~= attacker and IsValid(attacker) and attacker:IsPlayer() and TTT.Rounds.IsActive() and math.floor(dmgInfo:GetDamage()) > 0 then
+
+--[[  TODO
+		-- Scale everything to karma damage factor except a knife, because it assumes a kill.
+		if not dmgInfo:IsDamageType(DMG_SLASH) then
+			dmgInfo:ScaleDamage(attacker:GetDamageFactor())
+		end
+
+		-- process the effects of the damage on karma
+		KARMA.Hurt(att, ply, dmgInfo)
+
+		DamageLog(Format("DMG: \t %s [%s] damaged %s [%s] for %d dmg", att:Nick(), att:GetRoleString(), ply:Nick(), ply:GetRoleString(), math.Round(dmgInfo:GetDamage())))
+]]
+		TTT.Debug.Print("["..attacker:Nick().."] ["..attacker:GetUntranslatedRoleString().."] :: ["..ply:Nick().."] ["..ply:GetUntranslatedRoleString().."] ["..dmgInfo:GetDamage().."]")
 	end
 end

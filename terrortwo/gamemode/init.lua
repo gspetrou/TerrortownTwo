@@ -360,9 +360,79 @@ function GM:OnPlayerHitGround(ply, inWater, onFloater, speed)
 	TTT.Player.HandleFallDamage(ply, inWater, onFloater, speed)
 end
 
+hook.Add("TTT.Player.AllowPVP", "TTT", function()
+	local state = TTT.Rounds.GetState()
+	return state == ROUND_ACTIVE or (state == ROUND_POST and GetConVar("ttt_rounds_postdeathmatch"):GetBool())
+end)
+
+hook.Add("TTT.Player.OnTakeDamage", "TTT", function(ply, dmgInfo)
+	TTT.Player.OnTakeDamage(ply, dmgInfo)	
+end)
+
+-- Disable the built in team switching stuff the source engine uses.
+function GM:PlayerRequestTeam()
+end
+
+-- Implementing stuff that should already be in gmod, chpt. 389.
+function GM:PlayerEnteredVehicle(ply, vehicle)
+	if IsValid(vehicle) then
+		vehicle:SetNWEntity("ttt_driver", ply)
+	end
+end
+
+function GM:PlayerLeaveVehicle(ply, vehicle)
+	if IsValid(vehicle) then
+		vehicle:SetNWEntity("ttt_driver", vehicle)	-- Setting nil will not do anything, so bogusify.
+	end
+end
+
 hook.Add("TTT.Player.WantsToSearchCorpse", "TTT", function(ply, corpse)
 	
 end)
+
+----------------
+-- Entity Hooks
+----------------
+function GM:EntityTakeDamage(ent, dmgInfo)
+	if not IsValid(ent) then
+		return
+	end
+
+	local attacker = dmgInfo:GetAttacker()
+
+	-- If PVP is disabled then cancel out any prop to player or player to player damage.
+	if not TTT.Player.AllowPVP() then
+		if ent:IsAnExplosive() or (ent:IsPlayer() and IsValid(attacker) and attacker:IsPlayer()) then
+			dmgInfo:ScaleDamage(0)
+			dmgInfo:SetDamage(0)
+		end
+
+	-- Let PlayerTakeDamage handle damage dealt to players.
+	elseif ent:IsPlayer() then
+		TTT.Player.HandleDamage(ent, dmgInfo)
+
+	-- Old comment here said that when a barrel hits a player the source engine counts it as the player damaging the barrel.
+	-- This can lead to the dying player being blamed for their own death or even for killing their attacker. This code will prevent that.
+	elseif ent:IsAnExplosive() then
+		if IsValid(attacker) and attacker:IsPlayer() and dmgInfo:IsDamageType(DMG_CRUSH) and IsValid(ent:GetPhysicsAttacker()) then
+			dmgInfo:SetAttacker(ent:GetPhysicsAttacker())
+			dmgInfo:ScaleDamage(0)
+			dmgInfo:SetDamage(0)
+		end
+
+--[[	TODO
+
+	elseif ent.is_pinned and ent.OnPinnedDamage then
+		ent:OnPinnedDamage(dmgInfo)
+
+		dmgInfo:SetDamage(0)
+]]
+	end
+end
+
+-- Disable default implementation for killing NPCs, we really dont care about them in this gamemode.
+function GM:OnNPCKilled()
+end
 
 ---------------
 -- Round Hooks
