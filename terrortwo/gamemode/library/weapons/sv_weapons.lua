@@ -1,5 +1,6 @@
 TTT.Weapons = TTT.Weapons or {}
 local PLAYER = FindMetaTable("Player")
+local ENTITY = FindMetaTable("Entity")
 
 -------------------------------
 -- TTT.Weapons.StripCompletely
@@ -153,4 +154,22 @@ end
 -- Desc:		Clears the info about a player's last push.
 function PLAYER:ClearPushData()
 	self.ttt_PushedData = nil
+end
+
+-------------------------
+-- ENTITY:GetIgnitedData
+-------------------------
+-- Desc:		Used by the flare gun to handle fire damage responsibility.
+-- Returns:		Table, info on fire damage given to the victim entity.
+function ENTITY:GetIgnitedData()
+	return self.ttt_IgnitedData
+end
+
+-------------------------
+-- ENTITY:SetIgnitedData
+-------------------------
+-- Desc:		Sets info on an entity ignited by the flare gun.
+-- Arg One:		Table, info on the fire damage.
+function ENTITY:SetIgnitedData(data)
+	self.ttt_IgnitedData = data
 end

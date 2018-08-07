@@ -56,13 +56,30 @@ function PLAYER:GetRoleColor()
 	return TTT.Roles.Colors[self:GetRole()]
 end
 
+------------------------------------
+-- PLAYER:GetUntranslatedRoleString
+------------------------------------
+-- Desc:		Gets a simple, unlocalized string of the player's role. Used mainly to print debug info from the server.
+-- Returns:		String, the player's role.
+local roleStrings = {
+	[ROLE_WAITING] = "Waiting",
+	[ROLE_SPECTATOR] = "Spectator",
+	[ROLE_UNKNOWN] = "Unknown",
+	[ROLE_INNOCENT] = "Innocent",
+	[ROLE_DETECTIVE] = "Detective",
+	[ROLE_TRAITOR] = "Traitor"
+}
+function PLAYER:GetUntranslatedRoleString()
+	return roleStrings[self:GetRole()] or "Waiting"
+end
+
 if CLIENT then
 	--------------------------
 	-- TTT.Roles.RoleAsString
 	--------------------------
 	-- Desc:		Gets a language translated version of the given player's role.
 	-- Returns:		String, the player's role.
-	local role_phrase = {
+	local rolePhrases = {
 		[ROLE_WAITING] = "waiting",
 		[ROLE_SPECTATOR] = "spectator",
 		[ROLE_UNKNOWN] = "spectator",
@@ -71,6 +88,6 @@ if CLIENT then
 		[ROLE_TRAITOR] = "traitor"
 	}
 	function TTT.Roles.RoleAsString(ply)
-		return TTT.Languages.GetPhrase(role_phrase[ply:GetRole()] or "invalid")
+		return TTT.Languages.GetPhrase(rolePhrases[ply:GetRole()] or "invalid")
 	end
 end

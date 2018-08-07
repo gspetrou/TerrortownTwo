@@ -192,6 +192,15 @@ if CLIENT then
 	end
 end
 
+---------------
+-- util.BitSet
+---------------
+-- Desc:		Sees if a given bit is set on in a given number.
+-- Returns:		Boolean, is the given bit set.
+function util.BitSet(value, bit)
+	return bit.band(value, bit) == bit
+end
+
 ------------------
 -- util.PaintDown
 ------------------

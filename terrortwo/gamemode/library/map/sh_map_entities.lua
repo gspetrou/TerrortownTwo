@@ -67,6 +67,16 @@ function ENTITY:GetDamageOwner()
 	return nil, nil
 end
 
+------------------------
+-- ENTITY:IsAnExplosive
+------------------------
+-- Desc:		Is the given entity an explosive.
+-- Returns:		Boolean.
+function ENTITY:IsAnExplosive()
+	local kv = self:GetKeyValues()["ExplodeDamage"]
+	return self:Health() > 0 and kv and kv > 0
+end
+
 if SERVER then
 	local VectorRand, ipairs, ents_GetAll = VectorRand, ipairs, ents.GetAll
 

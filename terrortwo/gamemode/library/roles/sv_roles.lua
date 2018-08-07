@@ -238,7 +238,12 @@ function TTT.Roles.PickRoles()
 
 	-- Pick detectives.
 	do
-		local players = TTT.Roles.GetWaiting()
+		-- Filter out players who don't want to be detective.
+		local players = table.Filter(TTT.Roles.GetWaiting(), function(ply)
+			return ply:GetInfoNum("ttt_detective_avoid", 0) ~= 1
+		end)
+
+
 		if #players >= detective_threshold:GetInt() then
 			local needed_players = math.max(1, math.floor(#players * detective_percent:GetFloat()))
 
