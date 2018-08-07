@@ -22,6 +22,8 @@ TTT.Roles.Colors = {
 	[ROLE_TRAITOR] = TTT.Colors.Traitor
 }
 
+CreateClientConVar("ttt_detective_avoid", "0", true, true, "Set true to disable being chosen as a detective.")
+
 ------------------
 -- PLAYER:SetRole
 ------------------
