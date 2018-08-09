@@ -238,9 +238,10 @@ function TTT.Roles.PickRoles()
 
 	-- Pick detectives.
 	do
-		-- Filter out players who don't want to be detective.
+		-- Filter out players who don't want to be detective or are below the detective karma threshold.
+		local detectiveKarmaThreshold = GetConVar("ttt_karma_detective_minimum"):GetInt()
 		local players = table.Filter(TTT.Roles.GetWaiting(), function(ply)
-			return ply:GetInfoNum("ttt_detective_avoid", 0) ~= 1
+			return ply:GetInfoNum("ttt_detective_avoid", 0) ~= 1 and ply:GetBaseKarma() >= detectiveKarmaThreshold
 		end)
 
 

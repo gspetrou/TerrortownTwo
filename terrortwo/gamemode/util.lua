@@ -135,6 +135,17 @@ function table.Shuffle(tbl)
 	return tbl
 end
 
+-------------------------
+-- math.ExponentialDecay
+-------------------------
+-- Desc:		Equivalent to ExponentialDecay from Source Engine's mathlib. Used for fallof curves.
+-- Arg One:		Number, half life of the curve. How long it takes for the curve to reach half of it's current value.
+-- Arg Two:		Number, where on the x-axis are we, how far into the curve.
+-- Returns:		Number, y-axis of the curve. How much we've decayed at this point.
+function math.ExponentialDecay(halfLife, decayTime)
+	return math.exp((-0.69314718 / halfLife) * decayTime)
+end
+
 ------------------
 -- TTT.IsInMinMax
 ------------------

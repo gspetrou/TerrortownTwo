@@ -73,9 +73,11 @@ hook.Add("TTT.Scoreboard.Initialize", "TTT", function()
 	--------------
 	-- COLUMNS
 	--------------
-	TTT.Scoreboard.AddColumn("karma", "sb_karma", 50, 10, function(ply)
-		return 1337
-	end)
+	if TTT.Karma:IsEnabled() then
+		TTT.Scoreboard.AddColumn("karma", "sb_karma", 50, 10, function(ply)
+			return ply:GetBaseKarma()
+		end)
+	end
 
 	TTT.Scoreboard.AddColumn("score", "sb_score", 50, 20, function(ply)
 		return ply:Frags()

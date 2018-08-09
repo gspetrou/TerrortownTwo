@@ -6,6 +6,69 @@ include("util.lua")
 include("lib_loader.lua")
 include("shared.lua")
 
+-----------------
+-- General Hooks
+-----------------
+local ipairs, player_GetAll = ipairs, player.GetAll
+function GM:Tick()
+	for i, ply in ipairs(player_GetAll()) do
+		if ply:Alive() then
+			TTT.Player.HandleDrowning(ply)
+		else
+			TTT.Player.HandleDeathSpectating(ply)
+		end
+	end
+end
+
+-- Set a newly connected player's karma for the edge case where they are authed after initial spawn.
+function GM:NetworkIDValidated(name, steamID)
+	for i, ply in ipairs(player.GetAll()) do
+		if IsValid(ply) and ply:SteamID() == steamID and ply.ttt_DelayKarmaRecall then
+			TTT.Karma:LateRecallAndSet(ply)
+			return
+		end
+	end
+end
+
+function GM:KeyPress(ply, key)
+	if not ply:Alive() and not ply:IsSpectatingCorpse() then
+		--ply:ResetViewRoll() -- TODO: Why am I resetting view roll here... wtf?
+		TTT.Player.HandleSpectatorKeypresses(ply, key)
+	end
+end
+
+-- Handle +use overrides and body searching.
+function GM:KeyRelease(ply, key)
+	if key == IN_USE and IsValid(ply) and ply:Alive() then
+		local tr = util.TraceLine({
+			start  = ply:GetShootPos(),
+			endpos = ply:GetShootPos() + ply:GetAimVector() * 84,
+			filter = ply,
+			mask   = MASK_SHOT
+		})
+
+		if tr.Hit and IsValid(tr.Entity) then
+			if tr.Entity.CanUseKey and tr.Entity.UseOverride then
+				local phys = tr.Entity:GetPhysicsObject()
+				if IsValid(phys) and not phys:HasGameFlag(FVPHYSICS_PLAYER_HELD) then
+					tr.Entity:UseOverride(ply)
+				end
+				return true
+			elseif tr.Entity:IsCorpse() then
+				--CORPSE.ShowSearch(ply, tr.Entity, (ply:KeyDown(IN_WALK) or ply:KeyDownLast(IN_WALK)))
+				-- TODO: Show body search
+				return true
+			end
+		end
+	end
+end
+
+-- The GetFallDamage hook does not get called until around 600 speed, which is a
+-- rather high drop already. Hence we do our own fall damage handling in OnPlayerHitGround.
+function GM:GetFallDamage(ply, speed)
+	return 0
+end
+
 ---------------------
 -- Map Related Hooks
 ---------------------
@@ -53,58 +116,6 @@ hook.Add("TTT.Map.TraitorButtons.CanUse", "TTT", function(ply, btn)
 	return ply:Alive() and ply:IsTraitor() and ply:GetPos():Distance(btn:GetPos()) < btn:GetUsableRange()
 end)
 
------------------
--- General Hooks
------------------
-local ipairs, player_GetAll = ipairs, player.GetAll
-function GM:Tick()
-	for i, ply in ipairs(player_GetAll()) do
-		if ply:Alive() then
-			TTT.Player.HandleDrowning(ply)
-		else
-			TTT.Player.HandleDeathSpectating(ply)
-		end
-	end
-end
-
-function GM:KeyPress(ply, key)
-	if not ply:Alive() and not ply:IsSpectatingCorpse() then
-		--ply:ResetViewRoll() -- TODO: Why am I resetting view roll here... wtf?
-		TTT.Player.HandleSpectatorKeypresses(ply, key)
-	end
-end
-
--- Handle +use overrides and body searching.
-function GM:KeyRelease(ply, key)
-	if key == IN_USE and IsValid(ply) and ply:Alive() then
-		local tr = util.TraceLine({
-			start  = ply:GetShootPos(),
-			endpos = ply:GetShootPos() + ply:GetAimVector() * 84,
-			filter = ply,
-			mask   = MASK_SHOT
-		})
-
-		if tr.Hit and IsValid(tr.Entity) then
-			if tr.Entity.CanUseKey and tr.Entity.UseOverride then
-				local phys = tr.Entity:GetPhysicsObject()
-				if IsValid(phys) and not phys:HasGameFlag(FVPHYSICS_PLAYER_HELD) then
-					tr.Entity:UseOverride(ply)
-				end
-				return true
-			elseif tr.Entity:IsCorpse() then
-				--CORPSE.ShowSearch(ply, tr.Entity, (ply:KeyDown(IN_WALK) or ply:KeyDownLast(IN_WALK)))
-				-- TODO: Show body search
-				return true
-			end
-		end
-	end
-end
-
--- The GetFallDamage hook does not get called until around 600 speed, which is a
--- rather high drop already. Hence we do our own fall damage handling in OnPlayerHitGround.
-function GM:GetFallDamage(ply, speed)
-	return 0
-end
 
 ----------------
 -- Player Hooks
@@ -115,6 +126,7 @@ function GM:PlayerInitialSpawn(ply)
 	TTT.Rounds.TellClientCurrentRoundState(ply)
 	TTT.Languages.SendDefaultLanguage(ply)
 	TTT.Player.SetSpeeds(ply)
+	TTT.Karma:InitPlayer(ply)
 
 	if ply:IsSpectator() then
 		local randomSpawn = table.RandomSequential(TTT.Map.GetSpawnEntities())
@@ -181,6 +193,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 
 	local ragdoll = TTT.Corpse.CreateBody(ply, attacker, dmginfo)	-- Create body.
 	TTT.Player.RecordDeathPos(ply)	-- Record their death position so that their spectator camera spawns here.
+	TTT.Player.StoreDeathInfo(ply, dmginfo)	-- Store the death CTakeDamageInfo so we can refer to it later.
 
 	-- Remove the body at round start if they died during prep.
 	if TTT.Rounds.IsPrep() then
@@ -195,6 +208,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 
 	TTT.Player.CreateDeathEffects(ply)
 	TTT.StartBleeding(ragdoll, dmginfo:GetDamage(), math.random(10, 20))
+	TTT.Karma:Killed(attacker, ply, dmginfo)
 
 	local killWeapon = TTT.WeaponFromDamageInfo(dmginfo)
 	if not (ply:WasHeadshotted() or dmginfo:IsDamageType(DMG_SLASH) or (IsValid(killWeapon) and killWeapon.IsSilent)) then
@@ -239,8 +253,11 @@ function GM:PostPlayerDeath(ply)
 end
 
 function GM:PlayerDisconnected(ply)
-	local steamID = ply:SteamID()
+	if TTT.Karma:IsEnabled() then
+		TTT.Karma:Remember(ply)
+	end
 
+	local steamID = ply:SteamID()
 	timer.Create("TTT.WaitForFullPlayerDisconnect", .5, 0, function()
 		if not IsValid(ply) then
 			TTT.Rounds.CheckForRoundEnd()
@@ -492,6 +509,7 @@ end)
 
 hook.Add("TTT.Rounds.RoundEnded", "TTT", function(type)
 	TTT.Map.TriggerRoundStateOutsputs(ROUND_POST, type)
+	TTT.Karma:RoundEnd()
 end)
 
 hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
@@ -515,6 +533,7 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 		ply:SetCanDyingShot(true)				-- Enable dying shots on all the players (so long as ttt_weapon_dyingshot is enabled).
 		ply:ClearPushData()						-- Clear data stored about the last time the player was pushed.
 		ply:SetWasHeadshotted(false)			-- The round just began, clear headshots.
+		ply:SetCleanRound(true)					-- Nobody has damaged teammates yet, the round just started.
 		TTT.Weapons.GiveRoleWeapons(ply)		-- Give all players the weapons for their newly given roles.
 		TTT.Equipment.GiveRoleEquipment(ply)	-- Give all players the equipment their role starts with.
 	end
@@ -528,6 +547,7 @@ hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
 	TTT.Map.ResetMap()
 	TTT.Map.TriggerRoundStateOutsputs(ROUND_PREP)
 	TTT.Roles.Clear()
+	TTT.Karma:RoundBegin()
 	
 	local col = hook.Call("TTT.Player.SetDefaultSpawnColor")
 	if not IsColor(col) then

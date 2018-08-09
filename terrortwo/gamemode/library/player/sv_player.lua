@@ -420,6 +420,26 @@ function TTT.Player.StoreDeathSceneData(ply, trace)
 	ply.ttt_HitTrace = trace
 end
 
+-----------------------------
+-- TTT.Player.StoreDeathInfo
+-----------------------------
+-- Desc:		Stores the CTakeDamageInfo that killed the given player for later use.
+-- Arg One:		Player, that died.
+-- Arg Two:		CTakeDamageInfo, that killed them.
+function TTT.Player.StoreDeathInfo(ply, dmgInfo)
+	ply.ttt_DeathDamageInfo = dmgInfo
+end
+
+-----------------------------
+-- PLAYER:GetDeathDamageInfo
+-----------------------------
+-- Desc:		Gets the damage info that killed the given player.
+-- 				Note that this may return a damgeinfo from the previous round. Make sure the check that the player has died recently!
+-- Returns:		CTakeDamageInfo or nil. Nil if the player hasn't died.
+function PLAYER:GetDeathDamageInfo()
+	return self.ttt_DeathDamageInfo
+end
+
 -------------------------
 -- PLAYER:WasHeadshotted
 -------------------------
@@ -671,17 +691,17 @@ function TTT.Player.OnTakeDamage(ply, dmgInfo)
 	-- General actions for PVP damage.
 	if ply ~= attacker and IsValid(attacker) and attacker:IsPlayer() and TTT.Rounds.IsActive() and math.floor(dmgInfo:GetDamage()) > 0 then
 
---[[  TODO
 		-- Scale everything to karma damage factor except a knife, because it assumes a kill.
 		if not dmgInfo:IsDamageType(DMG_SLASH) then
 			dmgInfo:ScaleDamage(attacker:GetDamageFactor())
 		end
 
-		-- process the effects of the damage on karma
-		KARMA.Hurt(att, ply, dmgInfo)
+		-- Process the effects of the damage on karma.
+		TTT.Karma:Hurt(attacker, ply, dmgInfo)
 
-		DamageLog(Format("DMG: \t %s [%s] damaged %s [%s] for %d dmg", att:Nick(), att:GetRoleString(), ply:Nick(), ply:GetRoleString(), math.Round(dmgInfo:GetDamage())))
-]]
+		-- TODO
+		--DamageLog(Format("DMG: \t %s [%s] damaged %s [%s] for %d dmg", att:Nick(), att:GetRoleString(), ply:Nick(), ply:GetRoleString(), math.Round(dmgInfo:GetDamage())))
+
 		TTT.Debug.Print("["..attacker:Nick().."] ["..attacker:GetUntranslatedRoleString().."] :: ["..ply:Nick().."] ["..ply:GetUntranslatedRoleString().."] ["..dmgInfo:GetDamage().."]")
 	end
 end
