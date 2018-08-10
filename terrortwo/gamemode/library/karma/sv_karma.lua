@@ -1,26 +1,26 @@
 TTT.Karma = TTT.Karma or {
 	RememberedPlayers = {},
-	ConVars = {
-		Strict = CreateConVar("ttt_karma_strict", "1", FCVAR_ARCHIVE, ""),
-		Starting = CreateConVar("ttt_karma_starting", "1000", FCVAR_ARCHIVE, ""),
-		Ratio = CreateConVar("ttt_karma_ratio", "0.001", FCVAR_ARCHIVE, "This CVar * Victim's Karma * Damage Dealt = Number of karma to punish the attacker with. Used for Traitor on Traitor damage."),
-		KillPenalty = CreateConVar("ttt_karma_kill_penalty", "15", FCVAR_ARCHIVE, ""),
-		Increment = CreateConVar("ttt_karma_round_incremenet", "5", FCVAR_ARCHIVE, ""),
-		CleanBonus = CreateConVar("ttt_karma_clean_bonus", "30", FCVAR_ARCHIVE, ""),
-		TraitorKillBonus = CreateConVar("ttt_karma_traitorkill_bonus", "40", FCVAR_ARCHIVE, ""),
-		TraitorDamageRatio = CreateConVar("ttt_karma_traitordmg_ratio", "0.0003", FCVAR_ARCHIVE, ""),
-		DebugPrints = CreateConVar("ttt_karma_debugspam", "0", nil, ""),
-
-		Persist = CreateConVar("ttt_karma_persist", "0", FCVAR_ARCHIVE, ""),
-		CleanHalf = CreateConVar("ttt_karma_clean_half", "0.25", FCVAR_ARCHIVE, ""),
-		DetectiveKarmaMin = CreateConVar("ttt_karma_detective_minimum", "600", FCVAR_ARCHIVE, ""),
-
-		LowKick = CreateConVar("ttt_karma_low_autokick", "1", FCVAR_ARCHIVE, "Should we kick people with low karma."),
-		LowAmount = CreateConVar("ttt_karma_low_amount", "450", FCVAR_ARCHIVE, "At what karma amount and below should we start kicking."),
-		LowBan = CreateConVar("ttt_karma_low_ban", "1", FCVAR_ARCHIVE, "Should we ban for low karma."),
-		LowBanMinutes = CreateConVar("ttt_karma_low_ban_minutes", "60", FCVAR_ARCHIVE, "How long to ban for low karma.")
-	}
+	ConVars = {}
 }
+
+TTT.Karma.ConVars.Strict = CreateConVar("ttt_karma_strict", "1", FCVAR_ARCHIVE, "Should we punish players more for team damage.")
+TTT.Karma.ConVars.Starting = CreateConVar("ttt_karma_starting", "1000", FCVAR_ARCHIVE, "What is the starting karma.")
+TTT.Karma.ConVars.Ratio = CreateConVar("ttt_karma_ratio", "0.001", FCVAR_ARCHIVE, "This CVar * Victim's Karma * Damage Dealt = Number of karma to punish the attacker with. Used for Traitor on Traitor damage.")
+TTT.Karma.ConVars.KillPenalty = CreateConVar("ttt_karma_kill_penalty", "15", FCVAR_ARCHIVE, "Karma penalty for team killing.")
+TTT.Karma.ConVars.Increment = CreateConVar("ttt_karma_round_incremenet", "5", FCVAR_ARCHIVE, "Default Karma bonus for making it through a round.")
+TTT.Karma.ConVars.CleanBonus = CreateConVar("ttt_karma_clean_bonus", "30", FCVAR_ARCHIVE, "Karma bonus for making it through the round without giving any team damage.")
+TTT.Karma.ConVars.TraitorKillBonus = CreateConVar("ttt_karma_traitorkill_bonus", "40", FCVAR_ARCHIVE, "Karma bonus for killing a traitor")
+TTT.Karma.ConVars.TraitorDamageRatio = CreateConVar("ttt_karma_traitordmg_ratio", "0.0003", FCVAR_ARCHIVE, "Scales how much karma you get for damaging a traitor as an innocent.")
+TTT.Karma.ConVars.DebugPrints = CreateConVar("ttt_karma_debugspam", "0", nil, "Print lots of debug info relating to karma distribution.")
+
+TTT.Karma.ConVars.Persist = CreateConVar("ttt_karma_persist", "0", FCVAR_ARCHIVE, "Should we store karma between map changes.")
+TTT.Karma.ConVars.CleanHalf = CreateConVar("ttt_karma_clean_half", "0.25", FCVAR_ARCHIVE, "Scales how it becomes more difficult to gain more karma as you reach past the starting point.")
+TTT.Karma.ConVars.DetectiveKarmaMin = CreateConVar("ttt_karma_detective_minimum", "600", FCVAR_ARCHIVE, "Minimum karma needed to be a detective.")
+
+TTT.Karma.ConVars.LowKick = CreateConVar("ttt_karma_low_autokick", "1", FCVAR_ARCHIVE, "Should we kick people with low karma.")
+TTT.Karma.ConVars.LowAmount = CreateConVar("ttt_karma_low_amount", "450", FCVAR_ARCHIVE, "At what karma amount and below should we start kicking.")
+TTT.Karma.ConVars.LowBan = CreateConVar("ttt_karma_low_ban", "1", FCVAR_ARCHIVE, "Should we ban for low karma.")
+TTT.Karma.ConVars.LowBanMinutes = CreateConVar("ttt_karma_low_ban_minutes", "60", FCVAR_ARCHIVE, "How long to ban for low karma.")
 
 local PLAYER = FindMetaTable("Player")
 
@@ -84,16 +84,7 @@ end
 -- Desc:		Sees if we should print debug info for the karma system.
 -- Returns:		Boolean.
 function TTT.Karma:IsDebug()
-	return self.ConVars.DebugPrints:GetBool() and TTT.Debug.IsDebugMode()
-end
-
------------------------
--- TTT.Karma:IsEnabled
------------------------
--- Desc:		Sees if the karma system is enabled.
--- Returns:		Boolean.
-function TTT.Karma:IsEnabled()
-	return self.ConVars.Enabled:GetBool()
+	return self.ConVars.DebugPrints:GetBool()
 end
 
 ------------------------------
@@ -114,7 +105,7 @@ end
 -- Arg Two:		Number, the damage given to the player.
 -- Returns:		Number, the karma to take from the attacker.
 function TTT.Karma:DamageToKarmaHurtPenalty(victimsKarma, damage)
-	return victimsKarma * math.Clamp(damage * self.Convars.Ratio:GetFloat(), 0, 1)
+	return victimsKarma * math.Clamp(damage * self.ConVars.Ratio:GetFloat(), 0, 1)
 end
 
 --------------------------------------
@@ -142,7 +133,7 @@ end
 -- Desc:		Gets how much karma to award an innocent with for killing a traitor.
 -- Returns:		Number, karma that should be awarded.
 function TTT.Karma:InnocentToTraitorKillReward()
-	return self.InnocentToTraitorDamageReward(self.ConVars.TraitorKillBonus:GetFloat())
+	return self:InnocentToTraitorDamageReward(self.ConVars.TraitorKillBonus:GetFloat())
 end
 
 -------------------------
@@ -156,7 +147,7 @@ function TTT.Karma:GivePenalty(ply, penalty, victim)
 	local overrideDefaultImplementation = hook.Call("TTT.Karma.GivePenalty", nil, ply, penalty, victim)
 
 	if not overrideDefaultImplementation then
-		ply:SetKarma(math.max(ply:GetLiveKarma() - penalty, 0))
+		ply:SetLiveKarma(math.max(ply:GetLiveKarma() - penalty, 0))
 	end
 end
 
@@ -168,8 +159,8 @@ end
 -- Arg Two:		Number, how much karma to give.
 -- Returns:		Number, the karma awarded to the player that has been adjusted for decay.
 function TTT.Karma:GiveReward(ply, reward)
-	local scaledReward = self.GetDecayedMultiplier(ply) * reward
-	ply:SetKarma(math.min(ply:GetLiveKarma() * scaledReward), self.ConVars.Maximum:GetFloat())
+	local scaledReward = self:GetDecayedMultiplier(ply) * reward
+	ply:SetLiveKarma(math.min(ply:GetLiveKarma() + scaledReward), self.ConVars.Maximum:GetFloat())
 	return scaledReward
 end
 
@@ -184,7 +175,7 @@ function TTT.Karma:GetDecayedMultiplier(ply)
 	local startKarma = self:GetStartingKarma()
 	local plyKarma = ply:GetLiveKarma()
 
-	if self.ConVars.CleanHalf <= 0 or plyKarma > startKarma  then
+	if self.ConVars.CleanHalf:GetInt() <= 0 or plyKarma < startKarma  then
 		return 1
 	elseif plyKarma < maxKarma then
 		local baseDifference = maxKarma - startKarma
@@ -193,6 +184,8 @@ function TTT.Karma:GetDecayedMultiplier(ply)
 
 		return math.ExponentialDecay(baseDifference * half, playerDifference)
 	end
+
+	return 1
 end
 
 --------------------------------
@@ -205,7 +198,7 @@ function TTT.Karma:UpdateDamageFactor(ply)
 	local damageFactor = 1.0
 
 	if ply:GetBaseKarma() < self:GetStartingKarma() then
-		local karmaDifference = ply:GetBasekarma() - self:GetStartingKarma()
+		local karmaDifference = ply:GetBaseKarma() - self:GetStartingKarma()
 		if self.ConVars.Strict:GetBool() then
 			damageFactor = 1 + (0.0007 * karmaDifference) + (-0.000002 * karmaDifference^2)	-- This penalty curve sinks more quickly, less parabolic.
 		else
@@ -250,18 +243,17 @@ function TTT.Karma:Hurt(attacker, victim, dmgInfo)
 	end
 
 	-- Ignore excess damage
-	local hurtAmount = math.min(victim:Health(), dmginfo:GetDamage())
+	local hurtAmount = math.min(victim:Health(), dmgInfo:GetDamage())
 
 	-- If they were the same team then penalize, otherwise reward.
-	local onSameTeam = ply1:IsTraitor() and ply2:IsTraitor() or (not ply2:IsTraitor())
+	local onSameTeam = attacker:IsTraitor() and victim:IsTraitor() or (not victim:IsTraitor())
 
 	if onSameTeam then
-		if self:WasDamagaeAvoidable(attacker, victim, dmginfo) then
+		if self:WasDamaageAvoidable(attacker, victim, dmgInfo) then
 			return
 		end
 
 		local penalty = self:DamageToKarmaHurtPenalty(victim:GetLiveKarma(), hurtAmount)
-
 		self:GivePenalty(attacker, penalty, victim)
 
 		attacker:SetCleanRound(false)
@@ -269,7 +261,7 @@ function TTT.Karma:Hurt(attacker, victim, dmgInfo)
 		if self:IsDebug() then
 			print(string.format("%s (%f) attacked %s (%f) for %d and got penalised for %f", attacker:Nick(), attacker:GetLiveKarma(), victim:Nick(), victim:GetLiveKarma(), hurtAmount, penalty))
 		end
-	else
+	elseif not attacker:IsTraitor() then
 		local reward = self:InnocentToTraitorDamageReward(hurtAmount)
 		reward = self:GiveReward(attacker, reward)
 
@@ -292,7 +284,7 @@ function TTT.Karma:Killed(attacker, victim, dmginfo)
 	end
 
 	-- If they were the same team then penalize, otherwise reward.
-	local onSameTeam = ply1:IsTraitor() and ply2:IsTraitor() or (not ply2:IsTraitor())
+	local onSameTeam = attacker:IsTraitor() and victim:IsTraitor() or (not victim:IsTraitor())
 
 	if onSameTeam then
 		-- Don't penalize players for stupid victims.
@@ -318,6 +310,10 @@ function TTT.Karma:Killed(attacker, victim, dmginfo)
 	end
 end
 
+----------------------------
+-- TTT.Karma:RoundIncrement
+----------------------------
+-- Desc:		Give everyone their designated karma bonuses.
 function TTT.Karma:RoundIncrement()
 	local healBonus = self.ConVars.Increment:GetFloat()
 	local cleanBonus = self.ConVars.CleanBonus:GetFloat()
@@ -339,6 +335,10 @@ function TTT.Karma:RoundIncrement()
 	end
 end
 
+------------------------
+-- TTT.Karma:UpdateBase
+------------------------
+-- Desc:		Updates every player's base karma to their current live karma.
 function TTT.Karma:UpdateBase()
 	for i, ply in ipairs(player.GetAll()) do
 		if self:IsDebug() then
@@ -349,30 +349,41 @@ function TTT.Karma:UpdateBase()
 	end
 end
 
+-----------------------------------
+-- TTT.Karma:UpdateDamageFactorAll
+-----------------------------------
+-- Desc:		Updates everyone's damage factor.
 function TTT.Karma:UpdateDamageFactorAll()
 	for i, ply in ipairs(player.GetAll()) do
 		self:UpdateDamageFactor(ply)
 	end
 end
 
+----------------------
+-- TTT.Karma:RoundEnd
+----------------------
+-- Desc:		Handles actions performed at round end relating to karma.
 function TTT.Karma:RoundEnd()
 	if self:IsEnabled() then
 		self:RoundIncrement()
 		self:UpdateBase()
 		self:RememberAll()
+		self:SyncKarma()
 
 		if self.ConVars.LowKick:GetBool() then
 			for i, ply in ipairs(player.GetAll()) do
-				self:CheckForAutokick(ply)
+				self:CheckForAutoKick(ply)
 			end
 		end
 	end
 end
 
+------------------------
+-- TTT.Karma:RoundBegin
+------------------------
+-- Desc:		Handles actions performed at round start relating to karma.
 function TTT.Karma:RoundBegin()
 	if self:IsEnabled() then
-		self:SyncKarma()
-
 		for i, ply in ipairs(player.GetAll()) do
 			self:UpdateDamageFactor(ply)
 			-- TODO: Notify
@@ -380,10 +391,15 @@ function TTT.Karma:RoundBegin()
 	end
 end
 
+------------------------
+-- TTT.Karma:InitPlayer
+------------------------
+-- Desc:		Preps a new player for use with the karma system.
+-- Arg One:		Player.
 function TTT.Karma:InitPlayer(ply)
 	local karma = self:Recall(ply)
 
-	karma = math.Clamp(karma, 0, self.ConVar.Maximum:GetFloat())
+	karma = math.Clamp(karma, 0, self.ConVars.Maximum:GetFloat())
 
 	ply:SetBaseKarma(karma)
 	ply:SetLiveKarma(karma)
@@ -394,6 +410,10 @@ function TTT.Karma:InitPlayer(ply)
 	self:UpdateDamageFactor(ply)
 end
 
+-----------------------
+-- TTT.Karma:SyncKarma
+-----------------------
+-- Desc:		Sends all the players every player's base karma.
 util.AddNetworkString("TTT.Karma.SyncKarma")
 function TTT.Karma:SyncKarma()
 	net.Start("TTT.Karma.SyncKarma")
@@ -402,11 +422,16 @@ function TTT.Karma:SyncKarma()
 
 		for i, ply in ipairs(players) do
 			net.WritePlayer(ply)
-			net.WriteUInt(ply:GetBaseKarma(), 12)
+			net.WriteUInt(math.floor(ply:GetBaseKarma() + 0.5), 12)
 		end
 	net.Broadcast()
 end
 
+----------------------
+-- TTT.Karma:Remember
+----------------------
+-- Desc:		Updates the stored karma for the given player. Uses persistent SQL storage if enabled.
+-- Arg One:		Player, to store the karma of.
 function TTT.Karma:Remember(ply)
 	if ply.ttt_KarmaKicked or not ply:IsFullyAuthenticated() then
 		return
@@ -421,6 +446,22 @@ function TTT.Karma:Remember(ply)
 	self.RememberedPlayers[ply:SteamID()] = ply:GetLiveKarma()
 end
 
+-------------------------
+-- TTT.Karma:RememberAll
+-------------------------
+-- Desc:		Runs TTT.Karma:Remember on every player, stores their karma both temporarily and in SQL if enabled.
+function TTT.Karma:RememberAll()
+	for i, ply in ipairs(player.GetAll()) do
+		self:Remember(ply)
+	end
+end
+
+--------------------
+-- TTT.Karma:Recall
+--------------------
+-- Desc:		Gets a given player's stored karma, optionall from SQL storage if enabled.
+-- Arg One:		Player, to get karma of.
+-- Returns:		Number, live karma amount.
 function TTT.Karma:Recall(ply)
 	if self.ConVars.Persist:GetBool()then
 		ply.ttt_DelayKarmaRecall = not ply:IsFullyAuthenticated()
@@ -438,9 +479,14 @@ function TTT.Karma:Recall(ply)
 		return self.RememberedPlayers[ply:SteamID()]
 	end
 
-	return self.ConVar.Starting:GetFloat()
+	return self.ConVars.Starting:GetFloat()
 end
 
+------------------------------
+-- TTT.Karma:LateRecallAndSet
+------------------------------
+-- Desc:		Called when the player loads initial spawn before they've finished authentication (edge case) to load their karma late.
+-- Arg One:		Player.
 function TTT.Karma:LateRecallAndSet(ply)
 	local karma = TTT.Karma:GetPlayersStoredKarma(ply)
 
@@ -450,16 +496,22 @@ function TTT.Karma:LateRecallAndSet(ply)
 	end
 end
 
-function TTT.Karma:RememberAll()
-	for i, ply in ipairs(player.GetAll()) do
-		self:Remember(ply)
-	end
-end
-
+--------------------------------------
+-- TTT.Karma:UpdatePlayersStoredKarma
+--------------------------------------
+-- Desc:		Updates the player's stored SQL karma to the given number.
+-- Arg One:		Player, to set the karma of.
+-- Arg Two:		Number, the karma to set.
 function TTT.Karma:UpdatePlayersStoredKarma(ply, karma)
 	sql.Query("UPDATE `ttt` SET karma = ".. sql.SQLStr(karma) .." WHERE id = ".. sql.SQLStr(ply:SteamID64()) ..";")
 end
 
+-----------------------------------
+-- TTT.Karma:GetPlayersStoredKarma
+-----------------------------------
+-- Desc:		Gets the player's karma stored in SQL.
+-- Arg One:		Player, to get their karma.
+-- Returns:		Number, their karma.
 function TTT.Karma:GetPlayersStoredKarma(ply)
 	local query = sql.Query("SELECT `karma` from `ttt` WHERE id=".. sql.SQLStr(ply:SteamID64()) ..";")[1].karma
 	if query then
@@ -467,8 +519,13 @@ function TTT.Karma:GetPlayersStoredKarma(ply)
 	end
 end
 
+------------------------------
+-- TTT.Karma:CheckForAutoKick
+------------------------------
+-- Desc:		Checks if the given player's karma has fallen to low and kicks or bans them accordingly.
+-- Arg One:		Player, to check.
 local reason = "Karma too low"
-function TTT.Karma:CheckAutoKick(ply)
+function TTT.Karma:CheckForAutoKick(ply)
 	if ply:GetBaseKarma() <= self.ConVars.LowAmount:GetInt() then
 		if hook.Call("TTT.Karma.Low", GAMEMODE, ply) == false then
 			return
@@ -494,8 +551,12 @@ function TTT.Karma:CheckAutoKick(ply)
 	end
 end
 
-function TTT.Karma:PrintAll(printfn)
+----------------------
+-- TTT.Karma:PrintAll
+----------------------
+-- Desc:		Prints every player's live karma, base karma, and damage factor as a percent.
+function TTT.Karma:PrintAll()
 	for i, ply in ipairs(player.GetAll()) do
-		printfn(string.format("%s : Live = %f -- Base = %f -- Dmg = %f\n", ply:Nick(), ply:GetLiveKarma(), ply:GetBaseKarma(), ply:GetDamageFactor() * 100))
+		print(string.format("%s : Live = %f -- Base = %f -- Dmg = %f\n", ply:Nick(), ply:GetLiveKarma(), ply:GetBaseKarma(), ply:GetDamageFactor() * 100))
 	end
 end

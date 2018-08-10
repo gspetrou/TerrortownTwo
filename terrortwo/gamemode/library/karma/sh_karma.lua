@@ -1,9 +1,10 @@
 TTT.Karma = TTT.Karma or {
+	RememberedPlayers = {},
 	ConVars = {}
 }
 
 TTT.Karma.ConVars.Enabled = CreateConVar("ttt_karma", "1", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Is the karma system enabled.")
-TTT.Karma.ConVars.Maximum = CreateConVar("ttt_karma_max", "1250", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "")
+TTT.Karma.ConVars.Maximum = CreateConVar("ttt_karma_max", "1250", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "The maximum karma reachable. Must be below 4000.")
 
 -- Limit the maximum karma to 4000 because we are networking karma with 12 bits, a maximum karma of 4096.
 cvars.AddChangeCallback("ttt_karma_max", function(name, oldVal, newVal)
@@ -43,7 +44,19 @@ end
 -- Desc:		Sets the player's base karma. Should only be updated at round start.
 -- Arg One:		Number, updates the player's base karma.
 function PLAYER:SetBaseKarma(num)
+	if num > 4000 then
+		error("Player '"..self:Nick().."' has reached a karma above 4000, this is not allowed!")
+	end
 	self.ttt_BaseKarma = num
+end
+
+-----------------------
+-- TTT.Karma:IsEnabled
+-----------------------
+-- Desc:		Sees if the karma system is enabled.
+-- Returns:		Boolean.
+function TTT.Karma:IsEnabled()
+	return self.ConVars.Enabled:GetBool()
 end
 
 net.Receive("TTT.Karma.SyncKarma", function()
