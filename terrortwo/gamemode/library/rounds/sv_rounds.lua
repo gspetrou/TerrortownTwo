@@ -167,7 +167,7 @@ function TTT.Rounds.EnterPrep()
 	hook.Call("TTT.Rounds.EnteredPrep")
 
 	local delay = 0
-	if not TTT.Rounds.NumRoundsPassed or TTT.Rounds.NumRoundsPassed == 0 then
+	if (not TTT.Rounds.NumRoundsPassed or TTT.Rounds.NumRoundsPassed == 0) and not TTT.Rounds.UsedRestartCommand then
 		delay = initialpreptime:GetInt()
 	else
 		delay = preptime:GetInt()
@@ -234,6 +234,7 @@ end
 -- Desc:		Restarts the current round.
 concommand.Add("ttt_roundrestart", function(ply)
 	if not IsValid(ply) or ply:IsSuperAdmin() then
+		TTT.Rounds.UsedRestartCommand = true	-- Needed because if we restart the first round it would still go through initial prep time rather than normal prep time.
 		TTT.Rounds.RestartRound()
 	else
 		print("You do not have permission to run this command.")
