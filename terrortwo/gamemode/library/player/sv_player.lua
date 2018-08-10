@@ -547,7 +547,11 @@ end
 -- Returns:		Boolean.
 function TTT.Player.AllowPVP()
 	local hookResult = hook.Call("TTT.Player.AllowPVP")
-	return isbool(hookResult) and hookResult or true
+	if isbool(hookResult) then
+		return hookResult
+	else
+		return true
+	end
 end
 
 function TTT.Player.HandleDamage(ply, dmgInfo)
