@@ -60,6 +60,8 @@ L.weapon_shotgun = "Shotgun"
 L.weapon_scout = "Scout"
 L.weapon_unarmed = "Holstered"
 
+L.weapon_dnascanner = "DNA scanner"
+
 -- Grenades
 L.weapon_firenade = "Incendiary"
 L.weapon_discombob = "Discombobulator"

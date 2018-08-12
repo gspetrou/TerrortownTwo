@@ -132,6 +132,8 @@ function SWEP:Initialize()
 	self:SetClip1(self.Primary.DefaultClip)
 	self:SetIronsights(false)
 	self:SetZoom(false)
+
+	self.Fingerprints = {}
 end
 
 function SWEP:Reload()
@@ -235,7 +237,7 @@ function SWEP:Equip(newOwner)
 		end
 
 		-- Add fingerprints to the weapon if necessary.
-		self:SetFingerprints()
+		self:SetFingerprints(newOwner)
 	end
 end
 
@@ -443,7 +445,7 @@ end
 -------------------------
 -- TTT Related Functions
 -------------------------
-function SWEP:SetFingerprints()
+function SWEP:SetFingerprints(newOwner)
 	self.Fingerprints = self.Fingerprints or {}
 	local alreadyPrinted = false
 	for i, v in ipairs(self.Fingerprints) do
