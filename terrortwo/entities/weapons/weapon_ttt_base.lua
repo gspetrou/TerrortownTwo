@@ -73,7 +73,7 @@ SWEP.CanDrop		= true					-- Boolean, can they drop this weapon.
 SWEP.DrawTTTCrosshair	= true				-- Boolean, should we draw the default TTT crosshair.
 SWEP.NoSights		= false
 
-SWEP.Fingerprints	= {}
+SWEP.Fingerprints	= {}					-- Stores fingerprints. Server only.
 SWEP.SpawnWith		= nil					-- Boolean. If true, everyone will spawn with this weapon.
 SWEP.RoleWeapon		= nil					-- ROLE_ enum or table of ROLE_ enums. Any player with one of these roles will be given this weapon at the start of the round.
 SWEP.Kind			= WEAPON_PRIMARY		-- WEAPON_ enum for what slot this gun takes.
@@ -223,22 +223,20 @@ end
 -- Largely copied from weapon_tttbase.
 local SF_WEAPON_START_CONSTRAINED = 1
 function SWEP:Equip(newOwner)
-	if SERVER then
-		-- Check if the weapon is on fire when picked up.
-		if self:IsOnFire() then
-			self:Extinguish()
-		end
-
-		-- If this weapon started constrained, unset that spawnflag, or the weapon will be re-constrained and float.
-		if self:HasSpawnFlags(SF_WEAPON_START_CONSTRAINED) then
-			local flags = self:GetSpawnFlags()
-			local newflags = bit.band(flags, bit.bnot(SF_WEAPON_START_CONSTRAINED))
-			self:SetKeyValue("spawnflags", newflags)
-		end
-
-		-- Add fingerprints to the weapon if necessary.
-		self:SetFingerprints(newOwner)
+	-- Check if the weapon is on fire when picked up.
+	if self:IsOnFire() then
+		self:Extinguish()
 	end
+
+	-- If this weapon started constrained, unset that spawnflag, or the weapon will be re-constrained and float.
+	if self:HasSpawnFlags(SF_WEAPON_START_CONSTRAINED) then
+		local flags = self:GetSpawnFlags()
+		local newflags = bit.band(flags, bit.bnot(SF_WEAPON_START_CONSTRAINED))
+		self:SetKeyValue("spawnflags", newflags)
+	end
+
+	-- Add fingerprints to the weapon if necessary.
+	self:AddFingerprint(newOwner)
 end
 
 ----------------
@@ -445,7 +443,7 @@ end
 -------------------------
 -- TTT Related Functions
 -------------------------
-function SWEP:SetFingerprints(newOwner)
+function SWEP:AddFingerprint(newOwner)
 	self.Fingerprints = self.Fingerprints or {}
 	local alreadyPrinted = false
 	for i, v in ipairs(self.Fingerprints) do
@@ -457,6 +455,17 @@ function SWEP:SetFingerprints(newOwner)
 	if not alreadyPrinted then
 		table.insert(self.Fingerprints, newOwner)
 	end
+end
+
+function SWEP:GetFingerprints()
+	if not istable(self.Fingerprints) then
+		self.Fingerprints = {}
+	end
+	return self.Fingerprints
+end
+
+function SWEP:HasFingerprints()
+	return #self:GetFingerprints() > 0
 end
 
 -- Called when this weapon is bought from a Traitor or Detective store.

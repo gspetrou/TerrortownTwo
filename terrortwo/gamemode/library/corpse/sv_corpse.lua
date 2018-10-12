@@ -44,7 +44,16 @@ end
 -- Desc:		Sees if the entity is a corpse or not.
 -- Returns:		Boolean, true if they're a corpse.
 function ENTITY:IsCorpse()
-	return isbool(self.isbody) and true or false
+	return isbool(self.ttt_isbody) and true or false
+end
+
+------------------------
+-- ENTITY:HasTTTBodySet
+------------------------
+-- Desc:		Sees if the corpse has killer info set on it. If not then we cant collect DNA samples from it.
+-- Returns:		Boolean.
+function ENTITY:HasTTTBodyDataSet()
+	return isbool(self.HasTTTBodyDataSet) and true or false
 end
 
 ----------------------------
@@ -69,7 +78,7 @@ function TTT.Corpse.CreateRagdoll(ply)
 
 	ragdoll:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)	-- TTT had an option for this but it can cause crashes too easily.
 
-	ragdoll.isbody = true
+	ragdoll.ttt_isbody = true
 
 	return ragdoll
 end
@@ -104,13 +113,18 @@ function TTT.Corpse.SetBodyData(ply, ragdoll, attacker, dmginfo)
 		end
 	end
 
+	ragdoll.HasTTTBodyDataSet = true	-- Used to simply see if this corpse has had body data set on it.
+
 	-- Info at time of death. All stored rather then obtainned later through the player because they might disconnect.
 	ragdoll.Owner = ply
 	ragdoll.OwnerSteamID = ply:SteamID()
 	ragdoll.OwnerName = ply:Nick()
 	ragdoll.OwnerRole = ply:GetRole()
-	ragdoll.DeathTime = CurTime()
 	ragdoll.OwnerEquipment = ply:GetEquipment()
+	ragdoll.Killer = attacker
+	ragdoll.KillerSteamID = attacker:SteamID()
+	ragdoll.DeathTime = CurTime()
+	ragdoll.SampleDecayTime = CurTime() + (-1 * (0.019 * dist)^2 + GetConVar("ttt_killer_dna_basetime"):GetInt())
 	ragdoll.DeathDamageInfo = dmginfo
 end
 
@@ -119,8 +133,12 @@ end
 ----------------------------------
 -- Desc:		Gets a struct/table of a corpse's search info.
 -- Arg One:		Entity, the corpse.
--- Returns:		Table, of body info.
+-- Returns:		Table or false. Table for info, false if not a valid body.
 function TTT.Corpse.GetCorpseSearchInfo(corpse)
+	if not IsValid(corpse) or not corpse:IsCorpse() then
+		return false
+	end
+
 	return {
 		Entity = corpse,
 		Owner = corpse.Owner,
@@ -128,8 +146,31 @@ function TTT.Corpse.GetCorpseSearchInfo(corpse)
 		OwnerName = corpse.OwnerName,
 		OwnerRole = corpse.OwnerRole,
 		OwnerEquipment = corpse.OwnerEquipment,
+		Killer = corpse.attacker,
+		KillerSteamID = corpse.KillerSteamID,
+		SampleDecayTime = corpse.SampleDecayTime,
 		DeathTime = corpse.DeathTime,
 		DeathDamageInfo = corpse.DeathDamageInfo
+	}
+end
+
+------------------------
+-- TTT.Corpse.GetSample
+------------------------
+-- Desc:		Gets the DNA sample data from a corpse.
+-- Arg One:		Entity, the corpse.
+-- Returns:		Table or false. Table of DNA sample data, false if is an invalid corpse.
+function TTT.Corpse.GetSample(corpse)
+	if not IsValid(corpse) or not corpse:IsCorpse() then
+		return false
+	end
+
+	return {
+		Owner = corpse.Owner,
+		OwnerSteamID = corpse.OwnerSteamID,
+		Killer = corpse.Killer,
+		KillerSteamID = corpse.KillerSteamID,
+		SampleDecayTime = corpse.SampleDecayTime
 	}
 end
 
