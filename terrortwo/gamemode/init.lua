@@ -231,6 +231,7 @@ end
 function GM:PlayerDeath(ply, inflictor, attacker)
 	ply:Flashlight(false)
 	ply:Extinguish()
+	TTT.Corpse.SetMissingForTraitors(ply)	-- Let traitors know that this player is now considered missing.
 end
 
 hook.Add("TTT.Corpse.ShouldCreateBody", "TTT", function(ply)

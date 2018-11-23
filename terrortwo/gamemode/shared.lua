@@ -128,6 +128,8 @@ hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
 				TTT.Scoreboard.ClearTag(v)
 			end
 		end
+		
+		TTT.Corpse.ResetBodyStatuses()
 	end
 end)
 
