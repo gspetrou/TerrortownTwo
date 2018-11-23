@@ -21,6 +21,14 @@ do
 		frame:Center()
 	end
 
+	net.Receive("TTT.Corpse.OpenSearchMenu", function()
+		local corpseEntity = net.ReadEntity()
+		
+		if IsValid(corpseEntity) then
+			TTT.Corpse.OpenBodySearchMenu(corpseEntity)
+		end
+	end)
+
 	net.Receive("TTT.Corpse.SearchInfo", function()
 		local corpseEntity = net.ReadEntity()
 		local ownerName = net.ReadString()

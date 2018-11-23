@@ -77,7 +77,7 @@ function SWEP:PrimaryAttack()
 	if IsValid(hitEntity) and not hitEntity:IsPlayer() then
 		if SERVER then
 			-- Hit ragdoll.
-			if hitEntity:IsCorpse() and hitEntity:HasTTTBodyDataSet() then
+			if hitEntity:IsCorpse() and hitEntity:HasTTTBodyData() then
 				local sampleData = TTT.Corpse.GetSample(corpse)
 				
 			-- Hit weapon with prints on it.

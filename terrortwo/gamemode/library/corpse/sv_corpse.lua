@@ -47,13 +47,13 @@ function ENTITY:IsCorpse()
 	return isbool(self.ttt_isbody) and true or false
 end
 
-------------------------
--- ENTITY:HasTTTBodySet
-------------------------
+---------------------
+-- ENTITY:HasTTTBody
+---------------------
 -- Desc:		Sees if the corpse has killer info set on it. If not then we cant collect DNA samples from it.
 -- Returns:		Boolean.
-function ENTITY:HasTTTBodyDataSet()
-	return isbool(self.HasTTTBodyDataSet) and true or false
+function ENTITY:HasTTTBodyData()
+	return isbool(self.HasTTTBodyData) and true or false
 end
 
 ----------------------------
@@ -78,6 +78,7 @@ function TTT.Corpse.CreateRagdoll(ply)
 
 	ragdoll:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)	-- TTT had an option for this but it can cause crashes too easily.
 
+	TTT.Corpse.AddToBodyInfoCache(ragdoll)
 	ragdoll.ttt_isbody = true
 
 	return ragdoll
@@ -113,7 +114,7 @@ function TTT.Corpse.SetBodyData(ply, ragdoll, attacker, dmginfo)
 		end
 	end
 
-	ragdoll.HasTTTBodyDataSet = true	-- Used to simply see if this corpse has had body data set on it.
+	ragdoll.HasTTTBodyData = true	-- Used to simply see if this corpse has had body data set on it.
 
 	-- Info at time of death. All stored rather then obtainned later through the player because they might disconnect.
 	ragdoll.Owner = ply
@@ -174,6 +175,54 @@ function TTT.Corpse.GetSample(corpse)
 	}
 end
 
+-- Since there is a lot of information on a body we use a cache to ensure that this information doesnt have to be networked more times than necessary.
+-- The cache entry for a given body is kept until the body entity is removed.
+TTT.Corpse.BodyInfoCache = TTT.Corpse.BodyInfoCache or {}
+
+-----------------------------
+-- TTT.Corpse.ClearCacheSpot
+-----------------------------
+-- Desc:		Removes the given corpse entity from the body info cache.
+-- Arg One:		Entity, corpse.
+function TTT.Corpse.ClearCacheSpot(corpse)
+	TTT.Corpse.BodyInfoCache[corpse:EntIndex()] = nil
+end
+
+----------------------------------
+-- TTT.Corpse.AlreadySentBodyInfo
+----------------------------------
+-- Desc:		Sees if the given player has already been sent the given corpse's info.
+-- Arg One:		Player, who wants the body info.
+-- Arg Two:		Entity, corpse with info.
+-- Returns:		Boolean, do they already have the info.
+function TTT.Corpse.AlreadySentBodyInfo(ply, corpse)
+	for _, cachedPly in pairs(TTT.Corpse.BodyInfoCache[corpse:EntIndex()]) do	-- Using pairs here because a player could disconnect and become invalid in this cache.
+		if ply == cachedPly then
+			return true
+		end
+	end
+	return false
+end
+
+---------------------------------------
+-- TTT.Corpse.AddPersonToBodyInfoCache
+---------------------------------------
+-- Desc:		Adds a person to a corpse's body info cache. Pretty much means "this person has already been sent the info for this corpse so dont bother sending it again."
+-- Arg One:		Player, to add to a corpse's cache.
+-- Arg Two:		Entity, corpse.
+function TTT.Corpse.AddPersonToBodyInfoCache(ply, corpse)
+	table.insert(TTT.Corpse.BodyInfoCache[corpse:EntIndex()], ply)
+end
+
+---------------------------------
+-- TTT.Corpse.AddToBodyInfoCache
+---------------------------------
+-- Desc:		Adds a corpse to be tracked in the body info cache.
+-- Arg One:		Entity, corpse.
+function TTT.Corpse.AddToBodyInfoCache(corpse)
+	TTT.Corpse.BodyInfoCache[ragdoll:EntIndex()] = {}
+end
+
 -----------------------------
 -- TTT.Corpse.SendSearchInfo
 -----------------------------
@@ -208,7 +257,43 @@ function TTT.Corpse.SendSearchInfo(corpse, recipients)
 
 	if recipients == true then
 		net.Broadcast()
+
+		for i, ply in ipairs(player.GetAll()) do
+			TTT.Corpse.AddPersonToBodyInfoCache(ply, corpse)
+		end
 	else
 		net.Send(recipients)
+
+		if istable(recipients) then
+			for i, ply in ipairs(recipients) do
+				TTT.Corpse.AddPersonToBodyInfoCache(ply, corpse)
+			end
+		else
+			TTT.Corpse.AddPersonToBodyInfoCache(recipients, corpse)
+		end
 	end
 end
+
+---------------------
+-- TTT.Corpse.Search
+---------------------
+-- Desc:		Sets up and opens the body search menu for a player on a corpse.
+-- Arg One:		Player, who is doing the seaching.
+-- Arg Two:		Entity, ttt body to search.
+-- Arg Three:	(Optional=false) Boolean, true makes this a covert search. Nobody will know you've searched it.
+util.AddNetworkString("TTT.Corpse.OpenSearchMenu")
+function TTT.Corpse.Search(ply, corpse, covert)
+	if not TTT.Corpse.AlreadySentBodyInfo(ply, corpse) then
+		TTT.Corpse.SendSearchInfo(corpse, ply)
+	end
+
+	net.Start("TTT.Corpse.OpenSearchMenu")
+		net.WriteEntity(corpse)
+	net.Send(ply)
+end
+
+
+
+
+
+

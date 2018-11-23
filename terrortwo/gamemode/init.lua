@@ -55,8 +55,7 @@ function GM:KeyRelease(ply, key)
 				end
 				return true
 			elseif tr.Entity:IsCorpse() then
-				--CORPSE.ShowSearch(ply, tr.Entity, (ply:KeyDown(IN_WALK) or ply:KeyDownLast(IN_WALK)))
-				-- TODO: Show body search
+				TTT.Corpse.Search(ply, tr.Entity, ply:KeyDown(IN_WALK) or ply:KeyDownLast(IN_WALK))
 				return true
 			end
 		end
@@ -414,13 +413,20 @@ function GM:PlayerLeaveVehicle(ply, vehicle)
 	end
 end
 
+-- Called when a spectating/dead player wants to inspect a corpse.
 hook.Add("TTT.Player.WantsToSearchCorpse", "TTT", function(ply, corpse)
-	
+	TTT.Corpse.Search(ply, corpse, false)
 end)
 
 ----------------
 -- Entity Hooks
 ----------------
+function GM:EntityRemoved(entity)
+	if entity:IsCorpse() then
+		TTT.Corpse.ClearCacheSpot(entity)
+	end
+end
+
 function GM:EntityTakeDamage(ent, dmgInfo)
 	if not IsValid(ent) then
 		return
