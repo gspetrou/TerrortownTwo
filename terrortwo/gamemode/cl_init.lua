@@ -104,11 +104,11 @@ hook.Add("TTT.Scoreboard.Initialize", "TTT", function()
 		return ply:Alive()
 	end, TTT.Scoreboard.DrawTags, 40)
 
-	TTT.Scoreboard.AddGroup("missing", "sb_missing", 20, Color(130, 190, 130, 100), function(ply)
+	TTT.Scoreboard.AddGroup("missing", "sb_missing", Color(130, 190, 130, 100), 20, function(ply)
 		return ply:IsMissing()
 	end)
 
-	TTT.Scoreboard.AddGroup("dead", "sb_dead", 30, Color(130, 170, 10, 100), function(ply)
+	TTT.Scoreboard.AddGroup("dead", "sb_dead", Color(130, 170, 10, 100), 30, function(ply)
 		return ply:IsConfirmedDead()
 	end)
 

@@ -53,7 +53,11 @@ end
 -- Desc:		Sees if the corpse has killer info set on it. If not then we cant collect DNA samples from it.
 -- Returns:		Boolean.
 function ENTITY:HasTTTBodyData()
-	return isbool(self.HasTTTBodyData) and true or false
+	if isbool(self.SetTTTBodyData) then
+		return self.SetTTTBodyData
+	end
+
+	return false
 end
 
 ----------------------------
@@ -84,6 +88,9 @@ function TTT.Corpse.CreateRagdoll(ply)
 	return ragdoll
 end
 
+local ttt_killer_dna_basetime = CreateConVar("ttt_killer_dna_basetime", "100", FCVAR_ARCHIVE, "Killers DNA sample decay time dependent on the killer's distance from the victim.")
+local ttt_killer_dna_range = CreateConVar("ttt_killer_dna_range", "550", FCVAR_ARCHIVE, "The maximum distance a killer can be from a victim at the time of murder for DNA to be left.")
+
 --------------------------
 -- TTT.Corpse.SetBodyData
 --------------------------
@@ -94,7 +101,7 @@ end
 -- Arg Four:	CTakeDamageInfo, object containning info on how the player died.
 function TTT.Corpse.SetBodyData(ply, ragdoll, attacker, dmginfo)
 	-- Here we set the movement of the ragdoll at the moment of the player's death.
-	local numPhysObjects = ragdoll:GetPhysicsObjectCount()-1
+	local numPhysObjects = ragdoll:GetPhysicsObjectCount() - 1
 	local velocity = ply:GetVelocity()
 
 	-- "Bullets have a lot of force, which feels better when shooting props, but makes bodies fly, so dampen that here."
@@ -114,7 +121,17 @@ function TTT.Corpse.SetBodyData(ply, ragdoll, attacker, dmginfo)
 		end
 	end
 
-	ragdoll.HasTTTBodyData = true	-- Used to simply see if this corpse has had body data set on it.
+	local inflictor = dmginfo:GetInflictor()
+	if IsValid(inflictor) and inflictor:IsNPC() then
+		return
+	end
+
+	local dist = ply:GetPos():Distance(attacker:GetPos())
+	if dist > ttt_killer_dna_range:GetInt() then
+		return nil
+	end
+
+	ragdoll.SetTTTBodyData = true	-- Used to simply see if this corpse has had body data set on it.
 
 	-- Info at time of death. All stored rather then obtainned later through the player because they might disconnect.
 	ragdoll.Owner = ply
@@ -125,7 +142,7 @@ function TTT.Corpse.SetBodyData(ply, ragdoll, attacker, dmginfo)
 	ragdoll.Killer = attacker
 	ragdoll.KillerSteamID = attacker:SteamID()
 	ragdoll.DeathTime = CurTime()
-	ragdoll.SampleDecayTime = CurTime() + (-1 * (0.019 * dist)^2 + GetConVar("ttt_killer_dna_basetime"):GetInt())
+	ragdoll.SampleDecayTime = CurTime() + (-1 * (0.019 * dist)^2 + ttt_killer_dna_basetime:GetInt())
 	ragdoll.DeathDamageInfo = dmginfo
 end
 
@@ -220,7 +237,7 @@ end
 -- Desc:		Adds a corpse to be tracked in the body info cache.
 -- Arg One:		Entity, corpse.
 function TTT.Corpse.AddToBodyInfoCache(corpse)
-	TTT.Corpse.BodyInfoCache[ragdoll:EntIndex()] = {}
+	TTT.Corpse.BodyInfoCache[corpse:EntIndex()] = {}
 end
 
 -----------------------------
@@ -283,6 +300,9 @@ end
 -- Arg Three:	(Optional=false) Boolean, true makes this a covert search. Nobody will know you've searched it.
 util.AddNetworkString("TTT.Corpse.OpenSearchMenu")
 function TTT.Corpse.Search(ply, corpse, covert)
+	if not corpse:IsCorpse() or not corpse:HasTTTBodyData() then
+		error("Player '".. (ply:Nick() or "INVALID-NAME") .."' (".. (ply:SteamID() or "INVALID-STEAMID") ..") tried to search an invalid corpse!")
+	end
 	if not TTT.Corpse.AlreadySentBodyInfo(ply, corpse) then
 		TTT.Corpse.SendSearchInfo(corpse, ply)
 	end
@@ -290,6 +310,10 @@ function TTT.Corpse.Search(ply, corpse, covert)
 	net.Start("TTT.Corpse.OpenSearchMenu")
 		net.WriteEntity(corpse)
 	net.Send(ply)
+
+	if covert == false and TTT.Corpse.GetStatusFromSteamID(corpse.OwnerSteamID) != BODYSTATUS_FOUND then
+		TTT.Corpse.SetConfirmedDead(corpse.OwnerSteamID)
+	end
 end
 
 

@@ -129,18 +129,18 @@ if SERVER then
 	-- TTT.Corpse.SetMissingForTraitors
 	------------------------------------
 	-- Desc:		Sets the player's body status to missing for all traitors. Used when the given player dies.
-	-- Arg One:		Player, to set missing for traitors.
-	function TTT.Corpse.SetMissingForTraitors(ply)
-		TTT.Corpse.SendBodyStatusUpdate(ply, BODYSTATUS_MISSING, TTT.Roles.GetTraitors())
+	-- Arg One:		Player or SteamID32, to set missing for traitors.
+	function TTT.Corpse.SetMissingForTraitors(plyID)
+		TTT.Corpse.SendBodyStatusUpdate(plyID, BODYSTATUS_MISSING, TTT.Roles.GetTraitors())
 	end
 
-	-----------------------------
-	-- TTT.Corpse.SetConfirmDead
-	-----------------------------
+	-------------------------------
+	-- TTT.Corpse.SetConfirmedDead
+	-------------------------------
 	-- Desc:		Sets the player's body status to confirmed dead for all everyone.
-	-- Arg One:		Player, to set confirmed dead.
-	function TTT.Corpse.SetConfirmDead(ply)
-		TTT.Corpse.SendBodyStatusUpdate(ply, BODYSTATUS_FOUND, true)
+	-- Arg One:		Player or SteamID32, to set confirmed dead.
+	function TTT.Corpse.SetConfirmedDead(plyID)
+		TTT.Corpse.SendBodyStatusUpdate(plyID, BODYSTATUS_FOUND, true)
 	end
 end
 

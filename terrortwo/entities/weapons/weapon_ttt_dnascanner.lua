@@ -16,7 +16,7 @@ SWEP.ViewModelFOV	= 10
 SWEP.Primary.Enabled	= false
 SWEP.Primary.Ammo		= "none"
 SWEP.Primary.Delay		= 1
-self.NoSights			= true
+SWEP.NoSights			= true
 
 SWEP.SpawnWith = ROLE_DETECTIVE
 
