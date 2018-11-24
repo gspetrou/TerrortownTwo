@@ -199,6 +199,7 @@ end
 
 function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	if ply:IsSpectator() or ply:IsInFlyMode() then
+		hook.Call("TTT.Player.SpecDoPlayerDeath", nil, ply, attacker, dmginfo)
 		return
 	end
 
