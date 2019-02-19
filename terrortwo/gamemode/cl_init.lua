@@ -113,7 +113,7 @@ hook.Add("TTT.Scoreboard.Initialize", "TTT", function()
 	end)
 
 	TTT.Scoreboard.AddGroup("spectators", "sb_spectators", Color(200, 200, 0, 100), 40, function(ply)
-		return ply:IsSpectator() or ply:IsWaiting()
+		return ply:IsSpectator() or (ply:IsWaiting() and not TTT.Rounds.IsPrep())
 	end)
 
 	-------------------

@@ -5,6 +5,8 @@ TTT.Karma = TTT.Karma or {
 
 TTT.Karma.ConVars.Enabled = CreateConVar("ttt_karma", "1", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Is the karma system enabled.")
 TTT.Karma.ConVars.Maximum = CreateConVar("ttt_karma_max", "1250", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "The maximum karma reachable. Must be below 4000.")
+TTT.Karma.ConVars.Starting = CreateConVar("ttt_karma_starting", "1000", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "What is the starting karma.")
+
 
 -- Limit the maximum karma to 4000 because we are networking karma with 12 bits, a maximum karma of 4096.
 cvars.AddChangeCallback("ttt_karma_max", function(name, oldVal, newVal)
@@ -28,6 +30,15 @@ cvars.AddChangeCallback("ttt_karma_max", function(name, oldVal, newVal)
 end)
 
 local PLAYER = FindMetaTable("Player")
+
+------------------------------
+-- TTT.Karma:GetStartingKarma
+------------------------------
+-- Desc:		Gets the starting karma amount.
+-- Returns:		Number.
+function TTT.Karma:GetStartingKarma()
+	return self.ConVars.Starting:GetFloat()
+end
 
 -----------------------
 -- PLAYER:GetBaseKarma

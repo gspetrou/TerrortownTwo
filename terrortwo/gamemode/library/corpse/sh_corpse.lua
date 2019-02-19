@@ -75,7 +75,7 @@ end
 -- Desc:		Sees if the player is confirmed dead (everyone knows theyre dead).
 -- Returns:		Boolean.
 function PLAYER:IsConfirmedDead()
-	return ply:GetBodyFoundStatus() == BODYSTATUS_FOUND
+	return self:GetBodyFoundStatus() == BODYSTATUS_FOUND
 end
 
 --------------------
@@ -84,7 +84,7 @@ end
 -- Desc:		Sees if the player is missing. This can vary from player to player.
 -- Returns:		Boolean.
 function PLAYER:IsMissing()
-	return ply:GetBodyFoundStatus() == BODYSTATUS_MISSING
+	return self:GetBodyFoundStatus() == BODYSTATUS_MISSING
 end
 
 if SERVER then
