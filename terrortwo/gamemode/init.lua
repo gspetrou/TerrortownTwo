@@ -556,6 +556,8 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 		TTT.Equipment.GiveRoleEquipment(ply)	-- Give all players the equipment their role starts with.
 	end
 
+	TTT.Notifications.DispatchStartRoundMessages()
+
 	timer.Simple(1, function()
 		TTT.Rounds.CheckForRoundEnd()	-- Could happen if ttt_dev_preventwin is 0 and ttt_minimum_players is <= 1.
 	end)
