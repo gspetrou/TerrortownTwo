@@ -70,6 +70,9 @@ L.weapon_smokenade = "Smoke Grenade"
 L.ammo_not_enough = "Insufficient ammo in your weapon's clip to drop as an ammo box."
 L.ammo_drop_no_room = "You have no room here to drop your ammo!"
 
+-- Body Search
+L.body_search_results = "Body Search Results"
+
 -- Notifications
 L.notification_start_innocent = [[You are an innocent Terrorist! But there are traitors around...
 Who can you trust, and who is out to fill you with bullets?
@@ -91,6 +94,3 @@ These are your comrades:
 
 Press %s to receive your special equipment!
 ]]
-
-
-L.invalid = "bork" -- This is used for any invalid text.
