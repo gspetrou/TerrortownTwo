@@ -5,8 +5,7 @@
 -- If you only want to send some text to the client's notification stack just use TTT.Notifications.SendCustomMsg (server).
 
 TTT.Notifications = TTT.Notifications or {
-	StandardMsgTypes = {},
-	StandardMsgPhrases = {},
+	StandardMsgs = {},
 	StandardMsgCounter = 0
 }
 
@@ -20,26 +19,62 @@ local stdNotificationBits = 5
 -- Desc:		Adds a standard message to the notification system.
 -- Arg One:		String, unique identifier for this message.
 -- Arg Two:		String, phrase for the string.
-function TTT.Notifications:AddStandardMsg(ID, phrase)
-	self.StandardMsgTypes[ID] = self.StandardMsgCounter
-	self.StandardMsgPhrases[self.StandardMsgTypes[ID]] = phrase
+-- Arg Three:	(Optional=nil) Function, ran on the client, this function is called when getting any extra strings to be subbed into the phrase.
+-- Arg Four:	(Optional=Default BG Color) Color, if you want a custom background color for this notification.
+function TTT.Notifications:AddStandardMsg(ID, phrase, clientFunc, bgColor)
+	self.StandardMsgs[ID] = {
+		NWID = self.StandardMsgCounter,
+		Phrase = phrase,
+		ClientFunc = clientFunc,
+		BGColor = bgColor
+	}
 	self.StandardMessageCounter = self.StandardMessageCounter + 1
 end
 
+-------------------------------
+-- TT.Notifications.Initialize
+-------------------------------
+-- Desc:		Initializes standard messages to be used later.
 function TTT.Notifications.Initialize()
 	hook.Call("TTT.Notifications.InitStandardMessages")
 end
 
 if SERVER then
+	-----------------------------------
+	-- TTT.Notifications.SendCustomMsg
+	-----------------------------------
+	-- Desc:		Sends a custom message to the given clients.
+	-- Arg One:		String, message to send to clients.
+	-- Arg Two:		Boolean, table, or Player. Recipients of the message, true broadcasts.
+	-- Arg Three:	(Optional=Default BG Color) Color, background color of the message if you want a custom one.
+	-- Note:		If you need more customization in the message you're better off networking it on yourself and manually invoking the notification on the client.
 	util.AddNetworkString("TTT.Notifications.CustomMsg")
-	function TTT.Notifications.SendCustomMsg(recipients, msg, bgColor)
-
+	function TTT.Notifications.SendCustomMsg(msg, recipients, bgColor)
+		net.Start("TTT.Notifications.CustomMsg")
+			net.WriteString(msg)
+			if IsColor(bgColor) then
+				net.WriteBool(true)
+				net.WriteColor(bgColor)
+			else
+				net.WriteBool(false)
+			end
+		if recipients == true then
+			net.Broadcast()
+		else
+			net.Send(recipients)
+		end
 	end
 
+	-------------------------------------
+	-- TTT.Notifications:SendStandardMsg
+	-------------------------------------
+	-- Desc:		Sends a given standard message to the given clients.
+	-- Arg One:		String, message identifier (set in the first arg of AddStandardMsg).
+	-- Arg Two:		Boolean, table, or Player, recipients of the messge. Passing true broadcasts.
 	util.AddNetworkString("TTT.Notifications.StandardMsg")
 	function TTT.Notifications:SendStandardMsg(msgType, recipients)
 		net.Start("TTT.Notifications.StandardMsg")
-			net.WriteUInt(self.StandardMsgTypes[msgType], stdNotificationBits)
+			net.WriteUInt(self.StandardMsgs[msgType].NWID, stdNotificationBits)
 
 		if recipients == true then
 			net.Broadcast()
@@ -47,6 +82,8 @@ if SERVER then
 			net.Send(recipients)
 		end
 	end
+
+	
 
 	------------------------------------------------
 	-- TTT.Notifications.DispatchStartRoundMessages
@@ -58,28 +95,54 @@ if SERVER then
 		local detectives = TTT.Roles.GetDetectives()
 
 		if #traitors == 1 then
-			TTT.Notifications:SendStandardMsg(TTT.Notications.StandardMsgTypes.START_TRAITOR_SOLO, traitors)
+			TTT.Notifications:SendStandardMsg("START_TRAITOR_SOLO", traitors)
 		else
-			TTT.Notifications:SendStandardMsg(TTT.Notications.StandardMsgTypes.START_TRAITOR_MULTI, traitors)
+			TTT.Notifications:SendStandardMsg("START_TRAITOR_MULTI", traitors)
 		end
 
 		if #detectives > 0 then
-			TTT.Notifications:SendStandardMsg(TTT.Notications.StandardMsgTypes.START_DETECTIVE, detectives)
+			TTT.Notifications:SendStandardMsg("START_DETECTIVE", detectives)
 		end
 
-		TTT.Notifications:SendStandardMsg(TTT.Notications.StandardMsgTypes.START_INNOCENT, innocents)
-		TTT.Notifications:SendStandardMsg(TTT.Notications.StandardMsgTypes.START_DURATION, TTT.Roles.GetActivePlayers())
+		TTT.Notifications:SendStandardMsg("START_INNOCENT", innocents)
 	end
 end
 
 if CLIENT then
 	net.Receive("TTT.Notifications.CustomMsg", function()
+		local msg = net.ReadString()
+		local hasCustomBGColor = net.ReadBool()
+		local bgColor
 
+		if hasCustomBGColor then
+			bgColor = net.ReadColor()
+		end
+		print(msg, hasCustomBGColor, bgColor)
 	end)
 
 	net.Receive("TTT.Notifications.StandardMsg", function()
-		local msgType = net.ReadUInt(stdNotificationBits)
-		local phrase = TTT.Notifications.StandardMsgPhrases[msgType]
-		print(phrase)
+		local msgNWID = net.ReadUInt(stdNotificationBits)
+		local msgType
+		for mType, msgData in pairs(TTT.Notifications.StandardMsgs) do
+			if msgNWID == msgData.NWID then
+				msgType = mType
+				break
+			end
+		end
+
+		if not isstring(msgType) then
+			error("Invalid notification type received!")
+		end
+
+		local phrase = TTT.Notifications.StandardMsgs[msgType].Phrase
+		local bgColor = TTT.Notifications.StandardMsgs[msgType].BGColor
+		local func = TTT.Notifications.StandardMsgs[msgType].ClientFunc
+		local text
+		if isfunction(func) then
+			text = TTT.Language.GetPhrase(phrase, func())
+		else
+			text = TTT.Langauge.GetPhrase(phrase)
+		end
+		print(text, bgColor)
 	end)
 end

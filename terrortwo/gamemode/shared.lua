@@ -146,10 +146,16 @@ end
 ----------------------
 hook.Add("TTT.Notifications.InitStandardMessages", "TTT", function()
 	TTT.Notifications:AddStandardMsg("START_INNOCENT", "notification_start_innocent")
-	TTT.Notifications:AddStandardMsg("START_DETECTIVE", "notification_start_innocent")
-	TTT.Notifications:AddStandardMsg("START_TRAITOR_MULTI", "notification_start_innocent")
-	TTT.Notifications:AddStandardMsg("START_TRAITOR_SOLO", "notification_start_innocent")
-	TTT.Notifications:AddStandardMsg("START_DURATION", "notification_start_innocent")
+	TTT.Notifications:AddStandardMsg("START_DETECTIVE", "notification_start_detective", function()
+		return "BUTTON"
+	end)
+	TTT.Notifications:AddStandardMsg("START_TRAITOR_MULTI", "notification_start_traitor_multi", function()
+		return "BUDDIES", "TBUTTON"
+	end)
+	TTT.Notifications:AddStandardMsg("START_TRAITOR_SOLO", "notification_start_traitor_solo", function()
+		return "TBUTTON"
+	end)
+	--TTT.Notifications:AddStandardMsg("START_DURATION", "notification_start_duration")
 end)
 
 
