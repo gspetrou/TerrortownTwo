@@ -28,7 +28,7 @@ function TTT.Notifications:AddStandardMsg(ID, phrase, clientFunc, bgColor)
 		ClientFunc = clientFunc,
 		BGColor = bgColor
 	}
-	self.StandardMessageCounter = self.StandardMessageCounter + 1
+	self.StandardMsgCounter = self.StandardMsgCounter + 1
 end
 
 -------------------------------
@@ -82,8 +82,6 @@ if SERVER then
 			net.Send(recipients)
 		end
 	end
-
-	
 
 	------------------------------------------------
 	-- TTT.Notifications.DispatchStartRoundMessages
@@ -139,9 +137,9 @@ if CLIENT then
 		local func = TTT.Notifications.StandardMsgs[msgType].ClientFunc
 		local text
 		if isfunction(func) then
-			text = TTT.Language.GetPhrase(phrase, func())
+			text = TTT.Languages.GetPhrase(phrase, func())
 		else
-			text = TTT.Langauge.GetPhrase(phrase)
+			text = TTT.Languages.GetPhrase(phrase)
 		end
 		print(text, bgColor)
 	end)

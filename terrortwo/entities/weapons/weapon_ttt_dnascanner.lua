@@ -1,4 +1,3 @@
-
 SWEP.Base		= "weapon_ttt_base"
 DEFINE_BASECLASS(SWEP.Base)
 
@@ -18,7 +17,7 @@ SWEP.Primary.Ammo		= "none"
 SWEP.Primary.Delay		= 1
 SWEP.NoSights			= true
 
-SWEP.SpawnWith = ROLE_DETECTIVE
+SWEP.RoleWeapons = ROLE_DETECTIVE
 
 -- DNA Scanner specific settings
 SWEP.StoredSamples = {}				-- Where all DNA samples are stored.

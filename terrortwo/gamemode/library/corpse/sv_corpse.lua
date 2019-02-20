@@ -122,8 +122,15 @@ function TTT.Corpse.SetBodyData(ply, ragdoll, attacker, dmginfo)
 	end
 
 	local inflictor = dmginfo:GetInflictor()
-	if IsValid(inflictor) and inflictor:IsNPC() then
-		return
+	if IsValid(inflictor) then
+		if inflictor:IsNPC() then
+			return
+		end
+	else
+		local wep = attacker:GetActiveWeapon()
+		if IsValid(wep) then
+			dmginfo:SetInflictor(wep)
+		end
 	end
 
 	local dist = ply:GetPos():Distance(attacker:GetPos())
@@ -256,10 +263,12 @@ function TTT.Corpse.SendSearchInfo(corpse, recipients)
 	local corpseInfo = TTT.Corpse.GetCorpseSearchInfo(corpse)
 	local dmgInfo = corpseInfo.DeathDamageInfo
 	local damageType, weaponClass = dmgInfo:GetDamageType(), TTT.WeaponFromDamageInfo(dmgInfo)
+	if weaponClass == nil then
+		weaponClass = ""
+	end
 
 	-- Send that corpse's info.
 	net.Start("TTT.Corpse.SearchInfo")
-
 		net.WriteEntity(corpseInfo.Entity)			-- Which entity is our corpse.
 		net.WriteString(corpseInfo.OwnerName)		-- Name of the player at death incase it changes or they disconenct.
 		net.WriteUInt(corpseInfo.OwnerRole, 3)		-- Even though they client might already know this player's role we have to assume they have no info on them.
