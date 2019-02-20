@@ -79,7 +79,7 @@ end
 -- Desc:		Gets a phrase that is translated to the player's currently set language.
 -- Arg One:		String, phrase ID.
 -- Arg Two:		Vararg, wherever there is a %s in the returned string it will be substituted here.
--- Returns:		String or boolean, Phrase in the clients languages. If that phrase isn't valid in the clients language then it returns it in english. If that's not valid, returns false.
+-- Returns:		String , Phrase in the clients languages. If that phrase isn't valid in the clients language then it returns it in english. If that's not valid, returns "INVALID-PHRASE".
 function TTT.Languages.GetPhrase(phrase, ...)
 	local p = TTT.Languages.GetTable()[phrase]
 	if not p and TTT.Languages.IsValid("english") then
@@ -87,7 +87,7 @@ function TTT.Languages.GetPhrase(phrase, ...)
 	end
 
 	if not isstring(p) then
-		return false
+		return "INVALID-PHRASE"
 	end
 
 	if ... then

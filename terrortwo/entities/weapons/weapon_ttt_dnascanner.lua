@@ -1,4 +1,3 @@
-
 SWEP.Base		= "weapon_ttt_base"
 DEFINE_BASECLASS(SWEP.Base)
 
@@ -16,9 +15,9 @@ SWEP.ViewModelFOV	= 10
 SWEP.Primary.Enabled	= false
 SWEP.Primary.Ammo		= "none"
 SWEP.Primary.Delay		= 1
-self.NoSights			= true
+SWEP.NoSights			= true
 
-SWEP.SpawnWith = ROLE_DETECTIVE
+SWEP.RoleWeapons = ROLE_DETECTIVE
 
 -- DNA Scanner specific settings
 SWEP.StoredSamples = {}				-- Where all DNA samples are stored.
@@ -77,7 +76,7 @@ function SWEP:PrimaryAttack()
 	if IsValid(hitEntity) and not hitEntity:IsPlayer() then
 		if SERVER then
 			-- Hit ragdoll.
-			if hitEntity:IsCorpse() and hitEntity:HasTTTBodyDataSet() then
+			if hitEntity:IsCorpse() and hitEntity:HasTTTBodyData() then
 				local sampleData = TTT.Corpse.GetSample(corpse)
 				
 			-- Hit weapon with prints on it.

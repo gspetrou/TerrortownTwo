@@ -55,8 +55,7 @@ function GM:KeyRelease(ply, key)
 				end
 				return true
 			elseif tr.Entity:IsCorpse() then
-				--CORPSE.ShowSearch(ply, tr.Entity, (ply:KeyDown(IN_WALK) or ply:KeyDownLast(IN_WALK)))
-				-- TODO: Show body search
+				TTT.Corpse.Search(ply, tr.Entity, ply:KeyDown(IN_WALK) or ply:KeyDownLast(IN_WALK))
 				return true
 			end
 		end
@@ -155,18 +154,38 @@ function GM:PlayerSpawn(ply)
 		end
 
 		self:PlayerSetModel(ply)
-		self:PlayerLoadout(ply)		-- Doesn't do anything, backwards compatability.
-		hook.Call("TTT.Player.PostPlayerSpawn", nil, ply, isspec)
+		self:PlayerLoadout(ply, false)
+		hook.Call("TTT.Player.PostPlayerSpawn", nil, ply, false)
 	end
 end
 
-hook.Add("TTT.Player.PostPlayerSpawn", "TTT", function(ply, isSpec)
+function GM:PlayerLoadout(ply, forceSpawned, forceArm, forceGear)
 	TTT.Weapons.StripCompletely(ply)
 
-	if not isSpec then
-		TTT.Weapons.GiveStarterWeapons(ply)
-		ply:SelectWeapon("weapon_ttt_unarmed")
+	if ply:IsSpectator() then
+		return
 	end
+
+	if not forceSpawned then
+		TTT.Weapons.GiveStarterWeapons(ply)	-- Dont give role gear on a normal spawn, that will happen at round start.
+	else
+		if forceArm then
+			TTT.Weapons.GiveStarterWeapons(ply)
+		else
+			ply:Give("weapon_ttt_unarmed")	-- If the player isn't carrying anything the console will be spammed with annoying red text.
+		end
+
+		if forceGear then
+			TTT.Weapons.GiveRoleWeapons(ply)
+			TTT.Equipment.GiveRoleEquipment(ply)
+		end
+	end
+
+	ply:SelectWeapon("weapon_ttt_unarmed")	-- The game assumes every alive player has at least the unarmed weapon. Having no weapon spams the console with errors (thanks gmod).
+end
+
+hook.Add("TTT.Player.PostPlayerSpawn", "TTT", function(ply, forced)
+	
 end)
 
 function GM:PlayerSetModel(ply)			-- For backwards compatability.
@@ -180,6 +199,7 @@ end
 
 function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	if ply:IsSpectator() or ply:IsInFlyMode() then
+		hook.Call("TTT.Player.SpecDoPlayerDeath", nil, ply, attacker, dmginfo)
 		return
 	end
 
@@ -231,6 +251,7 @@ end
 function GM:PlayerDeath(ply, inflictor, attacker)
 	ply:Flashlight(false)
 	ply:Extinguish()
+	TTT.Corpse.SetMissingForTraitors(ply)	-- Let traitors know that this player is now considered missing.
 end
 
 hook.Add("TTT.Corpse.ShouldCreateBody", "TTT", function(ply)
@@ -278,26 +299,16 @@ function GM:PlayerSetHandsModels(ply, ent)
 	end
 end
 
-hook.Add("TTT.Player.ForcedSpawnedPlayer", "TTT", function(ply, resetSpawn, shouldarm, giveRoleGear)
-	TTT.Weapons.StripCompletely(ply)
-
+hook.Add("TTT.Player.ForcedSpawnedPlayer", "TTT", function(ply, resetSpawn, forced_Arm, forced_RoleGear)
 	if resetSpawn then
 		TTT.Map.PutPlayerAtRandomSpawnPoint(ply)
 	else
 		ply:SetPos(ply.ttt_noResetSpawnPos)
 		ply:SetEyeAngles(ply.ttt_noResetSpawnAng)
 	end
-			
-	if shouldarm then
-		TTT.Weapons.GiveStarterWeapons(ply)
-	else
-		ply:Give("weapon_ttt_unarmed")	-- If the player isn't carrying anything the console will be spammed with annoying red text.
-	end
-
-	if giveRoleGear then
-		TTT.Weapons.GiveRoleWeapons(ply)
-		TTT.Equipment.GiveRoleEquipment(ply)
-	end
+	
+	GAMEMODE:PlayerLoadout(ply, true, forced_Arm, forced_RoleGear)
+	hook.Call("TTT.Player.PostPlayerSpawn", nil, ply, true)
 end)
 
 -- Only spray when alive.
@@ -403,13 +414,20 @@ function GM:PlayerLeaveVehicle(ply, vehicle)
 	end
 end
 
+-- Called when a spectating/dead player wants to inspect a corpse.
 hook.Add("TTT.Player.WantsToSearchCorpse", "TTT", function(ply, corpse)
-	
+	TTT.Corpse.Search(ply, corpse, false)
 end)
 
 ----------------
 -- Entity Hooks
 ----------------
+function GM:EntityRemoved(entity)
+	if entity:IsCorpse() then
+		TTT.Corpse.ClearCacheSpot(entity)
+	end
+end
+
 function GM:EntityTakeDamage(ent, dmgInfo)
 	if not IsValid(ent) then
 		return
@@ -537,6 +555,8 @@ hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 		TTT.Weapons.GiveRoleWeapons(ply)		-- Give all players the weapons for their newly given roles.
 		TTT.Equipment.GiveRoleEquipment(ply)	-- Give all players the equipment their role starts with.
 	end
+
+	TTT.Notifications.DispatchStartRoundMessages()
 
 	timer.Simple(1, function()
 		TTT.Rounds.CheckForRoundEnd()	-- Could happen if ttt_dev_preventwin is 0 and ttt_minimum_players is <= 1.

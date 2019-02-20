@@ -4,7 +4,6 @@ TTT.Karma = TTT.Karma or {
 }
 
 TTT.Karma.ConVars.Strict = CreateConVar("ttt_karma_strict", "1", FCVAR_ARCHIVE, "Should we punish players more for team damage.")
-TTT.Karma.ConVars.Starting = CreateConVar("ttt_karma_starting", "1000", FCVAR_ARCHIVE, "What is the starting karma.")
 TTT.Karma.ConVars.Ratio = CreateConVar("ttt_karma_ratio", "0.001", FCVAR_ARCHIVE, "This CVar * Victim's Karma * Damage Dealt = Number of karma to punish the attacker with. Used for Traitor on Traitor damage.")
 TTT.Karma.ConVars.KillPenalty = CreateConVar("ttt_karma_kill_penalty", "15", FCVAR_ARCHIVE, "Karma penalty for team killing.")
 TTT.Karma.ConVars.Increment = CreateConVar("ttt_karma_round_incremenet", "5", FCVAR_ARCHIVE, "Default Karma bonus for making it through a round.")
@@ -85,15 +84,6 @@ end
 -- Returns:		Boolean.
 function TTT.Karma:IsDebug()
 	return self.ConVars.DebugPrints:GetBool()
-end
-
-------------------------------
--- TTT.Karma:GetStartingKarma
-------------------------------
--- Desc:		Gets the starting karma amount.
--- Returns:		Number.
-function TTT.Karma:GetStartingKarma()
-	return self.ConVars.Starting:GetFloat()
 end
 
 --------------------------------------
