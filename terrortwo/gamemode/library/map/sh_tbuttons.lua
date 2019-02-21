@@ -21,8 +21,8 @@ end
 if CLIENT then
 	-- Stores info about drawing buttons on screen.
 	TTT.Map.TraitorButtons.ButtonData = {
-		material_Normal = surface.GetTextureID("vgui/ttt/tbut_hand_line"),
-		material_Focus = surface.GetTextureID("vgui/ttt/tbut_hand_filled"),
+		material_Normal = surface.GetTextureID("ttt2/traitor_buttons/tbutton_hand_line"),
+		material_Focus = surface.GetTextureID("ttt2/traitor_buttons/tbutton_hand_filled"),
 
 		size = 32,
 		clickableSize = 25,

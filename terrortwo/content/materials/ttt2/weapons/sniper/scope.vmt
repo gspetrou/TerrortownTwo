@@ -1,6 +1,6 @@
 "UnlitGeneric"
 {
-	"$baseTexture" "sprites/scope"
+	"$baseTexture" "ttt2/weapons/sniper/scope"
 	"$translucent" "1"
 	"$vertexcolor" "1"
 	"$vertexalpha" "1"

@@ -40,7 +40,7 @@ function SWEP:PrimaryAttack(worldSound)
 end
 
 if CLIENT then
-	local scope = surface.GetTextureID("sprites/scope")
+	local scope = surface.GetTextureID("ttt2/weapons/sniper/scope")
 	function SWEP:DrawHUD()
 		if self:GetIronsights() then
 			surface.SetDrawColor(0, 0, 0, 255)

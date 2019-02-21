@@ -127,9 +127,11 @@ function TTT.Corpse.SetBodyData(ply, ragdoll, attacker, dmginfo)
 			return
 		end
 	else
-		local wep = attacker:GetActiveWeapon()
-		if IsValid(wep) then
-			dmginfo:SetInflictor(wep)
+		if IsValid(attacker) and IsValid(wep:GetActiveWeapon()) then
+			local wep = attacker:GetActiveWeapon()
+			if IsValid(wep) then
+				dmginfo:SetInflictor(wep)
+			end
 		end
 	end
 
@@ -279,7 +281,8 @@ function TTT.Corpse.SendSearchInfo(corpse, recipients)
 
 		-- TODO: Write equipment
 		-- TODO: Write C4 info
-		-- TODO: Read DNA sample decay time
+		-- TODO: Write DNA sample decay time
+		-- TODO: Last words
 
 	if recipients == true then
 		net.Broadcast()

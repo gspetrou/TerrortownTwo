@@ -1,0 +1,7 @@
+"UnlitGeneric"
+{
+ "$basetexture" "ttt2/item_icons/c4_buy"
+ "$vertexcolor" 1
+ "$vertexalpha" 1
+ "$translucent" 1
+}

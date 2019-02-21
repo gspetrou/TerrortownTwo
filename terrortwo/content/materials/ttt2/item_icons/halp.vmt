@@ -1,6 +1,6 @@
 "UnlitGeneric"
 {
- "$basetexture" "vgui/ttt/score_logo"
+ "$basetexture" "ttt2/item_icons/halp"
  "$vertexcolor" 1
  "$vertexalpha" 1
  "$translucent" 1

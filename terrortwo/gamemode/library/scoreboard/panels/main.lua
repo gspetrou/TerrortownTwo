@@ -16,7 +16,7 @@ TTT.Scoreboard.PANEL = {
 	BarYPos = 22,								-- Y Position of that top bar.
 	BarHeight = 32,								-- Height of that top bar.
 
-	Logo = surface.GetTextureID("vgui/ttt/score_logo"),	-- Logo image.
+	Logo = surface.GetTextureID("ttt2/scoreboard/logo"),	-- Logo image.
 	LogoSize = 256,										-- Logo image width/height.
 	LogoOffset = 72,									-- How much of the logo is/isn't sticking out from the scoreboard.
 	LogoWhitespace = 4,									-- The small amount of whitespace to account for in the logo image.
