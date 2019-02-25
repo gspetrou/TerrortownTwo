@@ -9,9 +9,10 @@ include("shared.lua")
 -----------------
 -- General Hooks
 -----------------
-local ipairs, player_GetAll = ipairs, player.GetAll
+local player_GetAll, IsValid = player.GetAll, IsValid
 function GM:Tick()
-	for i, ply in ipairs(player_GetAll()) do
+	for k = 1, player.GetCount() do
+		local ply = player_GetAll[k]
 		if ply:Alive() then
 			TTT.Player.HandleDrowning(ply)
 		else
@@ -22,7 +23,8 @@ end
 
 -- Set a newly connected player's karma for the edge case where they are authed after initial spawn.
 function GM:NetworkIDValidated(name, steamID)
-	for i, ply in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local ply = player_GetAll[k]
 		if IsValid(ply) and ply:SteamID() == steamID and ply.ttt_DelayKarmaRecall then
 			TTT.Karma:LateRecallAndSet(ply)
 			return
@@ -87,7 +89,8 @@ hook.Add("TTT.Map.OnReset", "TTT", function()
 
 	-- Spawn players around the map.
 	local randomSpectatorSpawnPoint = table.RandomSequential(TTT.Map.GetSpawnEntities()):GetPos() + Vector(0, 0, 64)
-	for i, ply in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local ply = player_GetAll[k]
 		if not ply:IsSpectator() then
 			if ply:IsInFlyMode() then
 				ply:UnSpectate()
@@ -103,7 +106,8 @@ end)
 -- Called immediately after TTT.Map.OnReset to handle any map settings that may have been set by the import script.
 hook.Add("TTT.Map.HandleImportScriptSetting", "TTT", function(key, value)
 	if key == "replacespawns" and value == "1" then
-		for i, ent in ipairs(TTT.Map.GetSpawnEntities()) do
+		for k = 1, #TTT.Map.GetSpawnEntities() do
+			local ent = TTT.Map.GetSpawnEntities()[k]
 			ent.BeingRemoved = true -- Remove entity next tick.
 			ent:Remove()
 		end
@@ -221,7 +225,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 	end
 
 	-- Drop all weapons on death.
-	for k, weapon in pairs(ply:GetWeapons()) do
+	for k, weapon in next, ply:GetWeapons() do
 		TTT.Weapons.DropWeapon(ply, weapon, true)
 		weapon:DampenDrop()
 	end
@@ -239,7 +243,8 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
 
 	-- Anyone who was spectating this player while that player died should exit specate mode.
 	local pos = Vector(0, 0, 25) + ply:GetPos()
-	for i, v in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local v = player_GetAll[k]
 		if v:GetObserverTarget() == ply then
 			v:Spectate(OBS_MODE_ROAMING)
 			v:SpectateEntity(nil)
@@ -501,7 +506,8 @@ hook.Add("TTT.Rounds.ShouldEnd", "TTT", function()
 	end
 
 	local numAlive, numaliveTraitors, numaliveInnocents, numaliveDetectives = 0, 0, 0, 0
-	for i, v in ipairs(TTT.Player.GetAlivePlayers()) do
+	for k = 1, #TTT.Player.GetAlivePlayers() do
+		local v = TTT.Player.GetAlivePlayers()[k]
 		if v:IsInnocent() then
 			numaliveInnocents = numaliveInnocents + 1
 		elseif v:IsTraitor() then
@@ -530,24 +536,27 @@ hook.Add("TTT.Rounds.RoundEnded", "TTT", function(type)
 	TTT.Karma:RoundEnd()
 end)
 
+local ents = ents
 hook.Add("TTT.Rounds.RoundStarted", "TTT", function()
 	TTT.Map.TriggerRoundStateOutsputs(ROUND_ACTIVE)
 
 	-- Delete any entities marked for deletion at round start.
-	for i, v in ipairs(ents.GetAll()) do
+	for k = 1, ents.GetCount() do -- # https://wiki.garrysmod.com/page/ents/GetCount
+		local v = ents.GetAll()[k]
 		if v:GetRemoveOnRoundStart() then
 			v:Remove()
 		end
 	end
 
-	for i, v in ipairs(TTT.Player.GetDeadPlayers()) do
-		TTT.Player.ForceSpawnPlayer(v, true, true, false) -- Technically the round already started. Force spawn all players that managed to die in prep.
+	for k = 1, #TTT.Player.GetDeadPlayers() do
+		TTT.Player.ForceSpawnPlayer(TTT.Player.GetDeadPlayers()[k], true, true, false) -- Technically the round already started. Force spawn all players that managed to die in prep.
 	end
 
 	TTT.Roles.PickRoles()
 	TTT.Roles.Sync()
 
-	for i, ply in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local ply = player_GetAll[k]
 		ply:SetCanDyingShot(true)				-- Enable dying shots on all the players (so long as ttt_weapon_dyingshot is enabled).
 		ply:ClearPushData()						-- Clear data stored about the last time the player was pushed.
 		ply:SetWasHeadshotted(false)			-- The round just began, clear headshots.
@@ -575,8 +584,8 @@ hook.Add("TTT.Rounds.EnteredPrep", "TTT", function()
 	end
 	TTT.Player.SetDefaultModelColor(col)	-- Set a new color for players each round.
 
-	for i, ply in ipairs(player.GetAll()) do
-		ply:ClearEquipment()
+	for k = 1, player.GetCount() do
+		player_GetAll[k]:ClearEquipment()
 	end
 end)
 

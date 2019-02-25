@@ -108,7 +108,8 @@ end
 -- Desc:		If the map has no weapons, isn't a TTT map, has no arming script, and is a CS:S/TF2 map then arm it with random weapons.
 function TTT.Weapons.PlaceWeaponsForOtherGameMaps()
 	-- If the map has any weapons/ammo assume its already armed and don't place more weapons. If a info_player_deathmatch exists then its a TTT map for sure.
-	for i, ent in ipairs(ents.GetAll()) do
+	for k = 1, ents.GetCount() do
+		local ent = ents.GetAll()[k]
 		if ent:GetClass() == "info_player_deathmatch" or ent.AutoSpawnable and not IsValid(ent:GetOwner()) then
 			return
 		end

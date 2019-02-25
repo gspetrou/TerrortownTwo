@@ -287,14 +287,14 @@ function TTT.Corpse.SendSearchInfo(corpse, recipients)
 	if recipients == true then
 		net.Broadcast()
 
-		for i, ply in ipairs(player.GetAll()) do
-			TTT.Corpse.AddPersonToBodyInfoCache(ply, corpse)
+	for k = 1, player.GetCount() do
+			TTT.Corpse.AddPersonToBodyInfoCache(player.GetAll()[k], corpse)
 		end
 	else
 		net.Send(recipients)
 
 		if istable(recipients) then
-			for i, ply in ipairs(recipients) do
+			for i, ply in ipairs(recipients) do -- # idk here numeric loop 0 or 1
 				TTT.Corpse.AddPersonToBodyInfoCache(ply, corpse)
 			end
 		else

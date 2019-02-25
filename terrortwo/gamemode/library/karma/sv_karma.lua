@@ -300,6 +300,8 @@ function TTT.Karma:Killed(attacker, victim, dmginfo)
 	end
 end
 
+local player_getall = player.GetAll
+
 ----------------------------
 -- TTT.Karma:RoundIncrement
 ----------------------------
@@ -308,7 +310,8 @@ function TTT.Karma:RoundIncrement()
 	local healBonus = self.ConVars.Increment:GetFloat()
 	local cleanBonus = self.ConVars.CleanBonus:GetFloat()
 
-	for i, ply in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local ply = player_getall()[k]
 		if not ply:Alive() then
 			local dmgInfo = ply:GetDeathDamageInfo()
 
@@ -330,7 +333,8 @@ end
 ------------------------
 -- Desc:		Updates every player's base karma to their current live karma.
 function TTT.Karma:UpdateBase()
-	for i, ply in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local ply = player_getall()[k]
 		if self:IsDebug() then
 			print(string.format("%s rebased from %f to %f", ply:Nick(), ply:GetBaseKarma(), ply:GetLiveKarma()))
 		end
@@ -344,8 +348,8 @@ end
 -----------------------------------
 -- Desc:		Updates everyone's damage factor.
 function TTT.Karma:UpdateDamageFactorAll()
-	for i, ply in ipairs(player.GetAll()) do
-		self:UpdateDamageFactor(ply)
+	for k = 1, player.GetCount() do
+		self:UpdateDamageFactor(player_getall()[k])
 	end
 end
 
@@ -361,8 +365,8 @@ function TTT.Karma:RoundEnd()
 		self:SyncKarma()
 
 		if self.ConVars.LowKick:GetBool() then
-			for i, ply in ipairs(player.GetAll()) do
-				self:CheckForAutoKick(ply)
+		for k = 1, player.GetCount() do
+				self:CheckForAutoKick(player_getall()[k])
 			end
 		end
 	end
@@ -374,8 +378,8 @@ end
 -- Desc:		Handles actions performed at round start relating to karma.
 function TTT.Karma:RoundBegin()
 	if self:IsEnabled() then
-		for i, ply in ipairs(player.GetAll()) do
-			self:UpdateDamageFactor(ply)
+		for k = 1, player.GetCount() do
+			self:UpdateDamageFactor(player_getall()[k])
 			-- TODO: Notify
 		end
 	end
@@ -407,10 +411,11 @@ end
 util.AddNetworkString("TTT.Karma.SyncKarma")
 function TTT.Karma:SyncKarma()
 	net.Start("TTT.Karma.SyncKarma")
-		local players = player.GetAll()
-		net.WriteUInt(#players, 7)
+		local players = player.GetCount()
+		net.WriteUInt(players, 7)
 
-		for i, ply in ipairs(players) do
+		for k = 1, players do
+			local ply = player_getall()[k]
 			net.WritePlayer(ply)
 			net.WriteUInt(math.floor(ply:GetBaseKarma() + 0.5), 12)
 		end
@@ -441,8 +446,8 @@ end
 -------------------------
 -- Desc:		Runs TTT.Karma:Remember on every player, stores their karma both temporarily and in SQL if enabled.
 function TTT.Karma:RememberAll()
-	for i, ply in ipairs(player.GetAll()) do
-		self:Remember(ply)
+	for k = 1, player.GetCount() do
+		self:Remember(player_getall()[k])
 	end
 end
 
@@ -546,7 +551,8 @@ end
 ----------------------
 -- Desc:		Prints every player's live karma, base karma, and damage factor as a percent.
 function TTT.Karma:PrintAll()
-	for i, ply in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local ply = player_getall()[k]
 		print(string.format("%s : Live = %f -- Base = %f -- Dmg = %f\n", ply:Nick(), ply:GetLiveKarma(), ply:GetBaseKarma(), ply:GetDamageFactor() * 100))
 	end
 end

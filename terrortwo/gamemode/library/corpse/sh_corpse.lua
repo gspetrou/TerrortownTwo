@@ -60,7 +60,8 @@ end
 --------------------------------
 -- Desc:		Resets all non-specators body status to unknown and all spectators to unset.
 function TTT.Corpse.ResetBodyStatuses()
-	for i, ply in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local ply = player.GetAll()[k]
 		if ply:IsSpectator() then
 			ply:SetBodyStatus(BODYSTATUS_UNSET)
 		else

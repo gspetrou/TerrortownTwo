@@ -104,7 +104,8 @@ end
 function PANEL:UpdatePlayers()
 	self:ClearGroup()
 	
-	for i, ply in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local ply = player.GetAll()[k]
 		if self.PlayerChooserFunction(ply) then
 			self:AddPlayer(ply)
 		end

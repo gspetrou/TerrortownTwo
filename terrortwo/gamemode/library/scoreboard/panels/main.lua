@@ -194,7 +194,8 @@ end
 function TTT.Scoreboard.PANEL:UpdateGroups()
 	local changed = false
 
-	for _, ply in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local ply = player.GetAll()[k]
 		for _, group in ipairs(self.Groups) do
 
 			-- If the player is in this group and shouldn't, remove them.

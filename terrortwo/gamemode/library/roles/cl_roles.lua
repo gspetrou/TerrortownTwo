@@ -38,7 +38,8 @@ net.Receive("TTT.Roles.Clear", function()
 		activeplayers[net.ReadPlayer()] = true
 	end
 
-	for i, v in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local v = player.GetAll()[k]
 		if activeplayers[v] then
 			v:SetRole(ROLE_WAITING)
 		else
@@ -72,7 +73,8 @@ net.Receive("TTT.Roles.Sync", function()
 	end
 
 	-- Any player without a role, set to unknown
-	for i, v in ipairs(player.GetAll()) do
+	for k = 1, player.GetCount() do
+		local v = player.GetAll()[k]
 		if v:IsWaiting() then
 			v:SetRole(ROLE_UNKNOWN)
 		end

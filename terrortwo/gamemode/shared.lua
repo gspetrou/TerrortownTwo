@@ -45,7 +45,7 @@ GM.Name = "Trouble in Terrorist Town Two"
 GM.Author = "George 'Stalker' Petrou"
 GM.Email = "N/A"
 GM.Website = "N/A"
-TTT.Version = 20180523					-- YearMonthDay
+TTT.Version = 20190225					-- YearMonthDay
 DEFINE_BASECLASS("gamemode_base")
 
 hook.Add("TTT.PreLibraryLoaded", "TTT", function()
@@ -115,7 +115,8 @@ end)
 ---------------
 hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
 	if state == ROUND_WAITING then
-		for i, v in ipairs(player.GetAll()) do
+		for k = 1, player.GetCount() do
+			local v = player.GetAll()[k]
 			if not v:IsSpectator() then
 				v:SetRole(ROLE_WAITING)
 			end
@@ -125,8 +126,8 @@ hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
 		end
 	elseif state == ROUND_PREP then
 		if CLIENT then
-			for i, v in ipairs(player.GetAll()) do
-				TTT.Scoreboard.ClearTag(v)
+		for k = 1, player.GetCount() do
+				TTT.Scoreboard.ClearTag(player.GetAll()[k])
 			end
 		end
 		

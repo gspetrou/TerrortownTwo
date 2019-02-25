@@ -14,13 +14,15 @@ local detective_threshold = CreateConVar("ttt_detective_threshold", "8", FCVAR_A
 local detective_percent = CreateConVar("ttt_detective_percent", "0.15", FCVAR_ARCHIVE, "Percentage of players that will be detectives.")
 local PLAYER = FindMetaTable("Player")
 
+local player_getall, net, ipairs, math = player.GetAll, net, ipairs, math
+
 ------------------------------
 -- TTT.Roles.GetActivePlayers
 ------------------------------
 -- Desc:		Gets all active players. Active means they are not in always spectate mode.
 -- Returns:		Table, containning active players.
 function TTT.Roles.GetActivePlayers()
-	return table.Filter(player.GetAll(), function(ply)
+	return table.Filter(player_getall(), function(ply)
 		return not ply:IsSpectator()
 	end)
 end
@@ -83,7 +85,7 @@ end)
 -- Arg One:		ROLE_ enum of players to get.
 -- Returns:		Table, players of this role.
 function TTT.Roles.GetPlayersOfRole(role)
-	return table.Filter(player.GetAll(), function(ply)
+	return table.Filter(player_getall(), function(ply)
 		return ply:GetRole() == role
 	end)
 end
@@ -94,7 +96,7 @@ function TTT.Roles.GetInnocents() return TTT.Roles.GetPlayersOfRole(ROLE_INNOCEN
 function TTT.Roles.GetDetectives() return TTT.Roles.GetPlayersOfRole(ROLE_DETECTIVE) end
 function TTT.Roles.GetTraitors() return TTT.Roles.GetPlayersOfRole(ROLE_TRAITOR) end
 function TTT.Roles.GetSpectators()
-	return table.Filter(player.GetAll(), function(ply)
+	return table.Filter(player_getall(), function(ply)
 		return ply:IsSpectator()
 	end)
 end
@@ -106,7 +108,7 @@ end
 -- Arg One:		ROLE_ enum to get players not of this role.
 -- Returns:		Table, players not of the role supplied in arg one.
 function TTT.Roles.GetPlayersNotOfRole(role)
-	return table.Filter(player.GetAll(), function(ply)
+	return table.Filter(player_getall(), function(ply)
 		return ply:GetRole() ~= role
 	end)
 end
@@ -117,7 +119,7 @@ function TTT.Roles.GetNotInnocents() return TTT.Roles.GetPlayersNotOfRole(ROLE_I
 function TTT.Roles.GetNotDetectives() return TTT.Roles.GetPlayersNotOfRole(ROLE_DETECTIVE) end
 function TTT.Roles.GetNotTraitors() return TTT.Roles.GetPlayersNotOfRole(ROLE_TRAITOR) end
 function TTT.Roles.GetNotSpectators()
-	return table.Filter(player.GetAll(), function(ply)
+	return table.Filter(player_getall(), function(ply)
 		return not ply:IsSpectator()
 	end)
 end
@@ -162,7 +164,7 @@ function PLAYER:ForceSpectator()
 	self:ForceRole(ROLE_SPECTATOR, true)
 end
 function PLAYER:ForceInnocent()
-	local allplayers_exceptself = player.GetAll()
+	local allplayers_exceptself = player_getall()
 	for i, v in ipairs(allplayers_exceptself) do
 		if v == self then
 			table.remove(allplayers_exceptself, i)

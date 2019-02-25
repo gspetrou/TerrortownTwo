@@ -1,13 +1,16 @@
 TTT.Player = TTT.Player or {}
 local PLAYER = FindMetaTable("Player")
 
+local player_getall = player.GetAll -- # micro-ops
+local hook, IsValid, CurTime, math = hook, IsValid, CurTime, math
+
 ------------------------------
 -- TTT.Player.GetAlivePlayers
 ------------------------------
 -- Desc:		Gets all the alive players.
 -- Returns:		Table, containning alive players.
 function TTT.Player.GetAlivePlayers()
-	return table.Filter(player.GetAll(), function(ply)
+	return table.Filter(player_getall(), function(ply)
 		return ply:Alive()
 	end)
 end
@@ -18,7 +21,7 @@ end
 -- Desc:		Gets a table containning all dead players, does not include spectators.
 -- Returns:		Table, all dead players that are not spectators.
 function TTT.Player.GetDeadPlayers()
-	return table.Filter(player.GetAll(), function(ply)
+	return table.Filter(player_getall(), function(ply)
 		return not ply:Alive()
 	end)
 end

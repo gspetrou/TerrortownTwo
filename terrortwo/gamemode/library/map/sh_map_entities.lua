@@ -96,7 +96,8 @@ if SERVER then
 
 		-- Assuming the mapper correctly placed ttt1 and ttt2 entities, go through converted entities (hl2, css, etc) and settle them.
 		-- Simply raise them 2 units and drop them in-case they spawn clipping in/through the floor and walls.
-		for i, wep in ipairs(ents_GetAll()) do
+		for k = 1, ents.GetCount() do
+			local wep = ents_GetAll()[k]
 			if wep.IsConvertedEntity and not wep.IsOriginalTTTEntity then
 				local pos = wep:GetPos()
 				pos.z = pos.z + 2
