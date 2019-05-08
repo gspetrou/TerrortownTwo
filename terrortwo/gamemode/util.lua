@@ -201,6 +201,46 @@ if CLIENT then
 	function TTT.IsCoordOnScreen(x, y)
 		return x >= 0 and x <= ScrW() and y >= 0 and y <= ScrH()
 	end
+
+	--------------------------
+	-- TTT.BreakTextIntoLines
+	--------------------------
+	-- Desc:		Given a string of text and a width returns a table of substrings that will fit nicely within that width. Will not break up mid word.
+	-- Arg One:		String, text to break up
+	-- Arg Two:		Number, max width this the text can take before being broken to a new line.
+	-- Arg Three:	(Optional=Nil) String, font used for this text. If left nil this simply uses the current set font.
+	-- Returns:		Table, array of strings broken to proper width.
+	-- Notice:		This function internally calls surface.SetFont if given a third arg. Make sure to re-set the font type if you want to draw with a different font after calling this function,
+	function TTT.BreakTextIntoLines(text, windowWidth, font)
+		if isstring(font) then
+			surface.SetFont(font)
+		end
+
+		-- A very likely case so lets try this first before breaking apart by word.
+		local fullWidth = surface.GetTextSize(text)
+		if fullWidth <= windowWidth then
+			return {text}
+		end
+
+		local words = string.Explode(" ", text, false)
+		local curLineWidth = 0
+		local curLine = 1
+		local output = {}
+		for i, word in ipairs(words) do
+			local wordWidth = surface.GetTextSize(word)
+
+			if curLineWidth + wordWidth > windowWidth then
+				curLineWidth = 0
+				curLine = curLine + 1
+				output[curLine] = word
+			else
+				curLineWidth = curLineWidth + wordWidth
+				output[curLine] = output[curLine].." "..word
+			end
+		end
+
+		return output
+	end
 end
 
 ---------------

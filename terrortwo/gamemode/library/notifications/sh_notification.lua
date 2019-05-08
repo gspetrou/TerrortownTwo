@@ -4,10 +4,9 @@
 --	messages using TTT.Notifications:AddStandardMsg (shared) and send it with TTT.Notifications:SendStandardMsg (server).
 -- If you only want to send some text to the client's notification stack just use TTT.Notifications.SendCustomMsg (server).
 
-TTT.Notifications = TTT.Notifications or {
-	StandardMsgs = {},
-	StandardMsgCounter = 0
-}
+TTT.Notifications = TTT.Notifications or {}
+TTT.Notifications.StandardMsgs = TTT.Notifications.StandardMsgs or {}
+TTT.Notifications.StandardMsgCounter = TTT.Notifications.StandardMsgCounter or 0
 
 -- How many standard messages are supported. By default, 2^5 = 32 custom messages.
 -- If you need more for some weird reason then you can increase this.
@@ -20,13 +19,13 @@ local stdNotificationBits = 5
 -- Arg One:		String, unique identifier for this message.
 -- Arg Two:		String, phrase for the string.
 -- Arg Three:	(Optional=nil) Function, ran on the client, this function is called when getting any extra strings to be subbed into the phrase.
--- Arg Four:	(Optional=Default BG Color) Color, if you want a custom background color for this notification.
-function TTT.Notifications:AddStandardMsg(ID, phrase, clientFunc, bgColor)
+-- Arg Four:	(Optional=Default Text Color) Color, if you want a custom text color for this notification.
+function TTT.Notifications:AddStandardMsg(ID, phrase, clientFunc, textColor)
 	self.StandardMsgs[ID] = {
 		NWID = self.StandardMsgCounter,
 		Phrase = phrase,
 		ClientFunc = clientFunc,
-		BGColor = bgColor
+		TextColor = textColor
 	}
 	self.StandardMsgCounter = self.StandardMsgCounter + 1
 end
@@ -46,15 +45,15 @@ if SERVER then
 	-- Desc:		Sends a custom message to the given clients.
 	-- Arg One:		String, message to send to clients.
 	-- Arg Two:		Boolean, table, or Player. Recipients of the message, true broadcasts.
-	-- Arg Three:	(Optional=Default BG Color) Color, background color of the message if you want a custom one.
+	-- Arg Three:	(Optional=Default Text Color) Color, text color of the message if you want a custom one.
 	-- Note:		If you need more customization in the message you're better off networking it on yourself and manually invoking the notification on the client.
 	util.AddNetworkString("TTT.Notifications.CustomMsg")
-	function TTT.Notifications.SendCustomMsg(msg, recipients, bgColor)
+	function TTT.Notifications.SendCustomMsg(msg, recipients, textColor)
 		net.Start("TTT.Notifications.CustomMsg")
 			net.WriteString(msg)
-			if IsColor(bgColor) then
+			if IsColor(textColor) then
 				net.WriteBool(true)
-				net.WriteColor(bgColor)
+				net.WriteColor(textColor)
 			else
 				net.WriteBool(false)
 			end
@@ -109,13 +108,13 @@ end
 if CLIENT then
 	net.Receive("TTT.Notifications.CustomMsg", function()
 		local msg = net.ReadString()
-		local hasCustomBGColor = net.ReadBool()
-		local bgColor
+		local hasCustomTextColor = net.ReadBool()
+		local textColor
 
-		if hasCustomBGColor then
-			bgColor = net.ReadColor()
+		if hasCustomTextColor then
+			textColor = net.ReadColor()
 		end
-		print(msg, hasCustomBGColor, bgColor)
+		TTT.Notifications:Add(text, textColor)
 	end)
 
 	net.Receive("TTT.Notifications.StandardMsg", function()
@@ -133,7 +132,7 @@ if CLIENT then
 		end
 
 		local phrase = TTT.Notifications.StandardMsgs[msgType].Phrase
-		local bgColor = TTT.Notifications.StandardMsgs[msgType].BGColor
+		local textColor = TTT.Notifications.StandardMsgs[msgType].TextColor
 		local func = TTT.Notifications.StandardMsgs[msgType].ClientFunc
 		local text
 		if isfunction(func) then
@@ -141,6 +140,6 @@ if CLIENT then
 		else
 			text = TTT.Languages.GetPhrase(phrase)
 		end
-		print(text, bgColor)
+		TTT.Notifications:Add(text, textColor)
 	end)
 end
