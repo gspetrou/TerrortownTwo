@@ -4,13 +4,12 @@ EQUIPMENT:SetDescription("equipment_disguiser_desc")
 EQUIPMENT:SetInStoreFor(ROLE_TRAITOR)
 
 local PLAYER = FindMetaTable("Player")
+local equipID = EQUIPMENT.ID	-- Note: We need to backup EQUIOMENT.ID into a local variable since EQUIPMENT.ID will be invalid after initilization.
 
-if SERVER then
-	local equipID = EQUIPMENT.ID	-- This variable will no longer exist when we need it in hooks so save it.
-	
+if SERVER then	
 	util.AddNetworkString("TTT.Equipment.ToggleDisguise")
 
-	function PLAYER:TTTToggleDisguise(bool)
+	function PLAYER:TTT_ToggleDisguise(bool)
 		self.ttt_DisguiserEnabled = bool
 		net.Start("TTT.Equipment.ToggleDisguise")
 			net.WritePlayer(self)
@@ -19,15 +18,15 @@ if SERVER then
 	end
 
 	function EQUIPMENT:OnEquip(ply)
-		ply:TTTToggleDisguise(true)
+		ply:TTT_ToggleDisguise(true)
 	end
 
 	function EQUIPMENT:OnUnequip(ply)
-		ply:TTTToggleDisguise(false)
+		ply:TTT_ToggleDisguise(false)
 	end
 end
 
-function PLAYER:TTTHasDisguiseOn()
+function PLAYER:TTT_HasDisguiseOn()
 	if isbool(self.ttt_DisguiserEnabled) then
 		return self.ttt_DisguiserEnabled
 	end

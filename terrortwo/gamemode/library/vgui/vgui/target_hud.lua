@@ -22,7 +22,7 @@ TTT.VGUI.AddElement("ttt_hud_target", function(ply, w, h)
 	local hitEnt = tr.Entity
 	surface.SetFont("TargetIDSmall2")
 
-	if hitEnt:IsPlayer() and not hitEnt:TTTHasDisguiseOn() then
+	if hitEnt:IsPlayer() and not hitEnt:TTT_HasDisguiseOn() then
 		local name = hitEnt:Nick()
 		local nameWidth, nameHeight = surface.GetTextSize(name)
 		local hpPhrase, hpColor = TTT.Player.GetHealthStatus(hitEnt:Health(), hitEnt:GetMaxHealth())
