@@ -1,28 +1,72 @@
-TTT.Notifications = TTT.Notifications or {}
-
-local Notification = {
-	ScreenScaleFactor = 3,
-	LifeTime = 5,
-	Margin = 5,
-	Font = "DefaultBold"
-	Background = {
-		r = 60,
-		g = 60,
-		b = 60,
-		a = 150
-	},
-	CreationTime = 0.
+TTT.Notifications = TTT.Notifications or {
+	NotificationQueue = {}
 }
 
-function Notification:New(initObj)
-	initObj = initObj or {}
-	setmetatable(initObj, self)
-	self.__index = self
-	return initObj
+-- Create notification object.
+do
+	local Notification = {
+		ScreenScaleFactor = 3,
+		LifeTime = 5,
+		Margin = 5,
+		Font = "DefaultBold",
+		TextColor = {
+			r = 255,
+			g = 255,
+			b = 255,
+			a = 255
+		},
+		Background = {
+			r = 60,
+			g = 60,
+			b = 60,
+			a = 150
+		},
+		CreationTime = 0,
+		DeathTime = 0,
+		Text = ""
+	}
+
+	function Notification:New(text, textColor, lifeTime, font, bgColor)
+		initObj = {}
+		setmetatable(initObj, self)
+		self.__index = self
+		initObj.CreationTime = CurTime()
+
+		if text then
+			initObj.Text = text
+		end
+		if lifeTime then
+			initObj.LifeTime = lifeTime
+		end
+		if font then
+			initObj.Font = font
+		end
+		if bgColor then
+			initObj.Background = {bgColor.r, bgColor.b, bgColor.g, bgColor.a}
+		end
+		
+		initObj.DeathTime = initObj.LifeTime + initObj.CreationTime
+		
+		return initObj
+	end
+
+	function Notification:GetMaxNotificationWidth()
+		return math.min(math.floor(ScrW()/self.ScreenScaleFactor), 300)
+	end
+
+	function Notification:GetHeight()
+
+	end
+
+	TTT.Notifications.Notification = Notification
 end
 
-function Notification:GetMaxNotificationWidth()
-	return math.min(math.floor(ScrW()/ScreenScaleFactor), 300)
+function TTT.Notifications:Add(text, textColor)
+	table.insert(self.NotificationQueue, self.Notifications:New(text))
+end
+
+function TTT.Notifications:HUDPaint()
+
 end
 
 --[[TTT.Notifications.PanelData = TTT.Notifications.PanelData or {
