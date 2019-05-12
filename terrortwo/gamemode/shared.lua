@@ -146,6 +146,22 @@ end
 -- Notification Hooks
 ----------------------
 hook.Add("TTT.Notifications.InitStandardMessages", "TTT", function()
+	TTT.Notifications:AddStandardMsg("START_TRAITOR_SOLO", "ntfcn_start_traitor_solo", nil, nil, Color(255, 0, 0, 200))
+	
+	TTT.Notifications:AddStandardMsg("START_TRAITOR_MULTI", "ntfcn_start_traitor_multi", function()
+		local output = ""
+		for i, ply in ipairs(player.GetAll()) do
+			if ply ~= LocalPlayer() and ply:IsTraitor() then
+				output = output..ply:Nick()..", "
+			end
+		end
+
+		return string.sub(output, 1, #output-2)
+	end, nil, Color(255, 0, 0, 200))
+
+
+	
+/*
 	TTT.Notifications:AddStandardMsg("START_INNOCENT", "notification_start_innocent")
 	TTT.Notifications:AddStandardMsg("START_DETECTIVE", "notification_start_detective", function()
 		return "BUTTON"
@@ -153,9 +169,8 @@ hook.Add("TTT.Notifications.InitStandardMessages", "TTT", function()
 	TTT.Notifications:AddStandardMsg("START_TRAITOR_MULTI", "notification_start_traitor_multi", function()
 		return "BUDDIES", "TBUTTON"
 	end)
-	TTT.Notifications:AddStandardMsg("START_TRAITOR_SOLO", "notification_start_traitor_solo", function()
-		return "TBUTTON"
-	end)
+*/
+
 	--TTT.Notifications:AddStandardMsg("START_DURATION", "notification_start_duration")
 end)
 

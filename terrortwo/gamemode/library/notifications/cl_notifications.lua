@@ -20,14 +20,6 @@ surface.CreateFont("TTT_Notification", {
 	weight = 1000
 })
 
-function TEST()
-	TTT.Notifications:Add('There are 24 people in this round. Of this 8 are traitors.')
-	TTT.Notifications:Add('There ar.')
-	TTT.Notifications:Add('There are 24 people in this round. Of this 8 are traitors.')
-	TTT.Notifications:Add('There arin this roasdsund. Of tsssssssssssssshis 8 are ts sdad asd asd asraitors.')
-	TTT.Notifications:Add('There arin this round. Of this 8 are traitors.')
-end
-
 ---------------------------
 -- TTT.Notifications:Clear
 ---------------------------
@@ -57,7 +49,7 @@ end
 function TTT.Notifications:Add(text, textColor, bgColor, type)
 	local notif = self.Notification:New(text, textColor, bgColor)
 	table.insert(self.ActiveNotifications, 1, notif)
-	print(text)
+	print("TTT: "..text)
 	hook.Call("TTT.Notifcations.Added", nil, notif, msgType)
 	return notif
 end

@@ -20,12 +20,14 @@ local stdNotificationBits = 5
 -- Arg Two:		String, phrase for the string.
 -- Arg Three:	(Optional=nil) Function, ran on the client, this function is called when getting any extra strings to be subbed into the phrase.
 -- Arg Four:	(Optional=Default Text Color) Color, if you want a custom text color for this notification.
-function TTT.Notifications:AddStandardMsg(ID, phrase, clientFunc, textColor)
+-- Arg Five:	(Optional=Default BG Color) Color, color of notification background.
+function TTT.Notifications:AddStandardMsg(ID, phrase, clientFunc, textColor, bgColor)
 	self.StandardMsgs[ID] = {
 		NWID = self.StandardMsgCounter,
 		Phrase = phrase,
 		ClientFunc = clientFunc,
-		TextColor = textColor
+		TextColor = textColor,
+		BGColor = bgColor
 	}
 	self.StandardMsgCounter = self.StandardMsgCounter + 1
 end
@@ -98,10 +100,10 @@ if SERVER then
 		end
 
 		if #detectives > 0 then
-			TTT.Notifications:SendStandardMsg("START_DETECTIVE", detectives)
+		--	TTT.Notifications:SendStandardMsg("START_DETECTIVE", detectives)
 		end
 
-		TTT.Notifications:SendStandardMsg("START_INNOCENT", innocents)
+		--TTT.Notifications:SendStandardMsg("START_INNOCENT", innocents)
 	end
 end
 
@@ -133,6 +135,7 @@ if CLIENT then
 
 		local phrase = TTT.Notifications.StandardMsgs[msgType].Phrase
 		local textColor = TTT.Notifications.StandardMsgs[msgType].TextColor
+		local bgColor = TTT.Notifications.StandardMsgs[msgType].BGColor
 		local func = TTT.Notifications.StandardMsgs[msgType].ClientFunc
 		local text
 		if isfunction(func) then
@@ -140,6 +143,6 @@ if CLIENT then
 		else
 			text = TTT.Languages.GetPhrase(phrase)
 		end
-		TTT.Notifications:Add(text, textColor, nil, msgType)
+		TTT.Notifications:Add(text, textColor, bgColor, msgType)
 	end)
 end
