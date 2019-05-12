@@ -125,6 +125,7 @@ hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
 		end
 	elseif state == ROUND_PREP then
 		if CLIENT then
+			TTT.Notifications:Clear()
 			for i, v in ipairs(player.GetAll()) do
 				TTT.Scoreboard.ClearTag(v)
 			end

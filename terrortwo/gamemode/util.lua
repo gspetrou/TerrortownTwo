@@ -222,6 +222,7 @@ if CLIENT then
 			return {text}
 		end
 
+		local spaceWidth = surface.GetTextSize(" ")
 		local words = string.Explode(" ", text, false)
 		local curLineWidth = 0
 		local curLine = 1
@@ -229,13 +230,13 @@ if CLIENT then
 		for i, word in ipairs(words) do
 			local wordWidth = surface.GetTextSize(word)
 
-			if curLineWidth + wordWidth > windowWidth then
+			if curLineWidth + wordWidth + spaceWidth > windowWidth then
 				curLineWidth = 0
 				curLine = curLine + 1
 				output[curLine] = word
 			else
-				curLineWidth = curLineWidth + wordWidth
-				output[curLine] = output[curLine].." "..word
+				curLineWidth = curLineWidth + wordWidth + spaceWidth
+				output[curLine] = (isstring(output[curLine]) and output[curLine].." " or "")..word
 			end
 		end
 

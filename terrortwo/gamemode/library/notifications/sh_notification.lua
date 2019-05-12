@@ -140,6 +140,6 @@ if CLIENT then
 		else
 			text = TTT.Languages.GetPhrase(phrase)
 		end
-		TTT.Notifications:Add(text, textColor)
+		TTT.Notifications:Add(text, textColor, nil, msgType)
 	end)
 end
