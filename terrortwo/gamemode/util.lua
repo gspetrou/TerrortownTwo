@@ -210,7 +210,8 @@ if CLIENT then
 	-- Arg Two:		Number, max width this the text can take before being broken to a new line.
 	-- Arg Three:	(Optional=Nil) String, font used for this text. If left nil this simply uses the current set font.
 	-- Returns:		Table, array of strings broken to proper width.
-	-- Notice:		This function internally calls surface.SetFont if given a third arg. Make sure to re-set the font type if you want to draw with a different font after calling this function,
+	-- Notice:		This function internally calls surface.SetFont if given a third arg. Make sure to re-set the font type if you want to draw with a different font after calling this function.
+	--				Also note that a \n anywhere in the given string will force a new line at that position as well.
 	function TTT.BreakTextIntoLines(text, windowWidth, font)
 		if isstring(font) then
 			surface.SetFont(font)
@@ -219,25 +220,32 @@ if CLIENT then
 		-- A very likely case so lets try this first before breaking apart by word.
 		local fullWidth = surface.GetTextSize(text)
 		if fullWidth <= windowWidth then
-			return {text}
+			return string.Explode("\n", text, false)
 		end
 
 		local spaceWidth = surface.GetTextSize(" ")
-		local words = string.Explode(" ", text, false)
+		local wordsByNewLine = string.Explode("\n", text, false)
+
 		local curLineWidth = 0
 		local curLine = 1
 		local output = {}
-		for i, word in ipairs(words) do
-			local wordWidth = surface.GetTextSize(word)
+		for _, wordGroup in ipairs(wordsByNewLine) do
+			local words = string.Explode(" ", wordGroup, false)
+			for i, word in ipairs(words) do
+				local wordWidth = surface.GetTextSize(word)
 
-			if curLineWidth + wordWidth + spaceWidth > windowWidth then
-				curLineWidth = 0
-				curLine = curLine + 1
-				output[curLine] = word
-			else
-				curLineWidth = curLineWidth + wordWidth + spaceWidth
-				output[curLine] = (isstring(output[curLine]) and output[curLine].." " or "")..word
+				if curLineWidth + wordWidth + spaceWidth > windowWidth then
+					curLineWidth = 0
+					curLine = curLine + 1
+					output[curLine] = word
+				else
+					curLineWidth = curLineWidth + wordWidth + spaceWidth
+					output[curLine] = (isstring(output[curLine]) and output[curLine].." " or "")..word
+				end
 			end
+
+			curLineWidth = 0
+			curLine = curLine + 1
 		end
 
 		return output
