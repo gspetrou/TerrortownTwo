@@ -8,9 +8,9 @@ TTT.Notifications = TTT.Notifications or {}
 TTT.Notifications.StandardMsgs = TTT.Notifications.StandardMsgs or {}
 TTT.Notifications.StandardMsgCounter = TTT.Notifications.StandardMsgCounter or 0
 
--- How many standard messages are supported. By default, 2^5 = 32 custom messages.
--- If you need more for some weird reason then you can increase this.
-local stdNotificationBits = 5
+-- How many standard messages are supported. By default, 2^8 = 256 custom messages.
+-- If you need more for some weird reason then you can increase this (up to 32).
+local stdNotificationBits = 8
 
 ------------------------------------
 -- TTT.Notifications:AddStandardMsg
@@ -74,8 +74,10 @@ if SERVER then
 	-- Arg Two:		Boolean, table, or Player, recipients of the messge. Passing true broadcasts.
 	util.AddNetworkString("TTT.Notifications.StandardMsg")
 	function TTT.Notifications:SendStandardMsg(msgType, recipients)
+		local msg = self.StandardMsgs[msgType]
+		
 		net.Start("TTT.Notifications.StandardMsg")
-			net.WriteUInt(self.StandardMsgs[msgType].NWID, stdNotificationBits)
+			net.WriteUInt(msg.NWID, stdNotificationBits)
 
 		if recipients == true then
 			net.Broadcast()
