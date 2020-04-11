@@ -176,8 +176,8 @@ function PLAYER:ForceInnocent()
 end
 function PLAYER:ForceTraitor()
 	self:SetRole(ROLE_TRAITOR)
-	self:SetRoleClientside(ROLE_TRAITOR, TTT.Roles.GetTraitors())
 	self:SetRoleClientside(ROLE_UNKNOWN, TTT.Roles.GetNotTraitors())
+	TTT.Roles.SyncTraitors()
 end
 function PLAYER:ForceDetective()
 	self:ForceRole(ROLE_DETECTIVE, true)
@@ -269,12 +269,11 @@ function TTT.Roles.PickRoles()
 	end
 end
 
-------------------
--- TTT.Roles.Sync
-------------------
--- Desc:		Informs everyone of their own rank and of the roles of other player's they should know of.
-function TTT.Roles.Sync()
-	-- Tell traitors about each other first.
+--------------------------
+-- TTT.Roles.SyncTraitors
+--------------------------
+-- Desc:		Tells every traitor (clientside) who the other traitors are, including themselves.
+function TTT.Roles.SyncTraitors()
 	local traitors = TTT.Roles.GetTraitors()
 	net.Start("TTT.Roles.SyncTraitors")
 		net.WriteUInt(#traitors, 7)
@@ -282,6 +281,15 @@ function TTT.Roles.Sync()
 			net.WritePlayer(v)
 		end
 	net.Send(traitors)
+end
+
+------------------
+-- TTT.Roles.Sync
+------------------
+-- Desc:		Informs everyone of their own rank and of the roles of other player's they should know of.
+function TTT.Roles.Sync()
+	-- Tell traitors about each other first.
+	TTT.Roles.SyncTraitors()
 
 	-- Now tell everyone what players are detectives or spectators and finalize other player's roles.
 	local detectives = TTT.Roles.GetDetectives()

@@ -8,9 +8,9 @@ TTT.Notifications = TTT.Notifications or {}
 TTT.Notifications.StandardMsgs = TTT.Notifications.StandardMsgs or {}
 TTT.Notifications.StandardMsgCounter = TTT.Notifications.StandardMsgCounter or 0
 
--- How many standard messages are supported. By default, 2^5 = 32 custom messages.
--- If you need more for some weird reason then you can increase this.
-local stdNotificationBits = 5
+-- How many standard messages are supported. By default, 2^8 = 256 custom messages.
+-- If you need more for some weird reason then you can increase this (up to 32).
+local stdNotificationBits = 8
 
 ------------------------------------
 -- TTT.Notifications:AddStandardMsg
@@ -20,12 +20,14 @@ local stdNotificationBits = 5
 -- Arg Two:		String, phrase for the string.
 -- Arg Three:	(Optional=nil) Function, ran on the client, this function is called when getting any extra strings to be subbed into the phrase.
 -- Arg Four:	(Optional=Default Text Color) Color, if you want a custom text color for this notification.
-function TTT.Notifications:AddStandardMsg(ID, phrase, clientFunc, textColor)
+-- Arg Five:	(Optional=Default BG Color) Color, color of notification background.
+function TTT.Notifications:AddStandardMsg(ID, phrase, clientFunc, textColor, bgColor)
 	self.StandardMsgs[ID] = {
 		NWID = self.StandardMsgCounter,
 		Phrase = phrase,
 		ClientFunc = clientFunc,
-		TextColor = textColor
+		TextColor = textColor,
+		BGColor = bgColor
 	}
 	self.StandardMsgCounter = self.StandardMsgCounter + 1
 end
@@ -72,8 +74,10 @@ if SERVER then
 	-- Arg Two:		Boolean, table, or Player, recipients of the messge. Passing true broadcasts.
 	util.AddNetworkString("TTT.Notifications.StandardMsg")
 	function TTT.Notifications:SendStandardMsg(msgType, recipients)
+		local msg = self.StandardMsgs[msgType]
+		
 		net.Start("TTT.Notifications.StandardMsg")
-			net.WriteUInt(self.StandardMsgs[msgType].NWID, stdNotificationBits)
+			net.WriteUInt(msg.NWID, stdNotificationBits)
 
 		if recipients == true then
 			net.Broadcast()
@@ -98,10 +102,10 @@ if SERVER then
 		end
 
 		if #detectives > 0 then
-			TTT.Notifications:SendStandardMsg("START_DETECTIVE", detectives)
+		--	TTT.Notifications:SendStandardMsg("START_DETECTIVE", detectives)
 		end
 
-		TTT.Notifications:SendStandardMsg("START_INNOCENT", innocents)
+		--TTT.Notifications:SendStandardMsg("START_INNOCENT", innocents)
 	end
 end
 
@@ -133,6 +137,7 @@ if CLIENT then
 
 		local phrase = TTT.Notifications.StandardMsgs[msgType].Phrase
 		local textColor = TTT.Notifications.StandardMsgs[msgType].TextColor
+		local bgColor = TTT.Notifications.StandardMsgs[msgType].BGColor
 		local func = TTT.Notifications.StandardMsgs[msgType].ClientFunc
 		local text
 		if isfunction(func) then
@@ -140,6 +145,6 @@ if CLIENT then
 		else
 			text = TTT.Languages.GetPhrase(phrase)
 		end
-		TTT.Notifications:Add(text, textColor)
+		TTT.Notifications:Add(text, textColor, bgColor, msgType)
 	end)
 end

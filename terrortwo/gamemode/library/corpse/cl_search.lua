@@ -82,7 +82,7 @@ do
 	end
 
 	function PANEL:SetBodyData(bodyData)
-		self.
+		--self.
 	end
 	
 	function PANEL:GetBodyData()

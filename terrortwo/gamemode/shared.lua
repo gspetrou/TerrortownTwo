@@ -125,6 +125,7 @@ hook.Add("TTT.Rounds.StateChanged", "TTT", function(state)
 		end
 	elseif state == ROUND_PREP then
 		if CLIENT then
+			TTT.Notifications:Clear()
 			for i, v in ipairs(player.GetAll()) do
 				TTT.Scoreboard.ClearTag(v)
 			end
@@ -144,27 +145,59 @@ end
 ----------------------
 -- Notification Hooks
 ----------------------
+-- TODO: Finish this
 hook.Add("TTT.Notifications.InitStandardMessages", "TTT", function()
-	TTT.Notifications:AddStandardMsg("START_INNOCENT", "notification_start_innocent")
-	TTT.Notifications:AddStandardMsg("START_DETECTIVE", "notification_start_detective", function()
-		return "BUTTON"
-	end)
-	TTT.Notifications:AddStandardMsg("START_TRAITOR_MULTI", "notification_start_traitor_multi", function()
-		return "BUDDIES", "TBUTTON"
-	end)
-	TTT.Notifications:AddStandardMsg("START_TRAITOR_SOLO", "notification_start_traitor_solo", function()
-		return "TBUTTON"
-	end)
-	--TTT.Notifications:AddStandardMsg("START_DURATION", "notification_start_duration")
+	-- AFK warning.
+	TTT.Notifications:AddStandardMsg("AFK_WARNING", "ntfc_idle_warning")
+
+	-- Body messages.
+	--TTT.Notifications:AddStandardMsg("BODY_FOUND", "ntfc_body_found", function()end)
+	--TTT.Notifications:AddStandardMsg("BODY_CONFIRM", "ntfc_body_confirm", function()end)
+	TTT.Notifications:AddStandardMsg("BODY_CALL_ERROR", "ntfc_body_call_error")
+	TTT.Notifications:AddStandardMsg("BODY_CREDITS", "ntfc_body_credits")
+
+	-- Round messages.
+	TTT.Notifications:AddStandardMsg("START_TRAITOR_SOLO", "ntfcn_start_traitor_solo", nil, nil, Color(255, 0, 0, 200))
+	TTT.Notifications:AddStandardMsg("START_TRAITOR_MULTI", "ntfcn_start_traitor_multi", function()
+		local output = ""
+		for i, ply in ipairs(player.GetAll()) do
+			if ply ~= LocalPlayer() and ply:IsTraitor() then
+				output = output..ply:Nick()..", "
+			end
+		end
+
+		return string.sub(output, 1, #output-2)
+	end, nil, Color(255, 0, 0, 200))
+	TTT.Notifications:AddStandardMsg("ROUND_NOTENOUGH_PLAYERS", "ntfc_round_minplayers")
+	--TTT.Notifications:AddStandardMsg("ROUND_MAPVOTE", "ntfc_round_voting")
+	--TTT.Notifications:AddStandardMsg("ROUND_BEGINS_IN", "ntfc_round_begintime")
+	TTT.Notifications:AddStandardMsg("ROUND_TRAITORS_SELECTED", "ntfc_round_selected")
+	TTT.Notifications:AddStandardMsg("ROUND_BEGAN", "ntfcn_round_start")
+
+	TTT.Notifications:AddStandardMsg("ROUND_WIN_TIME", "ntfcn_win_time")
+	TTT.Notifications:AddStandardMsg("ROUND_WIN_TRAITORS", "ntfcn_win_traitor")
+	TTT.Notifications:AddStandardMsg("ROUND_WIN_INNOCENTS", "ntfcn_win_innocent")
+	--TTT.Notifications:AddStandardMsg("ROUND_SHOW_REPORT", "ntfcn_win_showreport")
+
+	--TTT.Notifications:AddStandardMsg("ROUND_ROUND_LIMIT", "ntfcn_limit_round")
+	--TTT.Notifications:AddStandardMsg("ROUND_TIME_LIMIT", "ntfcn_limit_time")
+	--TTT.Notifications:AddStandardMsg("ROUND_TIME_LEFT", "ntfcn_limit_left")
+
+	-- Karma messages
+	TTT.Notifications:AddStandardMsg("KARMA_DEAL_FULL_DMG", "ntfc_karma_dmg_full")
+	TTT.Notifications:AddStandardMsg("KARMA_DEAL_LESS_DMG", "ntfc_karma_dmg_other")
+
+	-- Weapon messges
+	TTT.Notifications:AddStandardMsg("WEAPON_STORE_NO_STOCK", "ntfc_store_buy_no_stock")
+	TTT.Notifications:AddStandardMsg("WEAPON_STORE_RECEIVED", "ntfc_store_buy_received")
+
+	-- Store messages
+	-- TODO: Should be role colors
+	TTT.Notifications:AddStandardMsg("CRED_TRANSFER_NO_RECIP", "ntfc_transfer_no_recip")
+	TTT.Notifications:AddStandardMsg("CRED_TRANSFER_NO_CREDITS", "ntfc_transfer_no_credits")
+	--TTT.Notifications:AddStandardMsg("CRED_TRANSFER_SUCCESS", "ntfc_transfer_success")
+	--TTT.Notifications:AddStandardMsg("CRED_TRANSFER_RECEIVED", "ntfc_transfer_received")
+	--TTT.Notifications:AddStandardMsg("DET_CREDIT_REWARD", "ntfcn_credit_det_all")
+	--TTT.Notifications:AddStandardMsg("TR_CREDIT_REWARD", "ntfcn_credit_tr_all")
+	--TTT.Notifications:AddStandardMsg("CRED_REWARD_FOR_KILLING", "ntfcn_credit_kill")
 end)
-
-
-
-
-
-
-
-
-
-
-

@@ -40,7 +40,7 @@ if CLIENT then
 		local isalive = ply:Alive()
 
 		for k, v in pairs(TTT.VGUI.Elements) do
-			if v[2](ply, isalive) then
+			if not isfunction(v[2]) or v[2](ply, isalive) then
 				v[1](ply, w, h, isalive)
 			end
 		end

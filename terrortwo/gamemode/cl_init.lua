@@ -45,7 +45,6 @@ function GM:HUDPaint()
 	end
 
 	TTT.VGUI.HUDPaint()
-	TTT.Notifications:HUDPaint()
 end
 
 function GM:HUDShouldDraw(name)

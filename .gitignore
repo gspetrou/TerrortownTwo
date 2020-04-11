@@ -1,1 +1,5 @@
 .DS_Store
+
+# Handle line endings automatically except for lua files, format them to be \r\n (Windows standard).
+* text=auto
+*.lua text eol=crlf

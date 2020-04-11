@@ -13,6 +13,28 @@ L.preperation = "Preperation"
 L.roundend = "Round End"
 L.active = "Active"
 
+-- Round Messages
+L.ntfc_round_minplayers		= "Not enough players to start a new round..."
+L.ntfc_round_voting			= "Vote in progress, delaying new round by %s seconds..."
+L.ntfc_round_begintime		= "A new round begins in %s seconds. Prepare yourself."
+L.ntfc_round_selected		= "The Traitors have been selected."
+L.ntfcn_start_traitor_solo	= "Traitor, you stand alone."
+L.ntfcn_start_traitor_multi	= "Traitor, these are your allies: %s"
+L.ntfcn_round_start			= "The round has begun!"
+
+L.ntfcn_win_time		= "Time has run out. The Traitors lose."
+L.ntfcn_win_traitor		= "The Traitors have won!"
+L.ntfcn_win_innocent	= "The Traitors have been defeated!"
+L.ntfcn_win_showreport	= "Let's look at the round report for %s seconds."
+
+L.ntfcn_limit_round	= "Round limit reached. %s will load soon."
+L.ntfcn_limit_time	= "Time limit reached. %s will load soon."
+L.ntfcn_limit_left	= "%s round(s) or %s minutes remaining before the map changes to %s."
+
+L.ntfcn_credit_det_all   = "Detectives, you have been awarded %s equipment credit(s) for your performance."
+L.ntfcn_credit_tr_all    = "Traitors, you have been awarded %s equipment credit(s) for your performance."
+L.ntfcn_credit_kill      = "You have received %s credit(s) for killing a %s."
+
 -- Scoreboard
 L.sb_roundinfo = "Map changes in %s rounds or in %s"
 L.sb_karma = "Karma"
@@ -72,25 +94,25 @@ L.ammo_drop_no_room = "You have no room here to drop your ammo!"
 
 -- Body Search
 L.body_search_results = "Body Search Results"
+L.ntfc_body_found = "%s found the body of %s. They were %s."
+L.ntfc_body_confirm = "%s confirmed the death of %s."
+L.body_call = "%s called a Detective to the body of %s!"
+L.body_burning = "Ouch! This corpse is on fire!"
+L.ntfc_body_call_error = "You must confirm the death of this player before calling a Detective!"
+L.ntfc_body_credits = "You found %s credit(s) on the body!"
 
--- Notifications
-L.notification_start_innocent = [[You are an innocent Terrorist! But there are traitors around...
-Who can you trust, and who is out to fill you with bullets?
+-- Store
+L.ntfc_store_buy_no_stock	= "This weapon is out of stock: you already bought it this round."
+L.ntfc_store_buy_received	= "You have received your special equipment."
 
-Watch your back and work with your comrades to get out of this alive!]]
-L.notification_start_detective = [[You are a Detective! Terrorist HQ has given you special resources to find the traitors.
-Use them to help the innocent survive, but be careful:
-the traitors will be looking to take you down first!
+L.ntfc_transfer_no_recip   = "Recipient not valid, credit transfer aborted."
+L.ntfc_transfer_no_credits = "Insufficient credits for transfer."
+L.ntfc_transfer_success    = "Credit transfer to %s completed."
+L.ntfc_transfer_received   = "%s has given you %s credit."
 
-Press %s to receive your equipment!]]
-L.notification_start_traitor_solo = [[You are a TRAITOR! You have no fellow traitors this round.
-Kill all others to win!
+-- Karma
+L.ntfc_karma_dmg_full	= "Your Karma is %s, so you deal full damage this round!"
+L.ntfc_karma_dmg_other	= "Your Karma is %s. As a result all damage you deal is reduced by %s%%"
 
-Press %s to receive your special equipment!]]
-L.notification_start_traitor_multi = [[You are a TRAITOR! Work with fellow traitors to kill all others.
-But take care, or your treason may be discovered...
-These are your comrades:
-%s
-
-Press %s to receive your special equipment!
-]]
+-- Miscellaneous
+L.ntfc_idle_warning = "Warning: you appear to be idle/AFK, and will be made to spectate unless you show activity!"
